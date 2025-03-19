@@ -1,5 +1,2 @@
-Flask==3.0.0
+Flask
 gunicorn
-requests
-supabase
-psycopg2-binary
