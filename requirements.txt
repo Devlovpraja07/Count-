@@ -1,3 +1,5 @@
-Flask
+Flask==3.0.0
 gunicorn
-torch==2.0.1+cpu
+requests
+supabase
+psycopg2-binary
