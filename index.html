@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sahi Namaz</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #0ff;
+      font-size: 2rem;
+      text-shadow: 0 0 10px #0ff;
+    }
+
+    .folder {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      border: 2px solid #0ff;
+      border-radius: 12px;
+      margin: 20px 0;
+      box-shadow: 0 0 15px #0ff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .folder:hover {
+      background: rgba(0, 255, 255, 0.1);
+    }
+
+    .folder h2 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: #0ff;
+      display: flex;
+      align-items: center;
+    }
+
+    .folder h2::before {
+      content: '📁';
+      margin-right: 10px;
+    }
+
+    .content {
+      display: none;
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid #0ff;
+      border-radius: 8px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .folder h2 {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Sahi Namaz - Neon Web App</h1>
+
+  <!-- Folder 1: NAMAZ -->
+  <div class="folder" onclick="toggleContent('namaz')">
+    <h2>NAMAZ</h2>
+    <div class="content" id="namaz">
+      <p><strong>Niyat:</strong> Niyat ki main Allah ke liye Fajr (ya jo bhi) ki 2/4 Rakat Farz ada kar raha hoon.</p>
+      <p><strong>Takbeer:</strong> Allahu Akbar</p>
+      <p><strong>Sana:</strong> Subhanaka Allahumma wa bihamdika wa tabaarakasmuka, wa ta’ala jadduka wa la ilaaha ghayruk.</p>
+      <p><strong>Surah Fatiha</strong> + koi Surah (jaise Surah Ikhlas)</p>
+      <p><strong>Ruku:</strong> Subhana Rabbiyal Azeem (3x)</p>
+      <p><strong>Sami Allahu liman Hamidah</strong> + Rabbana lakal hamd</p>
+      <p><strong>Sajda:</strong> Subhana Rabbiyal A'la (3x)</p>
+      <p><strong>Tashahhud:</strong> Attahiyyatu Lillahi…</p>
+      <p><strong>Darood:</strong> Allahumma Salli ala Muhammad…</p>
+      <p><strong>Dua:</strong> Rabbij'alni muqeemas-salati…</p>
+      <p><strong>Salam:</strong> Assalamu Alaikum wa Rahmatullah (right & left)</p>
+    </div>
+  </div>
+
+  <!-- Folder 2: TAHAJJUD -->
+  <div class="folder" onclick="toggleContent('tahajjud')">
+    <h2>TAHAJJUD</h2>
+    <div class="content" id="tahajjud">
+      <p><strong>Rakat:</strong> 2 to 12 Rakat (2-2 karke)</p>
+      <p><strong>Niyat:</strong> Main 2 Rakat Tahajjud ki namaz Allah ke liye ada kar raha hoon</p>
+      <p><strong>Procedure:</strong> Har Rakat me Surah Fatiha + koi Surah</p>
+      <p>Namaz ke baad roohani duayein, maafi, hidayat, aur barkat ki dua maangein.</p>
+    </div>
+  </div>
+
+  <!-- Folder 3: SALATUTASBIH -->
+  <div class="folder" onclick="toggleContent('tasbih')">
+    <h2>SALATUTASBIH</h2>
+    <div class="content" id="tasbih">
+      <p><strong>Niyat:</strong> Main 4 Rakat Salatul Tasbih Allah ke liye ada kar raha hoon</p>
+      <p><strong>Tasbih:</strong> Subhanallahi wal Hamdulillahi wa laa ilaaha illallahu wallahu Akbar</p>
+      <p><strong>Har Rakat me:</strong></p>
+      <ul>
+        <li>Surah ke baad 15 bar tasbih</li>
+        <li>Ruku me 10 bar</li>
+        <li>Qaumah me 10 bar</li>
+        <li>Sajda me 10 bar</li>
+        <li>Jalsa me 10 bar</li>
+        <li>Doosre Sajda me 10 bar</li>
+        <li>Total: 75 per Rakat</li>
+      </ul>
+      <p><strong>4 Rakat = 300 times tasbih</strong></p>
+    </div>
+  </div>
+
+  <div class="footer">
+    Designed for Shab-e-Qadr | May Allah accept your prayers
+  </div>
+
+  <script>
+    function toggleContent(id) {
+      var content = document.getElementById(id);
+      content.style.display = content.style.display === "block" ? "none" : "block";
+    }
+  </script>
+
+</body>
+</html>
