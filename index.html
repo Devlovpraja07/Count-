@@ -1,143 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sahi Namaz</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: #0f0f0f;
-      color: #fff;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-      color: #0ff;
-      font-size: 2rem;
-      text-shadow: 0 0 10px #0ff;
-    }
-
-    .folder {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 15px;
-      border: 2px solid #0ff;
-      border-radius: 12px;
-      margin: 20px 0;
-      box-shadow: 0 0 15px #0ff;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .folder:hover {
-      background: rgba(0, 255, 255, 0.1);
-    }
-
-    .folder h2 {
-      margin: 0;
-      font-size: 1.3rem;
-      color: #0ff;
-      display: flex;
-      align-items: center;
-    }
-
-    .folder h2::before {
-      content: '📁';
-      margin-right: 10px;
-    }
-
-    .content {
-      display: none;
-      margin-top: 15px;
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.05);
-      border-left: 3px solid #0ff;
-      border-radius: 8px;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 40px;
-      font-size: 0.9rem;
-      color: #aaa;
-    }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 10px;
-      }
-
-      .folder h2 {
-        font-size: 1.1rem;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chand Raat Eidi App 🌙</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .gift-box {
+            font-size: 80px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            margin: 20px 0;
+        }
+        .gift-box:hover {
+            transform: scale(1.1);
+        }
+        .hidden {
+            display: none;
+        }
+        .eid-mubarak {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+            animation: glow 2s infinite;
+            margin-bottom: 15px;
+        }
+        .eidi-box {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 400px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        input {
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            width: 90%;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        button {
+            padding: 12px 25px;
+            margin: 15px 5px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #collectBtn {
+            background: #FFD700;
+            color: #000;
+        }
+        #submitBtn {
+            background: #4CAF50;
+            color: white;
+            display: none;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes glow {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
-
-  <h1>Sahi Namaz - Neon Web App</h1>
-
-  <!-- Folder 1: NAMAZ -->
-  <div class="folder" onclick="toggleContent('namaz')">
-    <h2>NAMAZ</h2>
-    <div class="content" id="namaz">
-      <p><strong>Niyat:</strong> Niyat ki main Allah ke liye Fajr (ya jo bhi) ki 2/4 Rakat Farz ada kar raha hoon.</p>
-      <p><strong>Takbeer:</strong> Allahu Akbar</p>
-      <p><strong>Sana:</strong> Subhanaka Allahumma wa bihamdika wa tabaarakasmuka, wa ta’ala jadduka wa la ilaaha ghayruk.</p>
-      <p><strong>Surah Fatiha</strong> + koi Surah (jaise Surah Ikhlas)</p>
-      <p><strong>Ruku:</strong> Subhana Rabbiyal Azeem (3x)</p>
-      <p><strong>Sami Allahu liman Hamidah</strong> + Rabbana lakal hamd</p>
-      <p><strong>Sajda:</strong> Subhana Rabbiyal A'la (3x)</p>
-      <p><strong>Tashahhud:</strong> Attahiyyatu Lillahi…</p>
-      <p><strong>Darood:</strong> Allahumma Salli ala Muhammad…</p>
-      <p><strong>Dua:</strong> Rabbij'alni muqeemas-salati…</p>
-      <p><strong>Salam:</strong> Assalamu Alaikum wa Rahmatullah (right & left)</p>
+    <h1>Chand Raat Mubarak! 🌙</h1>
+    <p>Click on the gift to claim your special Eidi!</p>
+    
+    <div class="gift-box" onclick="showEidiForm()">🎁</div>
+    
+    <div id="eidMessage" class="hidden">
+        <div class="eid-mubarak">EID MUBARAK!</div>
+        <p>Congratulations! You've won <b>₹5 Eidi</b></p>
+        
+        <div class="eidi-box">
+            <p>Enter your UPI ID to receive your gift:</p>
+            <input type="text" id="upiId" placeholder="e.g. yourname@upi" oninput="validateUPI()">
+            <div>
+                <button id="collectBtn" onclick="collectEidi()">Collect Eidi</button>
+                <button id="submitBtn" onclick="submitEidi()">Submit ✅</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Folder 2: TAHAJJUD -->
-  <div class="folder" onclick="toggleContent('tahajjud')">
-    <h2>TAHAJJUD</h2>
-    <div class="content" id="tahajjud">
-      <p><strong>Rakat:</strong> 2 to 12 Rakat (2-2 karke)</p>
-      <p><strong>Niyat:</strong> Main 2 Rakat Tahajjud ki namaz Allah ke liye ada kar raha hoon</p>
-      <p><strong>Procedure:</strong> Har Rakat me Surah Fatiha + koi Surah</p>
-      <p>Namaz ke baad roohani duayein, maafi, hidayat, aur barkat ki dua maangein.</p>
+    <div id="thankYou" class="hidden">
+        <div class="eid-mubarak">Shukriya! ❤️</div>
+        <p>Please check your email client to complete the request.</p>
+        <p>If email didn't open automatically, please send your UPI ID to:</p>
+        <p><b>mohmmdraja039@gmail.com</b></p>
+        <div style="font-size: 60px; margin-top: 20px;">📧</div>
     </div>
-  </div>
 
-  <!-- Folder 3: SALATUTASBIH -->
-  <div class="folder" onclick="toggleContent('tasbih')">
-    <h2>SALATUTASBIH</h2>
-    <div class="content" id="tasbih">
-      <p><strong>Niyat:</strong> Main 4 Rakat Salatul Tasbih Allah ke liye ada kar raha hoon</p>
-      <p><strong>Tasbih:</strong> Subhanallahi wal Hamdulillahi wa laa ilaaha illallahu wallahu Akbar</p>
-      <p><strong>Har Rakat me:</strong></p>
-      <ul>
-        <li>Surah ke baad 15 bar tasbih</li>
-        <li>Ruku me 10 bar</li>
-        <li>Qaumah me 10 bar</li>
-        <li>Sajda me 10 bar</li>
-        <li>Jalsa me 10 bar</li>
-        <li>Doosre Sajda me 10 bar</li>
-        <li>Total: 75 per Rakat</li>
-      </ul>
-      <p><strong>4 Rakat = 300 times tasbih</strong></p>
-    </div>
-  </div>
+    <script>
+        function showEidiForm() {
+            document.querySelector('.gift-box').classList.add('hidden');
+            document.getElementById('eidMessage').classList.remove('hidden');
+        }
 
-  <div class="footer">
-    Designed for Shab-e-Qadr | May Allah accept your prayers
-  </div>
+        function validateUPI() {
+            const upiId = document.getElementById('upiId').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const collectBtn = document.getElementById('collectBtn');
+            
+            if (upiId.includes('@') && upiId.length > 5) {
+                collectBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            } else {
+                collectBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            }
+        }
 
-  <script>
-    function toggleContent(id) {
-      var content = document.getElementById(id);
-      content.style.display = content.style.display === "block" ? "none" : "block";
-    }
-  </script>
+        function collectEidi() {
+            alert("Please enter a valid UPI ID (e.g. name@upi)");
+        }
 
+        function submitEidi() {
+            const upiId = document.getElementById('upiId').value;
+            
+            // Prepare email content
+            const subject = "Eidi Payment Request";
+            const body = `Assalam-o-Alaikum,\n\nPlease send my ₹5 Eidi to this UPI ID: ${upiId}\n\nEid Mubarak!`;
+            
+            // Open default email client
+            window.location.href = `mailto:mohmmdraja039@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            // Show thank you message
+            document.getElementById('eidMessage').classList.add('hidden');
+            document.getElementById('thankYou').classList.remove('hidden');
+            
+            // Log submission
+            console.log("Eidi Request:", {
+                upiId: upiId,
+                email: "mohmmdraja039@gmail.com",
+                timestamp: new Date().toLocaleString()
+            });
+        }
+    </script>
 </body>
 </html>
