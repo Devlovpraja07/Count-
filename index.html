@@ -3,175 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chand Raat Eidi App 🌙</title>
+    <title>File to PDF Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
-            box-sizing: border-box;
+            text-align: center;
         }
-        h1 {
-            font-size: 2.2rem;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        .gift-box {
-            font-size: 80px;
-            cursor: pointer;
-            transition: transform 0.3s;
+        .drop-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
             margin: 20px 0;
+            cursor: pointer;
+            transition: background 0.3s;
         }
-        .gift-box:hover {
-            transform: scale(1.1);
+        .drop-area.highlight {
+            background: #f0f0f0;
+            border-color: #4CAF50;
         }
-        .hidden {
+        #fileInput {
             display: none;
         }
-        .eid-mubarak {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #FFD700;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
-            animation: glow 2s infinite;
-            margin-bottom: 15px;
-        }
-        .eidi-box {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 25px;
-            border-radius: 15px;
-            margin: 20px auto;
-            max-width: 400px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        input {
-            padding: 12px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 8px;
-            width: 90%;
-            font-size: 16px;
-            background: rgba(255, 255, 255, 0.9);
-        }
-        button {
-            padding: 12px 25px;
-            margin: 15px 5px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        #collectBtn {
-            background: #FFD700;
-            color: #000;
-        }
-        #submitBtn {
+        .upload-btn {
             background: #4CAF50;
             color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .upload-btn:hover {
+            background: #45a049;
+        }
+        #preview {
+            max-width: 100%;
+            margin: 20px 0;
             display: none;
         }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        #downloadBtn {
+            background: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            display: none;
         }
-        @keyframes glow {
-            0% { opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { opacity: 0.8; }
+        #downloadBtn:hover {
+            background: #0b7dda;
         }
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
-            border-radius: 50%;
-            pointer-events: none;
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            right: 30px;
+            top: 30px;
+            font-size: 17px;
+        }
+        .toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        @keyframes fadein {
+            from {top: 0; opacity: 0;}
+            to {top: 30px; opacity: 1;}
+        }
+        @keyframes fadeout {
+            from {top: 30px; opacity: 1;}
+            to {top: 0; opacity: 0;}
         }
     </style>
 </head>
 <body>
-    <h1>Chand Raat Mubarak! 🌙</h1>
-    <p>Click on the gift to claim your special Eidi!</p>
+    <h1>File to PDF Converter</h1>
+    <p>Drag and drop any file or click the button below to convert to PDF</p>
     
-    <div class="gift-box" onclick="showEidiForm()">🎁</div>
+    <div id="dropArea" class="drop-area">
+        <p>Drag & Drop your file here</p>
+        <p>or</p>
+        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Select File</button>
+        <input type="file" id="fileInput" accept="*/*">
+    </div>
     
-    <div id="eidMessage" class="hidden">
-        <div class="eid-mubarak">EID MUBARAK!</div>
-        <p>Congratulations! You've won <b>₹5 Eidi</b></p>
-        
-        <div class="eidi-box">
-            <p>Enter your UPI ID to receive your gift:</p>
-            <input type="text" id="upiId" placeholder="e.g. yourname@upi" oninput="validateUPI()">
-            <div>
-                <button id="collectBtn" onclick="collectEidi()">Collect Eidi</button>
-                <button id="submitBtn" onclick="submitEidi()">Submit ✅</button>
-            </div>
-        </div>
+    <div id="previewContainer">
+        <img id="preview" alt="Preview">
     </div>
-
-    <div id="thankYou" class="hidden">
-        <div class="eid-mubarak">Shukriya! ❤️</div>
-        <p>Please check your email client to complete the request.</p>
-        <p>If email didn't open automatically, please send your UPI ID to:</p>
-        <p><b>mohmmdraja039@gmail.com</b></p>
-        <div style="font-size: 60px; margin-top: 20px;">📧</div>
-    </div>
-
+    
+    <button id="downloadBtn">Download PDF</button>
+    
+    <div id="toast" class="toast">Convert done ✅</div>
+    
     <script>
-        function showEidiForm() {
-            document.querySelector('.gift-box').classList.add('hidden');
-            document.getElementById('eidMessage').classList.remove('hidden');
+        const { jsPDF } = window.jspdf;
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const toast = document.getElementById('toast');
+        
+        let currentFile = null;
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        // Handle selected files
+        fileInput.addEventListener('change', handleFiles, false);
+        
+        // Download button click handler
+        downloadBtn.addEventListener('click', downloadPDF);
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
-
-        function validateUPI() {
-            const upiId = document.getElementById('upiId').value;
-            const submitBtn = document.getElementById('submitBtn');
-            const collectBtn = document.getElementById('collectBtn');
-            
-            if (upiId.includes('@') && upiId.length > 5) {
-                collectBtn.style.display = 'none';
-                submitBtn.style.display = 'inline-block';
-            } else {
-                collectBtn.style.display = 'inline-block';
-                submitBtn.style.display = 'none';
+        
+        function highlight() {
+            dropArea.classList.add('highlight');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('highlight');
+        }
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles({ target: { files } });
+        }
+        
+        function handleFiles(e) {
+            const files = e.target.files;
+            if (files.length) {
+                currentFile = files[0];
+                showPreview(currentFile);
             }
         }
-
-        function collectEidi() {
-            alert("Please enter a valid UPI ID (e.g. name@upi)");
+        
+        function showPreview(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                if (file.type.startsWith('image/')) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    convertToPDF();
+                } else if (file.type === 'text/plain' || file.type === '') {
+                    // For text files or unknown types, display the content
+                    preview.style.display = 'none';
+                    convertToPDF();
+                } else {
+                    // For other file types (like PDF, etc.)
+                    preview.style.display = 'none';
+                    convertToPDF();
+                }
+            };
+            
+            if (file.type.startsWith('image/')) {
+                reader.readAsDataURL(file);
+            } else {
+                reader.readAsText(file);
+            }
         }
-
-        function submitEidi() {
-            const upiId = document.getElementById('upiId').value;
+        
+        function convertToPDF() {
+            if (!currentFile) return;
             
-            // Prepare email content
-            const subject = "Eidi Payment Request";
-            const body = `Assalam-o-Alaikum,\n\nPlease send my ₹5 Eidi to this UPI ID: ${upiId}\n\nEid Mubarak!`;
+            if (currentFile.type.startsWith('image/')) {
+                // For images
+                const img = new Image();
+                img.onload = function() {
+                    const pdf = new jsPDF();
+                    const width = pdf.internal.pageSize.getWidth();
+                    const height = (img.height * width) / img.width;
+                    
+                    pdf.addImage(img, 'JPEG', 0, 0, width, height);
+                    showDownloadButton(pdf);
+                };
+                img.src = URL.createObjectURL(currentFile);
+            } else {
+                // For text and other files
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const pdf = new jsPDF();
+                    const text = reader.result;
+                    const lines = pdf.splitTextToSize(text, 180);
+                    
+                    pdf.text(lines, 10, 10);
+                    showDownloadButton(pdf);
+                };
+                reader.readAsText(currentFile);
+            }
+        }
+        
+        function showDownloadButton(pdf) {
+            // Save PDF to variable for download
+            window.generatedPDF = pdf;
             
-            // Open default email client
-            window.location.href = `mailto:mohmmdraja039@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            // Show download button
+            downloadBtn.style.display = 'inline-block';
             
-            // Show thank you message
-            document.getElementById('eidMessage').classList.add('hidden');
-            document.getElementById('thankYou').classList.remove('hidden');
-            
-            // Log submission
-            console.log("Eidi Request:", {
-                upiId: upiId,
-                email: "mohmmdraja039@gmail.com",
-                timestamp: new Date().toLocaleString()
-            });
+            // Show toast notification
+            toast.className = 'toast show';
+            setTimeout(function() {
+                toast.className = toast.className.replace('show', '');
+            }, 3000);
+        }
+        
+        function downloadPDF() {
+            if (window.generatedPDF) {
+                window.generatedPDF.save('converted.pdf');
+            }
         }
     </script>
 </body>
