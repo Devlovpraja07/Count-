@@ -2,62 +2,158 @@
  <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <title>
-   Tool App
-  </title>
-  <script src="https://cdn.tailwindcss.com">
-  </script>
+  <title>Tool App</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+
   <style>
-   /* Custom neumorphism shadow */
     .neumorphism {
-      box-shadow:
-        8px 8px 15px #c7c9cc,
-        -8px -8px 15px #ffffff;
+      box-shadow: 8px 8px 15px #c7c9cc, -8px -8px 15px #ffffff;
       transition: box-shadow 0.3s ease, transform 0.2s ease;
     }
     .neumorphism:hover, .neumorphism:focus {
-      box-shadow:
-        4px 4px 8px #c7c9cc,
-        -4px -4px 8px #ffffff;
+      box-shadow: 4px 4px 8px #c7c9cc, -4px -4px 8px #ffffff;
       transform: translateY(-4px);
       outline: none;
     }
     button:active {
       transform: translateY(1px);
-      box-shadow:
-        inset 4px 4px 8px #c7c9cc,
-        inset -4px -4px 8px #ffffff;
+      box-shadow: inset 4px 4px 8px #c7c9cc, inset -4px -4px 8px #ffffff;
       transition: none;
     }
+    .hidden { display: none; }
   </style>
  </head>
+
  <body class="bg-[#f0f1f0] min-h-screen flex flex-col items-center justify-start pt-10 font-sans">
-  <button aria-label="Power button" class="absolute top-5 left-5 text-black text-3xl">
-   <i class="fas fa-power-off">
-   </i>
-  </button>
-  <div class="mt-10 w-28 h-28 rounded-3xl bg-white flex items-center justify-center neumorphism relative" style="box-shadow: 8px 8px 15px #c7c9cc, -8px -8px 15px #ffffff;">
-   <img alt="Blue circular icon with white crossed wrench and hammer and text TOOL below" class="rounded-2xl" height="80" src="https://storage.googleapis.com/a1aa/image/f9d40a8f-c23f-4ac2-0630-1fc87e17d139.jpg" width="80"/>
-   <div class="absolute bottom-0 right-0 w-20 h-20 rounded-2xl bg-[#004a8f] opacity-50" style="clip-path: polygon(0 100%, 100% 100%, 100% 0);">
-   </div>
+
+  <!-- Profile Button Top Right -->
+  <div class="absolute top-5 right-5 flex space-x-4">
+    <button id="profileBtn" aria-label="Profile button" onclick="openProfile()" class="text-black text-3xl hidden">
+      <i class="fas fa-user-circle"></i>
+    </button>
+
+    <button aria-label="Google login" onclick="googleLogin()" id="googleBtn" class="text-red-600 text-3xl">
+      <i class="fab fa-google"></i>
+    </button>
   </div>
+
+  <!-- Logo Section -->
+  <div class="mt-10 w-28 h-28 rounded-3xl bg-white flex items-center justify-center neumorphism relative">
+   <img alt="Tool icon" class="rounded-2xl" height="80" src="https://storage.googleapis.com/a1aa/image/f9d40a8f-c23f-4ac2-0630-1fc87e17d139.jpg" width="80"/>
+   <div class="absolute bottom-0 right-0 w-20 h-20 rounded-2xl bg-[#004a8f] opacity-50" style="clip-path: polygon(0 100%, 100% 100%, 100% 0);"></div>
+  </div>
+
+  <!-- Buttons Section -->
   <div class="mt-10 space-y-6 w-64">
-   <button onclick="window.open('https://example.com/backup', '_blank')" class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism" style="box-shadow: 8px 8px 15px #c7c9cc, -8px -8px 15px #ffffff;">
-    BACKUP
-   </button>
-   <button onclick="window.open('https://example.com/restore', '_blank')" class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism" style="box-shadow: 8px 8px 15px #c7c9cc, -8px -8px 15px #ffffff;">
-    RESTORE
-   </button>
-   <button onclick="window.open('obb.html', '_blank')" class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism" style="box-shadow: 8px 8px 15px #c7c9cc, -8px -8px 15px #ffffff;">
-    GET OBB
-   </button>
-   <button class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism" style="box-shadow: 8px 8px 15px #c7c9cc, -8px -8px 15px #ffffff;">
-    OPEN GAME
-   </button>
+   <button onclick="window.open('https://example.com/backup', '_blank')" class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism">BACKUP</button>
+   <button onclick="window.open('https://example.com/restore', '_blank')" class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism">RESTORE</button>
+   <button onclick="window.open('obb.html', '_blank')" class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism">GET OBB</button>
+   <button class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism">OPEN GAME</button>
   </div>
+
   <div class="mt-10 text-black text-center text-base font-extrabold tracking-wide">
    BGMI ALL FILES AVAILABLE?
   </div>
+
+  <!-- Profile Popup Modal -->
+  <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl p-6 w-80 text-center space-y-4 relative">
+      <button onclick="closeProfile()" class="absolute top-2 right-2 text-red-600 text-xl">
+        <i class="fas fa-times"></i>
+      </button>
+      <img id="profilePic" src="" class="w-24 h-24 rounded-full mx-auto">
+      <h2 id="profileName" class="text-xl font-bold"></h2>
+      <p id="profileEmail" class="text-gray-600 text-sm"></p>
+
+      <input type="text" id="nameInput" placeholder="Enter new name" class="w-full border rounded px-3 py-2">
+      <input type="text" id="picInput" placeholder="Profile pic URL" class="w-full border rounded px-3 py-2">
+
+      <button onclick="updateProfile()" class="w-full py-2 rounded bg-blue-600 text-white mt-2">Update Profile</button>
+      <button onclick="logout()" class="w-full py-2 rounded bg-red-600 text-white mt-2">Logout</button>
+    </div>
+  </div>
+
+  <!-- Firebase Config & Script -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
+      authDomain: "rn-gfx-tool.firebaseapp.com",
+      projectId: "rn-gfx-tool",
+      storageBucket: "rn-gfx-tool.firebasestorage.app",
+      messagingSenderId: "163149358541",
+      appId: "1:163149358541:android:2ef6d22fcd23e77ee09084",
+      databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Auto check login state
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('googleBtn').classList.add('hidden');
+        document.getElementById('profileBtn').classList.remove('hidden');
+        console.log('Logged in:', user.displayName);
+      } else {
+        document.getElementById('googleBtn').classList.remove('hidden');
+        document.getElementById('profileBtn').classList.add('hidden');
+      }
+    });
+
+    function googleLogin() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(() => {
+          location.reload(); // Refresh page after login
+        })
+        .catch(error => {
+          alert("Login failed: " + error.message);
+        });
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        alert("Logged out");
+        location.reload();
+      });
+    }
+
+    function openProfile() {
+      const user = auth.currentUser;
+      if (user) {
+        document.getElementById('profilePic').src = user.photoURL || 'https://via.placeholder.com/150';
+        document.getElementById('profileName').innerText = user.displayName;
+        document.getElementById('profileEmail').innerText = user.email;
+        document.getElementById('nameInput').value = user.displayName;
+        document.getElementById('picInput').value = user.photoURL || '';
+        document.getElementById('profileModal').classList.remove('hidden');
+      }
+    }
+
+    function closeProfile() {
+      document.getElementById('profileModal').classList.add('hidden');
+    }
+
+    function updateProfile() {
+      const newName = document.getElementById('nameInput').value;
+      const newPic = document.getElementById('picInput').value;
+      auth.currentUser.updateProfile({
+        displayName: newName,
+        photoURL: newPic
+      }).then(() => {
+        alert("Profile updated");
+        location.reload();
+      }).catch(err => {
+        alert("Error: " + err.message);
+      });
+    }
+  </script>
+
  </body>
 </html>
