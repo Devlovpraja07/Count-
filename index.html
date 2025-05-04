@@ -49,6 +49,19 @@
     #logoutListItem {
         display: none; /* Use display: none on the list item */
     }
+    /* Style for the status indicator */
+    #firebaseStatus {
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75rem; /* text-xs */
+        color: #9ca3af; /* text-gray-400 */
+    }
+    .status-success { color: #34D399; /* green-400 */ }
+    .status-warning { color: #FCD34D; /* yellow-400 */ }
+    .status-error { color: #F87171; /* red-400 */ }
+
   </style>
 </head>
 <body>
@@ -82,6 +95,8 @@
         <i class="fas fa-ellipsis-v text-gray-300 text-xl"></i>
       </button>
     </div>
+     <!-- Firebase Status Indicator -->
+    <div id="firebaseStatus" class="status-warning">Loading Firebase...</div>
 
     <!-- Menu Dropdown -->
     <div
@@ -184,7 +199,7 @@
             type="button"
             id="connectBtn"
           >
-            Connect (Check Auth State)
+            Check Auth Status
           </button>
         </li>
       </ul>
@@ -351,6 +366,47 @@
     // Ensure script runs after DOM and Firebase scripts are loaded
     document.addEventListener("DOMContentLoaded", function () {
 
+      // --- Element Selection (Basic UI elements needed early) ---
+       const menuBtn = document.getElementById("menuBtn");
+       const searchBtn = document.getElementById("searchBtn");
+       const moreBtn = document.getElementById("moreBtn");
+
+       const menuDropdown = document.getElementById("menuDropdown");
+       const searchDropdown = document.getElementById("searchDropdown");
+       const moreDropdown = document.getElementById("moreDropdown");
+
+       const searchInput = document.getElementById("searchInput");
+       const searchResults = document.getElementById("searchResults");
+
+       // Buttons in Menu Dropdown - Select early for potential disabling
+       const homeBtn = document.getElementById("homeBtn");
+       const profileBtn = document.getElementById("profileBtn");
+       const settingsBtn = document.getElementById("settingsBtn");
+       const googleSignInBtn = document.getElementById("googleSignInBtn");
+       const logoutBtn = document.getElementById("logoutBtn");
+       const googleSignInListItem = document.getElementById("googleSignInListItem");
+       const logoutListItem = document.getElementById("logoutListItem");
+
+       // Buttons in More Options Dropdown - Select early
+       const aboutBtn = document.getElementById("aboutBtn");
+       const helpBtn = document.getElementById("helpBtn");
+       const connectBtn = document.getElementById("connectBtn");
+
+       // Info Section & Dismiss Button - Select early
+       const infoSection = document.getElementById("infoSection");
+       const dismissInfoBtn = document.getElementById("dismissInfoBtn");
+
+       // Firebase Status Element
+       const firebaseStatusElement = document.getElementById("firebaseStatus");
+
+       // Function to update status element
+       function updateFirebaseStatus(message, type = 'warning') {
+           if (firebaseStatusElement) {
+               firebaseStatusElement.textContent = message;
+               firebaseStatusElement.className = 'status-' + type; // Use class for color
+           }
+       }
+
       // --- Firebase Configuration & Initialization ---
 
       // Your Firebase project configuration - Updated with your details
@@ -370,17 +426,16 @@
       // Check if Firebase SDKs loaded BEFORE attempting to initialize
       // Check for both firebase (app) and firebase.auth service availability
       if (typeof firebase === "undefined" || typeof firebase.auth === "undefined") {
-          console.error("Firebase SDK(s) failed to load. This is often a network issue.");
+          console.error("Firebase SDK(s) failed to load. This is often a network issue preventing access to Google's servers.");
+          updateFirebaseStatus("Firebase SDK Failed to Load", 'error');
           alert("Firebase SDK failed to load. Please check your internet connection and try again. (Details: SDK files not found)");
           // Hide auth-dependent elements gracefully if SDKs failed to load
-           const googleSignInListItem = document.getElementById("googleSignInListItem");
-           const logoutListItem = document.getElementById("logoutListItem");
-           const connectBtn = document.getElementById("connectBtn"); // Assuming connect checks auth
            if(googleSignInListItem) googleSignInListItem.style.display = 'none';
            if(logoutListItem) logoutListItem.style.display = 'none';
            if(connectBtn) {
                connectBtn.textContent = 'Auth Unavailable';
                connectBtn.disabled = true;
+               connectBtn.parentElement.title = 'Firebase Authentication is not available.';
            }
           // We return here because Firebase functionality cannot be used.
           return;
@@ -400,76 +455,25 @@
         // Get the Auth service instance - This will only succeed if firebase.auth SDK was loaded
         auth = firebase.auth();
         console.log("Firebase Auth service obtained.");
+         updateFirebaseStatus("Firebase Initialized", 'success'); // Update status on successful init
+
       } catch (error) {
         console.error("Firebase initialization error:", error);
         // This alert handles errors specifically during the initializeApp call.
+        updateFirebaseStatus("Firebase Init Failed", 'error'); // Update status on initialization error
         alert("Failed to initialize Firebase services: " + error.message);
         // Hide auth-dependent elements gracefully if initialization fails
-         const googleSignInListItem = document.getElementById("googleSignInListItem");
-         const logoutListItem = document.getElementById("logoutListItem");
-         const connectBtn = document.getElementById("connectBtn");
          if(googleSignInListItem) googleSignInListItem.style.display = 'none';
          if(logoutListItem) logoutListItem.style.display = 'none';
           if(connectBtn) {
               connectBtn.textContent = 'Auth Unavailable';
               connectBtn.disabled = true;
+              connectBtn.parentElement.title = 'Firebase Authentication is not available.';
           }
         // We return here as auth is essential for many parts of the script.
         return;
       }
 
-
-      // --- Element Selection (Repeat selection if elements might be needed after early return) ---
-      // Select elements required for basic UI and auth even if auth fails
-      const menuBtn = document.getElementById("menuBtn");
-      const searchBtn = document.getElementById("searchBtn");
-      const moreBtn = document.getElementById("moreBtn");
-
-      const menuDropdown = document.getElementById("menuDropdown");
-      const searchDropdown = document.getElementById("searchDropdown");
-      const moreDropdown = document.getElementById("moreDropdown");
-
-      const searchInput = document.getElementById("searchInput");
-      const searchResults = document.getElementById("searchResults");
-
-      // Buttons in Menu Dropdown
-      const homeBtn = document.getElementById("homeBtn");
-      const profileBtn = document.getElementById("profileBtn");
-      const settingsBtn = document.getElementById("settingsBtn");
-      const googleSignInBtn = document.getElementById("googleSignInBtn");
-      const logoutBtn = document.getElementById("logoutBtn"); // Now in Menu dropdown
-      // Get list items again just to be safe after potential early returns
-      const googleSignInListItem = document.getElementById("googleSignInListItem");
-      const logoutListItem = document.getElementById("logoutListItem");
-
-
-      // Buttons in More Options Dropdown
-      const aboutBtn = document.getElementById("aboutBtn");
-      const helpBtn = document.getElementById("helpBtn");
-      // Get connect button again
-      const connectBtn = document.getElementById("connectBtn");
-
-      // Main Tools Buttons (assuming these don't strictly require login, adjust if needed)
-      const textToolsBtn = document.getElementById("textToolsBtn");
-      const imageToolsBtn = document.getElementById("imageToolsBtn");
-      const calculationToolsBtn = document.getElementById("calculationToolsBtn");
-      const unitConverterBtn = document.getElementById("unitConverterBtn");
-      const developmentToolsBtn = document.getElementById("developmentToolsBtn");
-      const colorsToolsBtn = document.getElementById("colorsToolsBtn");
-
-      // Info Section & Dismiss Button
-      const infoSection = document.getElementById("infoSection");
-      const dismissInfoBtn = document.getElementById("dismissInfoBtn");
-
-      // Sample tools for search
-      const tools = [
-        "Text Tools",
-        "Image Tools",
-        "Calculation Tools",
-        "Unit Converter",
-        "Development Tools",
-        "Colors Tools",
-      ];
 
       // --- Local Storage Functionality ---
       const INFO_SECTION_DISMISSED_KEY = "toolyInfoDismissed";
@@ -477,29 +481,41 @@
       // Function to check local storage and hide info section on load
       function loadInfoSectionState() {
           try {
-              const dismissed = localStorage.getItem(INFO_SECTION_DISMISSED_KEY);
-              if (dismissed === "true" && infoSection) {
-                  infoSection.style.display = 'none';
-                  console.log("Info section hidden based on local storage.");
+              // Check if localStorage is available (some browsers/modes might disable it)
+              if (typeof(Storage) !== "undefined") {
+                  const dismissed = localStorage.getItem(INFO_SECTION_DISMISSED_KEY);
+                  if (dismissed === "true" && infoSection) {
+                      infoSection.style.display = 'none';
+                      console.log("Info section hidden based on local storage.");
+                  } else {
+                      if(infoSection) infoSection.style.display = 'flex'; // Ensure it's visible by default if not dismissed
+                      console.log("Info section shown or local storage state not found.");
+                  }
               } else {
-                  if(infoSection) infoSection.style.display = 'flex'; // Ensure it's visible by default if not dismissed
-                  console.log("Info section shown or local storage state not found.");
+                   console.warn("localStorage is not available in this browser.");
+                   if(infoSection) infoSection.style.display = 'flex'; // Show by default if localStorage is off
+                   if(dismissInfoBtn) dismissInfoBtn.style.display = 'none'; // Hide dismiss button
               }
           } catch (e) {
               console.error("Could not access localStorage:", e);
-              // Handle cases where localStorage might not be available (e.g., strict privacy settings)
-              if(dismissInfoBtn) dismissInfoBtn.style.display = 'none'; // Hide dismiss button if localStorage isn't working
+              // Handle cases where localStorage might throw errors (e.g., full storage, security policies)
+              if(infoSection) infoSection.style.display = 'flex'; // Show by default on error
+              if(dismissInfoBtn) dismissInfoBtn.style.display = 'none'; // Hide dismiss button on error
           }
       }
 
       // Function to save info section state to local storage
       function saveInfoSectionDismissed() {
-          try {
-              localStorage.setItem(INFO_SECTION_DISMISSED_KEY, "true");
-              console.log("Info section dismissed state saved to local storage.");
-          } catch (e) {
-              console.error("Could not save to localStorage:", e);
-          }
+           try {
+              if (typeof(Storage) !== "undefined") {
+                  localStorage.setItem(INFO_SECTION_DISMISSED_KEY, "true");
+                  console.log("Info section dismissed state saved to local storage.");
+              } else {
+                  console.warn("localStorage not available to save state.");
+              }
+           } catch (e) {
+               console.error("Could not save to localStorage:", e);
+           }
       }
 
       // Event listener for the dismiss button
@@ -523,6 +539,7 @@
             if (user) {
               // User is signed in
               console.log("User is signed in:", user.email, "(UID:", user.uid, ")");
+              updateFirebaseStatus(`Signed In: ${user.displayName || user.email}`, 'success'); // Update status
               // Update UI: Hide Sign-in, Show Logout
               if(googleSignInListItem) googleSignInListItem.style.display = 'none';
               if(logoutListItem) logoutListItem.style.display = 'block';
@@ -536,6 +553,7 @@
             } else {
               // User is signed out
               console.log("User is signed out.");
+              updateFirebaseStatus("Signed Out", 'warning'); // Update status
               // Update UI: Show Sign-in, Hide Logout
               if(googleSignInListItem) googleSignInListItem.style.display = 'block';
               if(logoutListItem) logoutListItem.style.display = 'none';
@@ -547,6 +565,10 @@
               // if(signedInContent) signedInContent.style.display = 'none';
             }
           });
+      } else {
+          // auth service was not initialized, update status reflecting this
+          updateFirebaseStatus("Auth Service Unavailable", 'error');
+          console.warn("Firebase Auth is not available. Authentication features disabled.");
       }
 
 
@@ -555,7 +577,7 @@
       function toggleDropdown(dropdown) {
         const isHidden = dropdown && dropdown.classList.contains("hidden"); // Check if dropdown exists
         closeAllDropdowns(); // Close all others first
-        if (isHidden) {
+        if (isHidden && dropdown) { // Ensure dropdown is not null
           dropdown.classList.remove("hidden");
           if (dropdown === searchDropdown && searchInput) { // Check if searchInput exists
             searchInput.focus();
@@ -654,6 +676,7 @@
               // The onAuthStateChanged listener will handle UI updates automatically.
               const user = result.user;
               console.log("User signed in via Google:", user);
+              // Status update handled by onAuthStateChanged
               alert(`Welcome, ${user.displayName || user.email}!`);
             })
             .catch((error) => {
@@ -687,6 +710,7 @@
                 // This block runs AFTER the user successfully signs out.
                 // The onAuthStateChanged listener will handle UI updates automatically.
                 console.log("User successfully signed out.");
+                 // Status update handled by onAuthStateChanged
                 alert("Logged out successfully.");
               })
               .catch((error) => {
@@ -826,6 +850,10 @@
       // so no explicit initial show/hide is strictly necessary here,
       // but setting a default 'display: none;' in CSS for logoutListItem
       // is good practice. We added this in the <style> block.
+
+      // Initial status message (before SDK load check completes)
+      updateFirebaseStatus("Loading Firebase SDK...");
+
 
     }); // End DOMContentLoaded
   </script>
