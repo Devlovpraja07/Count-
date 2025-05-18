@@ -1,159 +1,498 @@
+<!DOCTYPE html>
 <html lang="en">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <title>Tool App</title>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
-
-  <!-- Firebase Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-
-  <style>
-    .neumorphism {
-      box-shadow: 8px 8px 15px #c7c9cc, -8px -8px 15px #ffffff;
-      transition: box-shadow 0.3s ease, transform 0.2s ease;
-    }
-    .neumorphism:hover, .neumorphism:focus {
-      box-shadow: 4px 4px 8px #c7c9cc, -4px -4px 8px #ffffff;
-      transform: translateY(-4px);
-      outline: none;
-    }
-    button:active {
-      transform: translateY(1px);
-      box-shadow: inset 4px 4px 8px #c7c9cc, inset -4px -4px 8px #ffffff;
-      transition: none;
-    }
-    .hidden { display: none; }
-  </style>
- </head>
-
- <body class="bg-[#f0f1f0] min-h-screen flex flex-col items-center justify-start pt-10 font-sans">
-
-  <!-- Profile Button Top Right -->
-  <div class="absolute top-5 right-5 flex space-x-4">
-    <button id="profileBtn" aria-label="Profile button" onclick="openProfile()" class="text-black text-3xl hidden">
-      <i class="fas fa-user-circle"></i>
-    </button>
-
-    <button aria-label="Google login" onclick="googleLogin()" id="googleBtn" class="text-red-600 text-3xl">
-      <i class="fab fa-google"></i>
-    </button>
-  </div>
-
-  <!-- Logo Section -->
-  <div class="mt-10 w-28 h-28 rounded-3xl bg-white flex items-center justify-center neumorphism relative">
-   <img alt="Tool icon" class="rounded-2xl" height="80" src="https://storage.googleapis.com/a1aa/image/f9d40a8f-c23f-4ac2-0630-1fc87e17d139.jpg" width="80"/>
-   <div class="absolute bottom-0 right-0 w-20 h-20 rounded-2xl bg-[#004a8f] opacity-50" style="clip-path: polygon(0 100%, 100% 100%, 100% 0);"></div>
-  </div>
-
-  <!-- Buttons Section -->
-  <div class="mt-10 space-y-6 w-64">
-   <button onclick="window.open('https://example.com/backup', '_blank')" class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism">BACKUP</button>
-   <button onclick="window.open('https://example.com/restore', '_blank')" class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism">RESTORE</button>
-   <button onclick="window.open('obb.html', '_blank')" class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism">GET OBB</button>
-   <button class="w-full py-3 rounded-full bg-[#f0f1f0] text-black text-center text-base font-normal neumorphism">OPEN GAME</button>
-  </div>
-
-  <div class="mt-10 text-black text-center text-base font-extrabold tracking-wide">
-   BGMI ALL FILES AVAILABLE?
-  </div>
-
-  <!-- Profile Popup Modal -->
-  <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-2xl p-6 w-80 text-center space-y-4 relative">
-      <button onclick="closeProfile()" class="absolute top-2 right-2 text-red-600 text-xl">
-        <i class="fas fa-times"></i>
-      </button>
-      <img id="profilePic" src="" class="w-24 h-24 rounded-full mx-auto">
-      <h2 id="profileName" class="text-xl font-bold"></h2>
-      <p id="profileEmail" class="text-gray-600 text-sm"></p>
-
-      <input type="text" id="nameInput" placeholder="Enter new name" class="w-full border rounded px-3 py-2">
-      <input type="text" id="picInput" placeholder="Profile pic URL" class="w-full border rounded px-3 py-2">
-
-      <button onclick="updateProfile()" class="w-full py-2 rounded bg-blue-600 text-white mt-2">Update Profile</button>
-      <button onclick="logout()" class="w-full py-2 rounded bg-red-600 text-white mt-2">Logout</button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin: Manage Keys</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <style>
+        /* --- Global Styles (iOS Feel) --- */
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            line-height: 1.4;
+            padding-top: 60px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+        header {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 10;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+            height: 55px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+        .header-content {
+            flex-grow: 1;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #000;
+        }
+        .card {
+            background-color: #fff;
+            padding: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: left;
+            color: #000;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+            padding-left: 5px;
+        }
+        .add-key-section input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        #addKeyButton {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #34c759;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+        #addKeyButton:hover { background-color: #2b9f48; }
+        #addKeyButton:active { opacity: 0.8; }
+        #keyList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #keyList li {
+            background-color: #fff;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            word-break: break-all;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            font-size: 0.95em;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+        #keyList li.empty-state,
+        #keyList li.error-state {
+            display: block;
+            text-align: center;
+            font-style: italic;
+            color: #888;
+            cursor: default;
+            background-color: #f8f8f8;
+            border: none;
+            box-shadow: none;
+            padding: 15px;
+        }
+        #keyList li.error-state {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border-color: #dc3545;
+        }
+        .key-text {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .key-actions {
+            flex-shrink: 0;
+            display: flex;
+            gap: 5px;
+        }
+        .action-button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            font-weight: 500;
+        }
+        .edit-button {
+            background-color: #007aff;
+            color: white;
+        }
+        .edit-button:hover { background-color: #005bb5; }
+        .edit-button:active { opacity: 0.8; }
+        .delete-button {
+            background-color: #ff3b30;
+            color: white;
+        }
+        .delete-button:hover { background-color: #cc3027; }
+        .delete-button:active { opacity: 0.8; }
+        #keyList li .edit-input {
+            flex-grow: 1;
+            margin-right: 10px;
+            padding: 5px;
+            border: 1px solid #007aff;
+            border-radius: 5px;
+            font-size: 0.95em;
+            box-sizing: border-box;
+        }
+        #keyList li .edit-actions .action-button {
+            padding: 5px 10px;
+        }
+        .save-button {
+            background-color: #34c759;
+            color: white;
+        }
+        .save-button:hover { background-color: #2b9f48; }
+        .save-button:active { opacity: 0.8; }
+        .cancel-button {
+            background-color: #8e8e93;
+            color: white;
+        }
+        .cancel-button:hover { background-color: #717175; }
+        .cancel-button:active { opacity: 0.8; }
+        .toast {
+            visibility: hidden;
+            min-width: 220px;
+            margin-left: -110px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 25px;
+            padding: 10px 15px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 0.85em;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+        @media (min-width: 600px) {
+            header { height: 60px; padding: 0 20px; }
+            header h1 { font-size: 1.2em; }
+            body { padding-top: 65px; }
+            h2 { font-size: 1.3em; }
+            .card { padding: 20px; }
+            .add-key-section input[type="text"] { font-size: 1.1em; }
+            #addKeyButton { font-size: 1.2em; padding: 15px; }
+            #keyList li, #keyList li .edit-input { font-size: 1em; }
+            .action-button { font-size: 0.9em; padding: 8px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Admin Panel</h1>
+        </div>
+    </header>
+    <div class="container">
+        <!-- Add Key Section -->
+        <div class="card add-key-section">
+            <h2>Add New Key</h2>
+            <input type="text" id="newKeyInput" placeholder="Enter key here">
+            <button id="addKeyButton">Add Key</button>
+        </div>
+        <!-- Manage Existing Keys Section -->
+        <div class="card manage-keys-section">
+            <h2>Manage Existing Keys</h2>
+            <ul id="keyList">
+                <li class="empty-state">Loading keys...</li>
+            </ul>
+        </div>
     </div>
-  </div>
+    <!-- Toast message element -->
+    <div id="toastMessage" class="toast"></div>
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
+            authDomain: "rn-gfx-tool.firebaseapp.com",
+            databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rn-gfx-tool",
+            storageBucket: "rn-gfx-tool.appspot.com",
+            messagingSenderId: "163149358541"
+            // appId: "YOUR_APP_ID" // Add if you have one
+        };
 
-  <!-- Firebase Config & Script -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
-      authDomain: "rn-gfx-tool.firebaseapp.com",
-      projectId: "rn-gfx-tool",
-      storageBucket: "rn-gfx-tool.firebasestorage.app",
-      messagingSenderId: "163149358541",
-      appId: "1:163149358541:android:2ef6d22fcd23e77ee09084",
-      databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app"
-    };
+        // Initialize Firebase
+        try {
+            if (typeof firebase !== 'undefined' && typeof firebase.apps !== 'undefined') {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                    console.log("Firebase initialized successfully.");
+                } else {
+                    firebase.app();
+                    console.log("Using existing Firebase app.");
+                }
+            } else {
+                console.error("Firebase SDK not loaded correctly.");
+                throw new Error("Firebase SDK not available.");
+            }
+        } catch (error) {
+            console.error("Error initializing Firebase:", error);
+            const keyList = document.getElementById('keyList');
+            if (keyList) {
+                keyList.innerHTML = '<li class="error-state">Failed to initialize Firebase: ' + error.message + '. Check console.</li>';
+            }
+            const addKeyButton = document.getElementById('addKeyButton');
+            const newKeyInput = document.getElementById('newKeyInput');
+            if(addKeyButton) addKeyButton.disabled = true;
+            if(newKeyInput) newKeyInput.disabled = true;
+        }
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+        // Get database reference ONLY if Firebase app was initialized
+        let database = null;
+        let keysRef = null;
+        if (typeof firebase !== 'undefined' && firebase.apps.length > 0 && firebase.database) {
+            try {
+                database = firebase.database();
+                keysRef = database.ref('keys');
+            } catch (dbError) {
+                console.error("Error getting Firebase Database reference:", dbError);
+                const keyList = document.getElementById('keyList');
+                if (keyList) {
+                    keyList.innerHTML = '<li class="error-state">Failed to get Database reference: ' + dbError.message + '. Check console.</li>';
+                }
+                const addKeyButton = document.getElementById('addKeyButton');
+                const newKeyInput = document.getElementById('newKeyInput');
+                if(addKeyButton) addKeyButton.disabled = true;
+                if(newKeyInput) newKeyInput.disabled = true;
+            }
+        }
 
-    // Auto check login state
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        document.getElementById('googleBtn').classList.add('hidden');
-        document.getElementById('profileBtn').classList.remove('hidden');
-        console.log('Logged in:', user.displayName);
-      } else {
-        document.getElementById('googleBtn').classList.remove('hidden');
-        document.getElementById('profileBtn').classList.add('hidden');
-      }
-    });
+        const newKeyInput = document.getElementById('newKeyInput');
+        const addKeyButton = document.getElementById('addKeyButton');
+        const keyList = document.getElementById('keyList');
+        const toastMessageDiv = document.getElementById('toastMessage');
 
-    function googleLogin() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .then(() => {
-          location.reload(); // Refresh page after login
-        })
-        .catch(error => {
-          alert("Login failed: " + error.message);
-        });
-    }
+        // --- Toast Message Functions ---
+        let toastTimeout;
+        function showToast(message) {
+            if (!toastMessageDiv) return;
+            clearTimeout(toastTimeout);
+            toastMessageDiv.textContent = message;
+            toastMessageDiv.style.visibility = 'visible';
+            toastMessageDiv.style.opacity = '1';
+            toastTimeout = setTimeout(() => {
+                toastMessageDiv.style.opacity = '0';
+                setTimeout(() => {
+                    toastMessageDiv.style.visibility = 'hidden';
+                }, 300);
+            }, 3000);
+        }
 
-    function logout() {
-      auth.signOut().then(() => {
-        alert("Logged out");
-        location.reload();
-      });
-    }
+        // --- Add Key ---
+        if (addKeyButton && keysRef) {
+            addKeyButton.addEventListener('click', () => {
+                const newKeyValue = newKeyInput.value.trim();
+                if (newKeyValue) {
+                    keysRef.push({
+                        key: newKeyValue,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    })
+                    .then(() => {
+                        console.log("Key added successfully!");
+                        showToast("Key added successfully!");
+                        newKeyInput.value = '';
+                    })
+                    .catch((error) => {
+                        console.error("Error adding key: ", error);
+                        showToast("Failed to add key: " + error.message);
+                    });
+                } else {
+                    showToast("Please enter a key to add.");
+                }
+            });
+        } else if (addKeyButton) {
+            addKeyButton.disabled = true;
+            addKeyButton.title = "Firebase not initialized. Check console.";
+        }
 
-    function openProfile() {
-      const user = auth.currentUser;
-      if (user) {
-        document.getElementById('profilePic').src = user.photoURL || 'https://via.placeholder.com/150';
-        document.getElementById('profileName').innerText = user.displayName;
-        document.getElementById('profileEmail').innerText = user.email;
-        document.getElementById('nameInput').value = user.displayName;
-        document.getElementById('picInput').value = user.photoURL || '';
-        document.getElementById('profileModal').classList.remove('hidden');
-      }
-    }
+        // --- Edit & Delete Keys (Event Delegation) ---
+        if (keyList && keysRef) {
+            keyList.addEventListener('click', (event) => {
+                const target = event.target;
+                const li = target.closest('li');
+                if (!li || !li.dataset.keyId || li.classList.contains('empty-state') || li.classList.contains('error-state')) {
+                    return;
+                }
+                const keyId = li.dataset.keyId;
+                if (target.classList.contains('edit-button')) {
+                    if (li.classList.contains('editing')) return;
+                    li.classList.add('editing');
+                    const keyTextSpan = li.querySelector('.key-text');
+                    const currentKey = keyTextSpan.textContent;
+                    li.dataset.originalContent = li.innerHTML;
+                    li.innerHTML = `
+                        <input type="text" class="edit-input" value="${escapeHTML(currentKey)}">
+                        <div class="key-actions edit-actions">
+                            <button class="action-button save-button">Save</button>
+                            <button class="action-button cancel-button">Cancel</button>
+                        </div>
+                    `;
+                    const editInput = li.querySelector('.edit-input');
+                    editInput.focus();
+                    editInput.select();
+                } else if (target.classList.contains('delete-button')) {
+                    if (confirm('Are you sure you want to delete this key?')) {
+                        if (!keysRef) {
+                            showToast("Database not available for deletion.");
+                            return;
+                        }
+                        keysRef.child(keyId).remove()
+                            .then(() => {
+                                console.log("Key deleted successfully!");
+                                showToast("Key deleted!");
+                            })
+                            .catch((error) => {
+                                console.error("Error deleting key: ", error);
+                                showToast("Failed to delete key: " + error.message);
+                            });
+                    }
+                } else if (target.classList.contains('save-button')) {
+                    const editInput = li.querySelector('.edit-input');
+                    const newValue = editInput.value.trim();
+                    if (newValue) {
+                        if (!keysRef) {
+                            showToast("Database not available for saving.");
+                            restoreOriginalContent(li);
+                            return;
+                        }
+                        keysRef.child(keyId).update({ key: newValue })
+                            .then(() => {
+                                console.log("Key updated successfully!");
+                                showToast("Key updated!");
+                                li.classList.remove('editing');
+                                delete li.dataset.originalContent;
+                            })
+                            .catch((error) => {
+                                console.error("Error updating key: ", error);
+                                showToast("Failed to update key: " + error.message);
+                            });
+                    } else {
+                        showToast("Key cannot be empty. Update cancelled.");
+                        restoreOriginalContent(li);
+                    }
+                } else if (target.classList.contains('cancel-button')) {
+                    showToast("Edit cancelled.");
+                    restoreOriginalContent(li);
+                }
+            });
+        }
 
-    function closeProfile() {
-      document.getElementById('profileModal').classList.add('hidden');
-    }
+        function restoreOriginalContent(li) {
+            if (li.dataset.originalContent !== undefined) {
+                const keyId = li.dataset.keyId;
+                li.innerHTML = li.dataset.originalContent;
+                li.dataset.keyId = keyId;
+                delete li.dataset.originalContent;
+            }
+            li.classList.remove('editing');
+        }
 
-    function updateProfile() {
-      const newName = document.getElementById('nameInput').value;
-      const newPic = document.getElementById('picInput').value;
-      auth.currentUser.updateProfile({
-        displayName: newName,
-        photoURL: newPic
-      }).then(() => {
-        alert("Profile updated");
-        location.reload();
-      }).catch(err => {
-        alert("Error: " + err.message);
-      });
-    }
-  </script>
+        // Correct escapeHTML function (fixes the error!)
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
 
- </body>
+        // --- Fetch and Display Keys from Firebase ---
+        if (keysRef) {
+            keysRef.on('value', (snapshot) => {
+                console.log("Firebase data updated.");
+                const keys = snapshot.val();
+                const keyList = document.getElementById('keyList');
+                if (!keyList) return;
+                keyList.innerHTML = '';
+                if (keys) {
+                    const keysArray = Object.keys(keys).map(keyId => ({
+                        id: keyId,
+                        ...keys[keyId]
+                    }));
+                    keysArray.sort((a, b) => {
+                        const timestampA = a.timestamp || 0;
+                        const timestampB = b.timestamp || 0;
+                        if (timestampA !== timestampB) {
+                            return timestampB - timestampA;
+                        }
+                        return a.key.localeCompare(b.key);
+                    });
+                    keysArray.forEach(keyData => {
+                        const keyId = keyData.id;
+                        const keyText = keyData.key;
+                        const li = document.createElement('li');
+                        li.dataset.keyId = keyId;
+                        li.innerHTML = `
+                            <span class="key-text">${escapeHTML(keyText)}</span>
+                            <div class="key-actions">
+                                <button class="action-button edit-button">Edit</button>
+                                <button class="action-button delete-button">Delete</button>
+                            </div>
+                        `;
+                        keyList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = "No keys found yet.";
+                    li.className = 'empty-state';
+                    keyList.appendChild(li);
+                }
+            }, (errorObject) => {
+                console.error("Firebase read failed: " + errorObject.code, errorObject);
+                const keyList = document.getElementById('keyList');
+                if (!keyList) return;
+                keyList.innerHTML = '';
+                const li = document.createElement('li');
+                li.textContent = 'Error loading keys: ' + errorObject.message;
+                li.className = 'error-state';
+                keyList.appendChild(li);
+            });
+        } else {
+            const keyList = document.getElementById('keyList');
+            if (keyList) {
+                keyList.innerHTML = '<li class="error-state">Database reference could not be obtained.</li>';
+            }
+        }
+    </script>
+</body>
 </html>
