@@ -1,150 +1,1754 @@
+<!DOCTYPE html>
 <html lang="en">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <title>Compactible Obb Found</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-   .neumorph {
-      box-shadow: 6px 6px 10px #c8c8c8, -6px -6px 10px #ffffff;
-   }
-   .neumorph-inset {
-      box-shadow: inset 6px 6px 10px #c8c8c8, inset -6px -6px 10px #ffffff;
-   }
-  </style>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
- </head>
- <body class="bg-[#ecf0f1] min-h-screen flex items-center justify-center p-4">
-  <div class="bg-[#ecf0f1] rounded-3xl w-full max-w-sm p-8 neumorph">
-   <h1 class="text-center font-semibold text-black text-lg mb-8">Compactible Obb Found</h1>
-   <div class="w-full h-6 rounded-lg bg-[#c7e8ff] neumorph-inset relative overflow-hidden mb-3">
-    <div class="h-6 rounded-lg bg-[#1a73e8]" id="progress-bar" style="width: 0%"></div>
-   </div>
-   <p class="text-center text-gray-600 text-sm mb-10" id="progress-text">0Mb/670.68Mb</p>
-   <div class="flex justify-between gap-6">
-    <button class="flex-1 bg-[#ecf0f1] rounded-full py-3 neumorph font-normal text-black text-base" id="cancel-btn">CANCEL</button>
-    <button class="flex-1 bg-[#ecf0f1] rounded-full py-3 neumorph font-normal text-black text-base" id="start-btn">START</button>
-   </div>
-   <div class="mt-8 flex justify-center">
-    <img alt="Download icon" class="w-20 h-20" height="100" src="https://storage.googleapis.com/a1aa/image/8e1691ed-f13f-4331-6d62-52807e349cf2.jpg" width="100"/>
-   </div>
-   <div class="mt-6 flex flex-col items-center gap-3">
-    <button id="google-login-btn" class="w-full bg-[#ecf0f1] rounded-full py-3 neumorph font-normal text-black text-base">Sign in with Google</button>
-    <p id="user-info" class="text-sm text-gray-700"></p>
-    <button id="logout-btn" class="hidden w-full bg-[#ecf0f1] rounded-full py-3 neumorph font-normal text-black text-base">Logout</button>
-   </div>
-  </div>
-
-  <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
-      authDomain: "rn-gfx-tool.firebaseapp.com",
-      databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "rn-gfx-tool",
-      storageBucket: "rn-gfx-tool.firebasestorage.app",
-      messagingSenderId: "163149358541",
-      appId: "1:163149358541:android:2ef6d22fcd23e77ee09084"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const provider = new firebase.auth.GoogleAuthProvider();
-
-    const loginBtn = document.getElementById('google-login-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const userInfo = document.getElementById('user-info');
-
-    loginBtn.addEventListener('click', () => {
-      auth.signInWithPopup(provider)
-        .then(result => {
-          const user = result.user;
-          userInfo.textContent = `Signed in as ${user.displayName}`;
-          loginBtn.classList.add('hidden');
-          logoutBtn.classList.remove('hidden');
-        })
-        .catch(error => {
-          alert(error.message);
-        });
-    });
-
-    logoutBtn.addEventListener('click', () => {
-      auth.signOut().then(() => {
-        userInfo.textContent = '';
-        loginBtn.classList.remove('hidden');
-        logoutBtn.classList.add('hidden');
-      });
-    });
-  </script>
-
-  <script>
-    const startBtn = document.getElementById('start-btn');
-    const cancelBtn = document.getElementById('cancel-btn');
-    const progressBar = document.getElementById('progress-bar');
-    const progressText = document.getElementById('progress-text');
-
-    let progress = 0;
-    const maxSize = 670.68;
-    let interval = null;
-    let isDownloading = false;
-
-    const fileUrl = 'https://download1493.mediafire.com/yourfile/examplefile.zip';
-    const fileName = 'downloaded_file.zip';
-
-    startBtn.addEventListener('click', () => {
-      if (!isDownloading) {
-        isDownloading = true;
-        startBtn.textContent = 'PAUSE';
-        startDownload();
-      } else {
-        isDownloading = false;
-        startBtn.textContent = 'START';
-        clearInterval(interval);
-      }
-    });
-
-    cancelBtn.addEventListener('click', () => {
-      clearInterval(interval);
-      interval = null;
-      progress = 0;
-      isDownloading = false;
-      progressBar.style.width = '0%';
-      progressText.textContent = '0Mb/' + maxSize + 'Mb';
-      startBtn.textContent = 'START';
-    });
-
-    function startDownload() {
-      interval = setInterval(() => {
-        if (!isDownloading) {
-          clearInterval(interval);
-          return;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Sports Tiger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            background-color: #1a1a1a; /* Dark background */
+            color: #e5e7eb; /* Light text */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden; /* Prevent horizontal scroll due to drawer */
         }
-        if (progress >= maxSize) {
-          clearInterval(interval);
-          isDownloading = false;
-          startBtn.textContent = 'START';
-          return;
+
+        /* Admin Panel Header */
+        .admin-header {
+            background-color: #2d2d2d; /* Darker header */
+            color: #ffffff;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        progress += 10 + Math.random() * 10;
-        if (progress > maxSize) progress = maxSize;
-        const percent = (progress / maxSize) * 100;
-        progressBar.style.width = percent + '%';
-        progressText.textContent = progress.toFixed(2) + 'Mb/' + maxSize + 'Mb';
-      }, 300);
 
-      const a = document.createElement('a');
-      a.href = fileUrl;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-  </script>
+        .admin-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            flex-grow: 1; /* Allow title to take space */
+        }
+         .admin-header h1 span {
+             color: #f59e0b; /* Yellow */
+         }
 
-  <!-- Adsterra Ad Script -->
-  <script type='text/javascript' src='//pl26564853.profitableratecpm.com/78/63/63/7863633f84dcd3e4f2e714f0ce89ea15.js'></script>
- </body>
+        .menu-icon-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 15px; /* Space from title */
+            transition: color 0.2s ease;
+        }
+         .menu-icon-button:hover {
+             color: #3b82f6; /* Blue */
+         }
+         .menu-icon-button:focus {
+             outline: 2px solid #3b82f6;
+             outline-offset: 2px;
+             border-radius: 4px;
+         }
+
+        /* Mobile Menu Drawer */
+        .mobile-menu-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 250px; /* Fixed width */
+            max-width: 80%; /* Max width on smaller screens */
+            background-color: #374151; /* Slate background */
+            color: #e5e7eb;
+            z-index: 1050; /* Above overlay */
+            transform: translateX(-100%); /* Start off-screen */
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .mobile-menu-drawer.open {
+            transform: translateX(0); /* Slide in */
+        }
+
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #4b5563; /* Border */
+            margin-bottom: 20px;
+        }
+        .mobile-menu-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            color: #e5e7eb;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+         .mobile-menu-close:hover {
+             color: #ef4444; /* Red */
+             transform: rotate(90deg);
+         }
+         .mobile-menu-close:focus {
+             outline: 2px solid #3b82f6;
+             outline-offset: 2px;
+             border-radius: 4px;
+         }
+
+
+        .mobile-menu-drawer ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1; /* Push content down */
+        }
+
+        .mobile-menu-drawer li {
+            margin-bottom: 15px;
+        }
+
+        .mobile-menu-drawer a {
+            color: #e5e7eb;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+            display: block;
+            padding: 8px 0;
+            transition: color 0.2s ease;
+        }
+        .mobile-menu-drawer a:hover {
+            color: #3b82f6; /* Blue */
+        }
+         .mobile-menu-drawer a.active {
+             color: #f59e0b; /* Yellow - highlight active */
+             font-weight: 700;
+         }
+
+        /* Overlay for menu drawer */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1040; /* Below drawer */
+            display: none; /* Hidden by default */
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+         .overlay.active {
+             display: block;
+             opacity: 1;
+         }
+         body.menu-open {
+             overflow: hidden; /* Prevent background scroll when menu is open */
+         }
+
+
+        /* Main Content Area & Sections */
+        .admin-main-content {
+            flex-grow: 1; /* Allow content to take remaining space */
+            padding: 20px;
+             max-width: 900px; /* Max width for content */
+             margin: 0 auto; /* Center content */
+        }
+
+         .admin-section {
+             display: none; /* Hidden by default, shown by JS */
+             margin-bottom: 32px; /* Space between sections if multiple visible (shouldn't happen with SPA) */
+             padding: 0; /* Remove padding here, add within subsections */
+         }
+
+         .admin-section.active {
+             display: block; /* Shown when active */
+         }
+
+
+        .settings-subsection {
+            margin-bottom: 32px; /* Space between settings groups */
+            padding: 24px;
+            border-radius: 8px;
+            background-color: #2d2d2d;
+            border: 1px solid #4b5563;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .settings-subsection h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-bottom: 1px solid #4b5563;
+            padding-bottom: 10px;
+        }
+         .settings-subsection p.help-text {
+             font-size: 0.9rem;
+             color: #9ca3af;
+             margin-top: -15px;
+             margin-bottom: 20px;
+         }
+
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #d1d5db;
+            font-size: 0.9rem;
+        }
+        input[type="text"],
+        input[type="url"],
+        textarea,
+        select {
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #4b5563;
+            background-color: #374151;
+            color: #e5e7eb;
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+         textarea {
+             min-height: 120px;
+             resize: vertical;
+         }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+             background-color: #374151;
+        }
+
+        /* Button Styles */
+        .btn {
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary { background-color: #3b82f6; color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: #2563eb; }
+        .btn-success { background-color: #10b981; color: white; }
+        .btn-success:hover:not(:disabled) { background-color: #059669; }
+         .btn-warning { background-color: #f59e0b; color: white; }
+        .btn-warning:hover:not(:disabled) { background-color: #d97706; }
+         .btn-danger { background-color: #ef4444; color: white; }
+        .btn-danger:hover:not(:disabled) { background-color: #dc2626; }
+        .btn-secondary { background-color: #4b5563; color: white; }
+        .btn-secondary:hover:not(:disabled) { background-color: #374151; }
+
+
+         /* List Styles */
+        .admin-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .admin-list li {
+            padding: 12px 0;
+            display: flex;
+            flex-direction: column; /* Stack on small screens */
+            align-items: flex-start; /* Align text left */
+            justify-content: space-between;
+            border-bottom: 1px solid #4b5563;
+            transition: background-color 0.2s ease;
+        }
+        .admin-list li:last-child {
+            border-bottom: none;
+        }
+        .admin-list li:hover {
+             background-color: #374151;
+        }
+        .admin-list li span {
+            flex-grow: 1;
+            margin-bottom: 8px; /* Space between text and buttons */
+            word-break: break-word;
+            font-size: 1rem;
+             color: #d1d5db;
+        }
+         .admin-list li span a {
+              color: #9ecaff;
+              text-decoration: underline;
+         }
+         .admin-list .actions {
+             flex-shrink: 0;
+              display: flex;
+              gap: 8px;
+         }
+         .admin-list .actions .btn {
+             padding: 6px 12px;
+             font-size: 0.875rem;
+         }
+
+         @media (min-width: 640px) { /* sm breakpoint */
+             .admin-list li {
+                 flex-direction: row;
+                 align-items: center;
+             }
+             .admin-list li span {
+                 margin-bottom: 0;
+                 margin-right: 15px;
+             }
+             /* Prevent text overflow in lists on larger screens */
+              .admin-list li span:first-child {
+                  flex-basis: 70%; /* Give text more space */
+                  flex-shrink: 1;
+              }
+               .admin-list .actions {
+                   flex-basis: 30%; /* Give actions less space */
+                   flex-shrink: 0;
+                    justify-content: flex-end; /* Align buttons to the right */
+               }
+         }
+
+         .loading-indicator {
+             text-align: center;
+             padding: 20px;
+             color: #9ca3af;
+             font-style: italic;
+             display: none; /* Hidden by default, shown by JS */
+         }
+
+
+    </style>
+</head>
+<body>
+
+    <header class="admin-header">
+        <h1>Sports<span>Tiger</span> Admin</h1>
+        <button class="menu-icon-button mobile-only" id="open-menu-btn" aria-label="Open menu">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Mobile Menu Drawer -->
+    <div class="mobile-menu-drawer" id="mobile-menu-drawer">
+        <div class="mobile-menu-header">
+            <h3>Navigation</h3>
+            <button class="mobile-menu-close" id="close-menu-btn" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="admin-nav">
+            <ul>
+                 <li><a href="#dashboard" class="nav-link" data-section="dashboard"><i class="fas fa-home mr-2"></i> Dashboard</a></li>
+                <li><a href="#posts" class="nav-link" data-section="posts"><i class="fas fa-newspaper mr-2"></i> Posts</a></li>
+                <li><a href="#pages" class="nav-link" data-section="pages"><i class="fas fa-file-alt mr-2"></i> Static Pages</a></li>
+                <li><a href="#settings" class="nav-link" data-section="settings"><i class="fas fa-cogs mr-2"></i> Settings</a></li>
+                <!-- Add other main sections here -->
+            </ul>
+        </nav>
+        <!-- Optional: Add user info or logout here -->
+    </div>
+
+    <!-- Overlay for menu drawer -->
+    <div class="overlay" id="overlay"></div>
+
+
+    <main class="admin-main-content" id="admin-main-content">
+        <div class="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded relative mb-6" role="alert">
+            <strong class="font-bold">Warning!</strong>
+            <span class="block sm:inline"> This admin panel is not secure without authentication and proper Firebase Rules. Use only for testing. Implement Firebase Authentication for production.</span>
+        </div>
+
+        <div id="admin-sections">
+
+             <!-- Dashboard Section -->
+             <section id="section-dashboard" class="admin-section">
+                 <div class="settings-subsection">
+                      <h3>Dashboard</h3>
+                      <p class="help-text">Welcome to the Sports Tiger Admin Panel. Use the menu to navigate and manage your website content and settings.</p>
+                     <p>Please ensure your Firebase Security Rules are configured correctly, especially for write access.</p>
+                     <p>For production use, **you must implement authentication** to prevent unauthorized access.</p>
+                 </div>
+             </section>
+
+
+            <!-- Posts Management Section -->
+            <section id="section-posts" class="admin-section">
+                 <div class="settings-subsection">
+                    <h3>Add/Edit Post</h3>
+                    <form id="postForm" class="space-y-4">
+                        <div class="form-group">
+                            <label for="postTitle">Title:</label>
+                            <input type="text" id="postTitle" required>
+                        </div>
+                         <div class="form-group">
+                            <label for="postSlug">Slug (for URL, lowercase, hyphens only):</label>
+                            <input type="text" id="postSlug" required pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$" title="Lowercase letters, numbers, and single hyphens only. No leading/trailing hyphens.">
+                        </div>
+                        <div class="form-group">
+                            <label for="postImageUrl">Image URL:</label>
+                            <input type="url" id="postImageUrl" placeholder="e.g., https://example.com/image.jpg">
+                        </div>
+                         <div class="form-group">
+                            <label for="postContent">Content (HTML allowed):</label>
+                            <textarea id="postContent" required></textarea>
+                        </div>
+                         <div class="form-group">
+                            <label for="postMetaDescription">Meta Description (for SEO):</label>
+                            <textarea id="postMetaDescription" placeholder="Concise summary of the post for search engines."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="postKeywords">Keywords (comma-separated, for SEO):</label>
+                            <input type="text" id="postKeywords" placeholder="e.g., sports, cricket, IPL, news">
+                        </div>
+                        <input type="hidden" id="postId">
+                        <input type="hidden" id="postOriginalDate">
+                        <div class="pt-2">
+                            <button type="submit" class="btn btn-success mr-2">Save Post</button>
+                            <button type="button" id="cancelEdit" class="btn btn-secondary hidden">Cancel Edit</button>
+                        </div>
+                    </form>
+                 </div>
+
+                <!-- Existing Posts List -->
+                 <div class="settings-subsection">
+                    <h3>Existing Posts</h3>
+                    <ul id="postsList" class="admin-list">
+                        <li class="loading-indicator" id="postsLoading">Loading posts...</li>
+                    </ul>
+                 </div>
+            </section>
+
+            <!-- Static Pages Management Section -->
+            <section id="section-pages" class="admin-section">
+                 <div class="settings-subsection">
+                    <h3>Manage Static Pages (About, Contact, etc.)</h3>
+                    <p class="help-text">Select a page to edit its main content using HTML.</p>
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            <label for="pageSelect">Select Page:</label>
+                            <select id="pageSelect">
+                                <option value="about">About Us</option>
+                                <option value="contact">Contact Us</option>
+                                <option value="privacy">Privacy Policy</option>
+                                <option value="disclaimer">Disclaimer</option>
+                                 <option value="terms">Terms & Conditions</option>
+                                <!-- Add more static page options here -->
+                            </select>
+                        </div>
+                        <div id="pageLoading" class="loading-indicator">Loading page content...</div>
+                         <div class="form-group">
+                            <label for="pageContent">Content (HTML allowed):</label>
+                            <textarea id="pageContent" required></textarea>
+                        </div>
+                        <div class="pt-2">
+                            <button id="savePageButton" class="btn btn-primary">Save Page Content</button>
+                        </div>
+                    </div>
+                 </div>
+            </section>
+
+            <!-- Settings Section Container -->
+             <section id="section-settings" class="admin-section">
+                 <h3>Website Settings</h3>
+                 <p class="help-text">Manage site-wide configurations.</p>
+
+                 <!-- Adsterra Ads Management -->
+                 <div class="settings-subsection">
+                     <h3>Adsterra Ad Scripts</h3>
+                     <p class="help-text">Paste your full Adsterra script(s) here. This is typically used for header or body scripts that load ads site-wide.</p>
+                     <div class="space-y-4">
+                         <div class="form-group">
+                             <label for="adsterraScript">Adsterra Script(s):</label>
+                             <textarea id="adsterraScript" placeholder="Paste your Adsterra script(s) here."></textarea>
+                         </div>
+                          <div id="adsLoading" class="loading-indicator">Loading ad script...</div>
+                         <div class="pt-2">
+                             <button id="saveAdsButton" class="btn btn-primary">Save Ad Script</button>
+                         </div>
+                     </div>
+                 </div>
+
+                  <!-- Download Button URL Management -->
+                  <div class="settings-subsection">
+                      <h3>Download Button URL</h3>
+                      <p class="help-text">Set the URL for the main download button (e.g., on your BGMI page).</p>
+                      <form id="downloadUrlForm" class="space-y-4">
+                          <div class="form-group">
+                              <label for="downloadUrlInput">Download URL:</label>
+                              <input type="url" id="downloadUrlInput" required placeholder="e.g., https://your-site.com/downloads/bgmi.apk">
+                          </div>
+                           <div id="downloadUrlLoading" class="loading-indicator">Loading URL...</div>
+                          <div class="pt-2">
+                              <button type="submit" id="saveDownloadUrlButton" class="btn btn-primary">Save Download URL</button>
+                          </div>
+                      </form>
+                  </div>
+
+                 <!-- Social Media Links Management -->
+                 <div class="settings-subsection">
+                     <h3>Social Media Links</h3>
+                     <p class="help-text">Add, edit, or delete links that appear in your footer social icons.</p>
+                     <form id="socialMediaForm" class="space-y-4 mb-6">
+                         <div class="form-group">
+                             <label for="socialName">Platform Name (e.g., Facebook, Twitter):</label>
+                             <input type="text" id="socialName" required>
+                         </div>
+                         <div class="form-group">
+                             <label for="socialUrl">Profile URL:</label>
+                             <input type="url" id="socialUrl" required placeholder="e.g., https://facebook.com/yourpage">
+                         </div>
+                          <div class="form-group">
+                             <label for="socialIcon">Font Awesome Icon Class (Optional):</label>
+                             <input type="text" id="socialIcon" placeholder="e.g., fab fa-facebook-f (See Font Awesome docs)">
+                         </div>
+                         <input type="hidden" id="socialId">
+                          <div class="pt-2">
+                             <button type="submit" class="btn btn-success mr-2">Add Social Link</button>
+                             <button type="button" id="cancelSocialEdit" class="btn btn-secondary hidden">Cancel Edit</button>
+                         </div>
+                     </form>
+                     <h4 class="text-lg font-semibold mb-3 text-gray-200">Existing Links</h4>
+                      <ul id="socialList" class="admin-list">
+                          <li class="loading-indicator" id="socialLoading">Loading social links...</li>
+                     </ul>
+                 </div>
+
+                 <!-- Niche Banner Management -->
+                 <div class="settings-subsection">
+                     <h3>Niche Banner</h3>
+                     <p class="help-text">Configure a single banner image and its target link for promotional spots.</p>
+                     <form id="bannerForm" class="space-y-4">
+                         <div class="form-group">
+                             <label for="bannerImageUrl">Banner Image URL:</label>
+                             <input type="url" id="bannerImageUrl" placeholder="e.g., https://example.com/banner.jpg">
+                         </div>
+                         <div class="form-group">
+                             <label for="bannerTargetUrl">Banner Target URL (Optional):</label>
+                             <input type="url" id="bannerTargetUrl" placeholder="e.g., https://affiliate.link">
+                         </div>
+                          <div id="bannerLoading" class="loading-indicator">Loading banner data...</div>
+                         <div class="pt-2">
+                             <button type="submit" id="saveBannerButton" class="btn btn-primary">Save Banner</button>
+                         </div>
+                     </form>
+                 </div>
+
+                  <!-- Header Navigation Management -->
+                  <div class="settings-subsection">
+                      <h3>Header Navigation Links</h3>
+                      <p class="help-text">Add, edit, or delete links that appear in your main header menu. (Home and Posts are often hardcoded).</p>
+                       <form id="headerNavForm" class="space-y-4 mb-6">
+                          <div class="form-group">
+                              <label for="headerLinkText">Link Text:</label>
+                              <input type="text" id="headerLinkText" required>
+                          </div>
+                          <div class="form-group">
+                              <label for="headerLinkUrl">Link URL:</label>
+                              <input type="text" id="headerLinkUrl" required placeholder="e.g., /about-us.html or https://external.link">
+                          </div>
+                           <div class="form-group">
+                               <label for="headerLinkOrder">Order (Number, Optional):</label>
+                               <input type="number" id="headerLinkOrder" placeholder="e.g., 1">
+                           </div>
+                          <input type="hidden" id="headerLinkId">
+                           <div class="pt-2">
+                              <button type="submit" class="btn btn-success mr-2">Add Header Link</button>
+                              <button type="button" id="cancelHeaderEdit" class="btn btn-secondary hidden">Cancel Edit</button>
+                          </div>
+                      </form>
+                      <h4 class="text-lg font-semibold mb-3 text-gray-200">Existing Links</h4>
+                      <ul id="headerNavList" class="admin-list">
+                          <li class="loading-indicator" id="headerLoading">Loading header links...</li>
+                      </ul>
+                  </div>
+
+
+                 <!-- Footer Navigation Management -->
+                 <div class="settings-subsection">
+                     <h3>Footer Navigation Links</h3>
+                     <p class="help-text">Add, edit, or delete links that appear in your footer navigation bar (About Us, Contact, Privacy, etc.).</p>
+                      <form id="footerNavForm" class="space-y-4 mb-6">
+                         <div class="form-group">
+                             <label for="footerLinkText">Link Text:</label>
+                             <input type="text" id="footerLinkText" required>
+                         </div>
+                         <div class="form-group">
+                             <label for="footerLinkUrl">Link URL:</label>
+                             <input type="text" id="footerLinkUrl" required placeholder="e.g., /privacy-policy.html or https://external.link">
+                         </div>
+                         <div class="form-group">
+                             <label for="footerLinkOrder">Order (Number, Optional):</label>
+                             <input type="number" id="footerLinkOrder" placeholder="e.g., 1">
+                         </div>
+                         <input type="hidden" id="footerLinkId">
+                          <div class="pt-2">
+                             <button type="submit" class="btn btn-success mr-2">Add Footer Link</button>
+                             <button type="button" id="cancelFooterEdit" class="btn btn-secondary hidden">Cancel Edit</button>
+                         </div>
+                     </form>
+                     <h4 class="text-lg font-semibold mb-3 text-gray-200">Existing Links</h4>
+                     <ul id="footerNavList" class="admin-list">
+                         <li class="loading-indicator" id="footerLoading">Loading footer links...</li>
+                     </ul>
+                 </div>
+
+
+             </section>
+             <!-- End Settings Section Container -->
+
+        </div>
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // Firebase configuration from provided details
+        // !! IMPORTANT: Double-check this config matches your Firebase project !!
+        const firebaseConfig = {
+            apiKey: "AIzaSyAY3hXmpCXJUVrBtOaosPY_tsse3sx-O5o",
+            authDomain: "nima-d4d7d.firebaseapp.com",
+            databaseURL: "https://nima-d4d7d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "nima-d4d7d",
+            storageBucket: "nima-d4d7d.firebasestorage.app",
+            messagingSenderId: "919311840182",
+            appId: "1:919311840182:web:YOUR_WEB_APP_ID" // Replace if you have a specific appId for your web app
+        };
+
+        // Initialize Firebase
+        // Use a try-catch block to gracefully handle potential initialization errors
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
+
+            // --- DOM Elements ---
+            // Get references to HTML elements. It's safer to get these *after* DOMContentLoaded if not using try/catch,
+            // but getting them here works with the try/catch wrapping the logic.
+            const openMenuBtn = document.getElementById('open-menu-btn');
+            const closeMenuBtn = document.getElementById('close-menu-btn');
+            const mobileMenuDrawer = document.getElementById('mobile-menu-drawer');
+            const overlay = document.getElementById('overlay');
+            const adminSections = document.getElementById('admin-sections'); // Container for all sections
+
+            // Section Divs
+            const sectionDashboard = document.getElementById('section-dashboard');
+            const sectionPosts = document.getElementById('section-posts');
+            const sectionPages = document.getElementById('section-pages');
+            const sectionSettings = document.getElementById('section-settings');
+
+            // Posts Elements
+            const postForm = document.getElementById('postForm');
+            const postIdInput = document.getElementById('postId');
+            const postOriginalDateInput = document.getElementById('postOriginalDate');
+            const postTitleInput = document.getElementById('postTitle');
+            const postSlugInput = document.getElementById('postSlug');
+            const postImageUrlInput = document.getElementById('postImageUrl');
+            const postContentInput = document.getElementById('postContent');
+            const postMetaDescriptionInput = document.getElementById('postMetaDescription');
+            const postKeywordsInput = document.getElementById('postKeywords');
+            const cancelEditButton = document.getElementById('cancelEdit');
+            const postsList = document.getElementById('postsList');
+            const postsLoading = document.getElementById('postsLoading');
+
+            // Static Pages Elements
+            const pageSelect = document.getElementById('pageSelect');
+            const pageContentInput = document.getElementById('pageContent');
+            const savePageButton = document.getElementById('savePageButton');
+            const pageLoading = document.getElementById('pageLoading');
+
+            // Adsterra Ads Elements
+            const adsterraScriptTextarea = document.getElementById('adsterraScript');
+            const saveAdsButton = document.getElementById('saveAdsButton');
+            const adsLoading = document.getElementById('adsLoading');
+
+            // Download URL Elements
+            const downloadUrlForm = document.getElementById('downloadUrlForm');
+            const downloadUrlInput = document.getElementById('downloadUrlInput');
+            const saveDownloadUrlButton = document.getElementById('saveDownloadUrlButton');
+            const downloadUrlLoading = document.getElementById('downloadUrlLoading');
+
+            // Social Media Elements
+            const socialMediaForm = document.getElementById('socialMediaForm');
+            const socialIdInput = document.getElementById('socialId');
+            const socialNameInput = document.getElementById('socialName');
+            const socialUrlInput = document.getElementById('socialUrl');
+            const socialIconInput = document.getElementById('socialIcon');
+            const cancelSocialEditButton = document.getElementById('cancelSocialEdit');
+            const socialList = document.getElementById('socialList');
+            const socialLoading = document.getElementById('socialLoading');
+
+            // Niche Banner Elements
+            const bannerForm = document.getElementById('bannerForm');
+            const bannerImageUrlInput = document.getElementById('bannerImageUrl');
+            const bannerTargetUrlInput = document.getElementById('bannerTargetUrl');
+            const saveBannerButton = document.getElementById('saveBannerButton');
+            const bannerLoading = document.getElementById('bannerLoading');
+
+            // Header Navigation Elements
+            const headerNavForm = document.getElementById('headerNavForm');
+            const headerLinkIdInput = document.getElementById('headerLinkId');
+            const headerLinkTextInput = document.getElementById('headerLinkText');
+            const headerLinkUrlInput = document.getElementById('headerLinkUrl');
+             const headerLinkOrderInput = document.getElementById('headerLinkOrder'); // Added order input
+            const cancelHeaderEditButton = document.getElementById('cancelHeaderEdit');
+            const headerNavList = document.getElementById('headerNavList');
+            const headerLoading = document.getElementById('headerLoading');
+
+            // Footer Navigation Elements
+            const footerNavForm = document.getElementById('footerNavForm');
+            const footerLinkIdInput = document.getElementById('footerLinkId');
+            const footerLinkTextInput = document.getElementById('footerLinkText');
+            const footerLinkUrlInput = document.getElementById('footerLinkUrl');
+            const footerLinkOrderInput = document.getElementById('footerLinkOrder'); // Added order input
+            const cancelFooterEditButton = document.getElementById('cancelFooterEdit');
+            const footerNavList = document.getElementById('footerNavList');
+            const footerLoading = document.getElementById('footerLoading');
+
+
+            // --- Navigation and Section Switching ---
+
+            // Function to show a specific section and hide others
+            function showSection(sectionId) {
+                const sections = adminSections ? adminSections.querySelectorAll('.admin-section') : [];
+                sections.forEach(section => {
+                    if (section.id === `section-${sectionId}`) {
+                        section.style.display = 'block'; // Show the target section
+                         section.classList.add('active'); // Add active class
+                    } else {
+                        section.style.display = 'none'; // Hide other sections
+                         section.classList.remove('active'); // Remove active class
+                    }
+                });
+
+                // Highlight active link in drawer
+                 const navLinks = mobileMenuDrawer ? mobileMenuDrawer.querySelectorAll('.nav-link') : [];
+                 navLinks.forEach(link => {
+                     if (link.dataset.section === sectionId) {
+                         link.classList.add('active');
+                     } else {
+                         link.classList.remove('active');
+                     }
+                 });
+
+
+                // Trigger data load for the section if needed
+                 switch (sectionId) {
+                     case 'dashboard':
+                         // Nothing to load currently
+                         break;
+                     case 'posts':
+                         fetchPostsForAdmin();
+                         break;
+                     case 'pages':
+                         loadSelectedPageContent(); // Load default selected page or current hash page
+                         break;
+                     case 'settings':
+                         // Load all settings data when the settings section is shown
+                         loadAdsterraScript();
+                         loadDownloadUrl();
+                         fetchSocialMediaLinks();
+                         loadBannerData();
+                         fetchHeaderNavLinks();
+                         fetchFooterNavLinks();
+                         break;
+                 }
+
+                // Close menu drawer on mobile after selection
+                 if (mobileMenuDrawer && mobileMenuDrawer.classList.contains('open')) {
+                     mobileMenuDrawer.classList.remove('open');
+                     if(overlay) overlay.classList.remove('active');
+                     document.body.classList.remove('menu-open');
+                 }
+
+                 // Update URL hash
+                 if (window.location.hash !== `#${sectionId}`) {
+                    // history.pushState(null, '', `#${sectionId}`); // Using replaceState might be better for admin
+                     history.replaceState(null, '', `#${sectionId}`);
+                 }
+
+                 window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top of the section
+            }
+
+            // Handle menu toggle clicks
+            if (openMenuBtn && mobileMenuDrawer && overlay) {
+                openMenuBtn.addEventListener('click', () => {
+                    mobileMenuDrawer.classList.add('open');
+                    overlay.classList.add('active');
+                    document.body.classList.add('menu-open');
+                });
+            }
+
+            if (closeMenuBtn && mobileMenuDrawer && overlay) {
+                closeMenuBtn.addEventListener('click', () => {
+                    mobileMenuDrawer.classList.remove('open');
+                    overlay.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                });
+            }
+
+            // Handle overlay click to close menu
+             if (overlay && mobileMenuDrawer) {
+                overlay.addEventListener('click', () => {
+                    mobileMenuDrawer.classList.remove('open');
+                    overlay.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                });
+             }
+
+            // Handle navigation link clicks (using delegation on the drawer)
+            if (mobileMenuDrawer) {
+                 mobileMenuDrawer.addEventListener('click', (e) => {
+                     const target = e.target.closest('a.nav-link');
+                     if (target) {
+                         e.preventDefault(); // Prevent default anchor behavior
+                         const sectionId = target.dataset.section;
+                         if (sectionId) {
+                            showSection(sectionId);
+                         }
+                     }
+                 });
+            }
+
+            // Handle initial load and hash changes for navigation
+            function handleHashChange() {
+                const hash = window.location.hash.substring(1); // Get hash without '#'
+                const validSections = ['dashboard', 'posts', 'pages', 'settings']; // Define your valid section IDs
+                const targetSection = validSections.includes(hash) ? hash : 'dashboard'; // Default to dashboard if hash is invalid/empty
+
+                showSection(targetSection);
+            }
+
+
+            // --- Firebase Data Management Functions ---
+
+            // Post Management (Existing logic, updated slighty)
+            function generateSlug(title) {
+                 if (!title) return '';
+                 return title.toLowerCase()
+                             .replace(/[^a-z0-9\s-]/g, '')
+                             .trim()
+                             .replace(/\s+/g, '-')
+                             .replace(/-+/g, '-');
+            }
+
+            if (postTitleInput && postSlugInput && postIdInput) {
+                postTitleInput.addEventListener('input', () => {
+                    // Only auto-generate slug on new posts (when postIdInput is empty)
+                    if (postIdInput.value === '') {
+                        postSlugInput.value = generateSlug(postTitleInput.value);
+                    }
+                });
+            } else { console.warn("Post form title/slug inputs not found."); }
+
+
+            if (postForm) {
+                postForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const submitBtn = postForm.querySelector('button[type="submit"]');
+                    if(submitBtn) submitBtn.disabled = true;
+
+                    const postId = postIdInput ? postIdInput.value : '';
+                    const title = postTitleInput ? postTitleInput.value.trim() : '';
+                    const slug = postSlugInput ? postSlugInput.value.trim() : '';
+                    const imageUrl = postImageUrlInput ? postImageUrlInput.value.trim() : '';
+                    const content = postContentInput ? postContentInput.value.trim() : '';
+                    const metaDescription = postMetaDescriptionInput ? postMetaDescriptionInput.value.trim() : '';
+                    const keywords = postKeywordsInput ? postKeywordsInput.value.trim() : '';
+                    // Keep original date for updates, use new date for new posts
+                    const date = postId && postOriginalDateInput && postOriginalDateInput.value ? postOriginalDateInput.value : new Date().toISOString();
+                    const author = 'Admin'; // You might want to make this dynamic later
+
+                    if (!title || !slug || !content) {
+                        alert("Title, Slug, and Content are required.");
+                         if(submitBtn) submitBtn.disabled = false;
+                        return;
+                    }
+                    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+                        alert("Invalid slug format. Use lowercase letters, numbers, and single hyphens. No leading/trailing hyphens.");
+                         if(submitBtn) submitBtn.disabled = false;
+                        return;
+                    }
+
+                    const postData = {
+                        title,
+                        slug,
+                        imageUrl,
+                        content,
+                        metaDescription,
+                        keywords,
+                        date,
+                        author
+                    };
+
+                    let dbRef;
+                    let operation;
+                    if (postId) {
+                        dbRef = database.ref(`posts/${postId}`);
+                         operation = dbRef.update(postData);
+                    } else {
+                        dbRef = database.ref('posts').push();
+                         postData.date = new Date().toISOString(); // Ensure new post gets a fresh creation date
+                        operation = dbRef.set(postData);
+                    }
+
+                    operation
+                        .then(() => {
+                            alert(`Post ${postId ? 'updated' : 'added'} successfully!`);
+                            resetPostForm();
+                            fetchPostsForAdmin(); // Refresh the list
+                        })
+                        .catch(error => {
+                            alert(`Error ${postId ? 'updating' : 'adding'} post: ` + error.message);
+                            console.error(`Error saving post ${postId ? 'update' : 'add'}:`, error);
+                        })
+                        .finally(() => {
+                             if(submitBtn) submitBtn.disabled = false;
+                        });
+                });
+            } else { console.warn("Post form not found."); }
+
+
+            function resetPostForm() {
+                 if(postIdInput) postIdInput.value = '';
+                 if(postOriginalDateInput) postOriginalDateInput.value = '';
+                 if(postTitleInput) postTitleInput.value = '';
+                 if(postSlugInput) postSlugInput.value = '';
+                 if(postImageUrlInput) postImageUrlInput.value = '';
+                 if(postContentInput) postContentInput.value = '';
+                 if(postMetaDescriptionInput) postMetaDescriptionInput.value = '';
+                 if(postKeywordsInput) postKeywordsInput.value = '';
+                 const submitBtn = postForm ? postForm.querySelector('button[type="submit"]') : null;
+                 if(submitBtn) submitBtn.textContent = 'Save Post';
+                 if(cancelEditButton) cancelEditButton.style.display = 'none';
+                 if(postSlugInput) postSlugInput.pattern = "^[a-z0-9]+(?:-[a-z0-9]+)*$"; // Reapply pattern
+            }
+            if(cancelEditButton) cancelEditButton.addEventListener('click', resetPostForm);
+
+
+            function fetchPostsForAdmin() {
+                 if (!postsList || !postsLoading) { console.warn("Posts list elements not found."); return; }
+                postsList.innerHTML = '';
+                postsLoading.style.display = 'block';
+
+                database.ref('posts').once('value')
+                    .then(snapshot => {
+                        const posts = snapshot.val();
+                        postsLoading.style.display = 'none';
+                        renderAdminPostsList(posts);
+                    })
+                    .catch(error => {
+                        postsList.innerHTML = '<li class="loading-indicator text-red-400">Error loading posts.</li>';
+                        postsLoading.style.display = 'none';
+                        console.error("Error fetching posts:", error);
+                    });
+            }
+
+            function renderAdminPostsList(posts) {
+                 if (!postsList) { console.warn("Posts list element not found for rendering."); return; }
+                postsList.innerHTML = '';
+                if (!posts) {
+                    postsList.innerHTML = '<li class="loading-indicator text-gray-400">No posts found.</li>';
+                    return;
+                }
+
+                const postList = Object.keys(posts).map(key => ({ id: key, ...posts[key] }));
+                postList.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                postList.forEach(post => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>${post.title || 'Untitled'}</span>
+                        <div class="actions">
+                            <button data-id="${post.id}" class="edit-post btn btn-warning">Edit</button>
+                            <button data-id="${post.id}" class="delete-post btn btn-danger">Delete</button>
+                        </div>
+                    `;
+                    postsList.appendChild(li);
+                });
+            }
+
+            // Event delegation for post actions
+            if (postsList) {
+                postsList.addEventListener('click', (e) => {
+                    const target = e.target;
+                    const postId = target.dataset.id;
+                    if (!postId) return;
+
+                    if (target.classList.contains('edit-post')) {
+                        editPost(postId);
+                    } else if (target.classList.contains('delete-post')) {
+                        deletePost(postId);
+                    }
+                });
+            }
+
+            function editPost(postId) {
+                 if (!postsLoading || !postsList) { console.warn("Posts list loading elements not found for edit."); }
+                 if (!postForm) { console.warn("Post form not found for edit."); return; }
+
+                if(postsLoading) postsLoading.style.display = 'block';
+                // if(postsList) postsList.style.opacity = '0.5';
+
+                database.ref(`posts/${postId}`).once('value')
+                    .then(snapshot => {
+                        const post = snapshot.val();
+                         if(postsLoading) postsLoading.style.display = 'none';
+                        // if(postsList) postsList.style.opacity = '1';
+
+                        if (post) {
+                            if(postIdInput) postIdInput.value = postId;
+                            if(postOriginalDateInput) postOriginalDateInput.value = post.date || new Date().toISOString();
+                            if(postTitleInput) postTitleInput.value = post.title || '';
+                            if(postSlugInput) postSlugInput.value = post.slug || '';
+                            // Optional: Disable slug editing after creation if you don't want users to break links
+                            // if(postSlugInput) postSlugInput.disabled = true;
+                            if(postImageUrlInput) postImageUrlInput.value = post.imageUrl || '';
+                            if(postContentInput) postContentInput.value = post.content || '';
+                            if(postMetaDescriptionInput) postMetaDescriptionInput.value = post.metaDescription || '';
+                            if(postKeywordsInput) postKeywordsInput.value = post.keywords || '';
+
+                            const submitBtn = postForm.querySelector('button[type="submit"]');
+                            if(submitBtn) submitBtn.textContent = 'Update Post';
+                            if(cancelEditButton) cancelEditButton.style.display = 'inline-block';
+
+                            // Scroll to the form
+                             if(postForm) window.scrollTo({ top: postForm.offsetTop - 100, behavior: 'smooth' });
+
+                        } else {
+                            alert("Post not found for editing.");
+                        }
+                    })
+                    .catch(error => {
+                        alert("Error loading post for editing: " + error.message);
+                         if(postsLoading) postsLoading.style.display = 'none';
+                        // if(postsList) postsList.style.opacity = '1';
+                         console.error("Error fetching post for edit:", error);
+                    });
+            }
+
+            function deletePost(postId) {
+                if (confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+                     if (!postsLoading || !postsList) { console.warn("Posts list loading elements not found for delete."); }
+
+                    if(postsLoading) postsLoading.style.display = 'block';
+                    // if(postsList) postsList.style.opacity = '0.5';
+
+                    database.ref(`posts/${postId}`).remove()
+                        .then(() => {
+                            alert("Post deleted successfully!");
+                            fetchPostsForAdmin();
+                            resetPostForm();
+                        })
+                        .catch(error => {
+                            alert("Error deleting post: " + error.message);
+                            console.error("Error deleting post:", error);
+                        })
+                         .finally(() => {
+                             if(postsLoading) postsLoading.style.display = 'none';
+                            // if(postsList) postsList.style.opacity = '1';
+                         });
+                }
+            }
+
+
+            // Static Pages Management (Existing logic, updated)
+             if (pageSelect && pageContentInput && savePageButton && pageLoading) {
+                function loadSelectedPageContent() {
+                    const pageKey = pageSelect.value;
+                    pageContentInput.value = '';
+                    pageLoading.style.display = 'block';
+                    savePageButton.disabled = true;
+
+                    database.ref(`pages/${pageKey}`).once('value')
+                        .then(snapshot => {
+                            const pageData = snapshot.val();
+                            pageContentInput.value = pageData ? pageData.content : '';
+                            pageLoading.style.display = 'none';
+                            savePageButton.disabled = false;
+                        })
+                        .catch(error => {
+                            pageContentInput.value = 'Error loading content.';
+                            pageLoading.style.display = 'none';
+                            savePageButton.disabled = false;
+                            alert(`Error loading content for ${pageKey}: ` + error.message);
+                            console.error("Error loading page content:", error);
+                        });
+                }
+
+                savePageButton.addEventListener('click', () => {
+                    const pageKey = pageSelect.value;
+                    const content = pageContentInput.value.trim();
+
+                    if (!content) {
+                        alert("Page content cannot be empty.");
+                        return;
+                    }
+
+                    savePageButton.disabled = true;
+
+                    database.ref(`pages/${pageKey}`).set({ content: content })
+                        .then(() => {
+                            alert(`${pageKey} page content saved successfully!`);
+                        })
+                        .catch(error => {
+                            alert(`Error saving page content for ${pageKey}: ` + error.message);
+                            console.error("Error saving page content:", error);
+                        })
+                        .finally(() => {
+                            savePageButton.disabled = false;
+                        });
+                });
+
+                pageSelect.addEventListener('change', loadSelectedPageContent);
+
+                 // Initial load for pages section is handled by showSection('pages')
+            } else { console.warn("Static page elements not found."); }
+
+
+            // Adsterra Ads Management (Existing logic, updated)
+             if (adsterraScriptTextarea && saveAdsButton && adsLoading) {
+                function loadAdsterraScript() {
+                    adsterraScriptTextarea.value = '';
+                    adsLoading.style.display = 'block';
+                    saveAdsButton.disabled = true;
+
+                    database.ref('settings/adsterraScript').once('value')
+                        .then(snapshot => {
+                            const script = snapshot.val();
+                            adsterraScriptTextarea.value = script || '';
+                            adsLoading.style.display = 'none';
+                            saveAdsButton.disabled = false;
+                        })
+                        .catch(error => {
+                            adsterraScriptTextarea.value = 'Error loading script.';
+                            adsLoading.style.display = 'none';
+                            saveAdsButton.disabled = false;
+                            alert('Error loading Adsterra script: ' + error.message);
+                            console.error("Error loading ad script:", error);
+                        });
+                }
+
+                saveAdsButton.addEventListener('click', () => {
+                    const script = adsterraScriptTextarea.value.trim();
+                    saveAdsButton.disabled = true;
+
+                    database.ref('settings/adsterraScript').set(script || null)
+                        .then(() => {
+                            alert('Adsterra script saved successfully!');
+                        })
+                        .catch(error => {
+                            alert('Error saving Adsterra script: ' + error.message);
+                            console.error("Error saving ad script:", error);
+                        })
+                        .finally(() => {
+                            saveAdsButton.disabled = false;
+                        });
+                });
+                 // Initial load handled by showSection('settings')
+            } else { console.warn("Adsterra elements not found."); }
+
+
+             // Download Button URL Management (Existing logic, updated)
+             if (downloadUrlForm && downloadUrlInput && saveDownloadUrlButton && downloadUrlLoading) {
+                 function loadDownloadUrl() {
+                     downloadUrlInput.value = '';
+                     downloadUrlLoading.style.display = 'block';
+                     saveDownloadUrlButton.disabled = true;
+
+                     database.ref('settings/downloadUrl').once('value')
+                         .then(snapshot => {
+                             const url = snapshot.val();
+                             downloadUrlInput.value = url || '';
+                             downloadUrlLoading.style.display = 'none';
+                             saveDownloadUrlButton.disabled = false;
+                         })
+                         .catch(error => {
+                             downloadUrlInput.value = 'Error loading URL.';
+                             downloadUrlLoading.style.display = 'none';
+                             saveDownloadUrlButton.disabled = false;
+                             alert('Error loading download URL: ' + error.message);
+                             console.error("Error loading download URL:", error);
+                         });
+                 }
+
+                 downloadUrlForm.addEventListener('submit', (e) => {
+                     e.preventDefault();
+                     const url = downloadUrlInput.value.trim();
+
+                     if (!url) {
+                         alert("Download URL cannot be empty.");
+                         return;
+                     }
+
+                     saveDownloadUrlButton.disabled = true;
+
+                     database.ref('settings/downloadUrl').set(url)
+                         .then(() => {
+                             alert('Download URL saved successfully!');
+                         })
+                         .catch(error => {
+                             alert('Error saving download URL: ' + error.message);
+                             console.error("Error saving download URL:", error);
+                         })
+                         .finally(() => {
+                             saveDownloadUrlButton.disabled = false;
+                         });
+                 });
+                 // Initial load handled by showSection('settings')
+             } else { console.warn("Download URL elements not found."); }
+
+
+            // Social Media Management (Existing logic, updated)
+            if (socialMediaForm && socialIdInput && socialNameInput && socialUrlInput && socialIconInput && cancelSocialEditButton && socialList && socialLoading) {
+                function fetchSocialMediaLinks() {
+                     socialList.innerHTML = '';
+                     socialLoading.style.display = 'block';
+
+                    database.ref('settings/socialMedia').on('value', (snapshot) => { // Use on() for lists
+                         socialList.innerHTML = '';
+                         socialLoading.style.display = 'none';
+
+                        const links = snapshot.val();
+                        if (!links) {
+                            socialList.innerHTML = '<li class="loading-indicator text-gray-400">No social links found.</li>';
+                            return;
+                        }
+
+                        const linkList = Object.keys(links).map(key => ({ id: key, ...links[key] }));
+                        // Optional: Sort links if needed
+
+                        linkList.forEach(link => {
+                            const li = document.createElement('li');
+                            li.innerHTML = `
+                                <span>
+                                     ${link.icon ? `<i class="${link.icon.trim()} mr-2 text-blue-400"></i>` : ''}
+                                     ${link.name || 'Link'}: <a href="${link.url || '#'}" target="_blank" rel="noopener noreferrer">${link.url || 'N/A'}</a>
+                                </span>
+                                <div class="actions">
+                                    <button data-id="${link.id}" class="edit-social btn btn-warning">Edit</button>
+                                    <button data-id="${link.id}" class="delete-social btn btn-danger">Delete</button>
+                                </div>
+                            `;
+                            socialList.appendChild(li);
+                        });
+                    }, (error) => {
+                         socialList.innerHTML = '<li class="loading-indicator text-red-400">Error loading social links.</li>';
+                         socialLoading.style.display = 'none';
+                         console.error("Error fetching social media links:", error);
+                    });
+                }
+
+                socialMediaForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const submitBtn = socialMediaForm.querySelector('button[type="submit"]');
+                    if(submitBtn) submitBtn.disabled = true;
+
+                    const socialId = socialIdInput.value;
+                    const name = socialNameInput.value.trim();
+                    const url = socialUrlInput.value.trim();
+                    const icon = socialIconInput.value.trim();
+
+                    if (!name || !url) {
+                        alert("Name and URL are required for a social link.");
+                         if(submitBtn) submitBtn.disabled = false;
+                        return;
+                    }
+
+                    const linkData = { name, url, icon };
+
+                    let operation;
+                    if (socialId) {
+                        operation = database.ref(`settings/socialMedia/${socialId}`).update(linkData);
+                    } else {
+                        operation = database.ref('settings/socialMedia').push(linkData);
+                    }
+
+                    operation
+                        .then(() => {
+                            alert(`Social link ${socialId ? 'updated' : 'added'} successfully!`);
+                            resetSocialMediaForm();
+                        })
+                        .catch(error => {
+                            alert(`Error ${socialId ? 'updating' : 'adding'} social link: ` + error.message);
+                             console.error(`Error saving social link ${socialId ? 'update' : 'add'}:`, error);
+                        })
+                        .finally(() => {
+                            if(submitBtn) submitBtn.disabled = false;
+                        });
+                });
+
+                function resetSocialMediaForm() {
+                     if(socialIdInput) socialIdInput.value = '';
+                     if(socialNameInput) socialNameInput.value = '';
+                     if(socialUrlInput) socialUrlInput.value = '';
+                     if(socialIconInput) socialIconInput.value = '';
+                     const submitBtn = socialMediaForm.querySelector('button[type="submit"]');
+                     if(submitBtn) submitBtn.textContent = 'Add Social Link';
+                     if(cancelSocialEditButton) cancelSocialEditButton.style.display = 'none';
+                }
+                 if(cancelSocialEditButton) cancelSocialEditButton.addEventListener('click', resetSocialMediaForm);
+
+
+                if (socialList) {
+                    socialList.addEventListener('click', (e) => {
+                        const target = e.target;
+                        const socialId = target.dataset.id;
+                        if (!socialId) return;
+
+                        if (target.classList.contains('edit-social')) {
+                            editSocialLink(socialId);
+                        } else if (target.classList.contains('delete-social')) {
+                            deleteSocialLink(socialId);
+                        }
+                    });
+                }
+
+                function editSocialLink(socialId) {
+                     if (!socialMediaForm || !socialIdInput || !socialNameInput || !socialUrlInput || !socialIconInput || !cancelSocialEditButton) { console.warn("Social edit elements not found."); return; }
+                    database.ref(`settings/socialMedia/${socialId}`).once('value')
+                        .then(snapshot => {
+                            const link = snapshot.val();
+                            if (link) {
+                                socialIdInput.value = socialId;
+                                socialNameInput.value = link.name || '';
+                                socialUrlInput.value = link.url || '';
+                                socialIconInput.value = link.icon || '';
+                                const submitBtn = socialMediaForm.querySelector('button[type="submit"]');
+                                if(submitBtn) submitBtn.textContent = 'Update Social Link';
+                                if(cancelSocialEditButton) cancelSocialEditButton.style.display = 'inline-block';
+                                 if(socialMediaForm) window.scrollTo({ top: socialMediaForm.offsetTop - 100, behavior: 'smooth' });
+                            } else {
+                                alert("Social link not found for editing.");
+                            }
+                        })
+                        .catch(error => {
+                            alert("Error loading social link for editing: " + error.message);
+                             console.error("Error loading social link for edit:", error);
+                        });
+                }
+
+                function deleteSocialLink(socialId) {
+                    if (confirm("Are you sure you want to delete this social link?")) {
+                        database.ref(`settings/socialMedia/${socialId}`).remove()
+                            .then(() => {
+                                alert("Social link deleted successfully!");
+                                resetSocialMediaForm();
+                            })
+                            .catch(error => {
+                                alert("Error deleting social link: " + error.message);
+                                console.error("Error deleting social link:", error);
+                            });
+                    }
+                }
+                 // Initial load handled by showSection('settings')
+            } else { console.warn("Social media form/list elements not found."); }
+
+
+            // Niche Banner Management (Existing logic, updated)
+             if (bannerForm && bannerImageUrlInput && bannerTargetUrlInput && saveBannerButton && bannerLoading) {
+                 function loadBannerData() {
+                     bannerImageUrlInput.value = '';
+                     bannerTargetUrlInput.value = '';
+                     bannerLoading.style.display = 'block';
+                     saveBannerButton.disabled = true;
+
+                     database.ref('settings/banner').once('value')
+                         .then(snapshot => {
+                             const bannerData = snapshot.val();
+                             if (bannerData) {
+                                 bannerImageUrlInput.value = bannerData.imageUrl || '';
+                                 bannerTargetUrlInput.value = bannerData.targetUrl || '';
+                             }
+                             bannerLoading.style.display = 'none';
+                             saveBannerButton.disabled = false;
+                         })
+                         .catch(error => {
+                             bannerLoading.style.display = 'none';
+                             saveBannerButton.disabled = false;
+                             alert('Error loading banner data: ' + error.message);
+                              console.error("Error loading banner data:", error);
+                         });
+                 }
+
+                bannerForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const imageUrl = bannerImageUrlInput.value.trim();
+                    const targetUrl = bannerTargetUrlInput.value.trim();
+
+                    saveBannerButton.disabled = true;
+
+                    const bannerData = (imageUrl || targetUrl) ? { imageUrl, targetUrl } : null;
+
+                    database.ref('settings/banner').set(bannerData)
+                        .then(() => {
+                            alert('Banner data saved successfully!');
+                        })
+                        .catch(error => {
+                            alert('Error saving banner data: ' + error.message);
+                            console.error("Error saving banner data:", error);
+                        })
+                        .finally(() => {
+                            saveBannerButton.disabled = false;
+                        });
+                });
+                 // Initial load handled by showSection('settings')
+            } else { console.warn("Banner elements not found."); }
+
+
+            // Header Navigation Management (Existing logic, updated)
+            if (headerNavForm && headerLinkIdInput && headerLinkTextInput && headerLinkUrlInput && cancelHeaderEditButton && headerNavList && headerLoading && headerLinkOrderInput) {
+                function fetchHeaderNavLinks() {
+                     headerNavList.innerHTML = '';
+                     headerLoading.style.display = 'block';
+
+                    database.ref('settings/headerNav').on('value', (snapshot) => {
+                         headerNavList.innerHTML = '';
+                         headerLoading.style.display = 'none';
+
+                        const links = snapshot.val();
+                        if (!links) {
+                            headerNavList.innerHTML = '<li class="loading-indicator text-gray-400">No header links found.</li>';
+                            return;
+                        }
+
+                        const linkList = Object.keys(links).map(key => ({ id: key, ...links[key] }));
+                        linkList.sort((a, b) => (a.order || 0) - (b.order || 0)); // Sort by order field
+
+                        linkList.forEach(link => {
+                            const li = document.createElement('li');
+                             li.innerHTML = `
+                                 <span>
+                                     ${link.text || 'Link'}: <a href="${link.url || '#'}" target="_blank" rel="noopener noreferrer">${link.url || 'N/A'}</a>
+                                     ${link.order !== undefined && link.order !== '' ? ` (Order: ${link.order})` : ''}
+                                 </span>
+                                 <div class="actions">
+                                     <button data-id="${link.id}" class="edit-header-link btn btn-warning">Edit</button>
+                                     <button data-id="${link.id}" class="delete-header-link btn btn-danger">Delete</button>
+                                 </div>
+                             `;
+                            headerNavList.appendChild(li);
+                        });
+                    }, (error) => {
+                         headerNavList.innerHTML = '<li class="loading-indicator text-red-400">Error loading header links.</li>';
+                         headerLoading.style.display = 'none';
+                         console.error("Error fetching header nav links:", error);
+                    });
+                }
+
+                headerNavForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const submitBtn = headerNavForm.querySelector('button[type="submit"]');
+                    if(submitBtn) submitBtn.disabled = true;
+
+                    const headerLinkId = headerLinkIdInput.value;
+                    const text = headerLinkTextInput.value.trim();
+                    const url = headerLinkUrlInput.value.trim();
+                     const order = parseInt(headerLinkOrderInput.value); // Get order as number
+
+                    if (!text || !url) {
+                        alert("Link Text and URL are required for a header link.");
+                         if(submitBtn) submitBtn.disabled = false;
+                        return;
+                    }
+
+                    const linkData = { text, url };
+                     if (!isNaN(order)) { linkData.order = order; } // Add order only if it's a valid number
+
+
+                    let operation;
+                    if (headerLinkId) {
+                        operation = database.ref(`settings/headerNav/${headerLinkId}`).update(linkData);
+                    } else {
+                        operation = database.ref('settings/headerNav').push(linkData);
+                    }
+
+                    operation
+                        .then(() => {
+                            alert(`Header link ${headerLinkId ? 'updated' : 'added'} successfully!`);
+                            resetHeaderNavForm();
+                        })
+                        .catch(error => {
+                            alert(`Error ${headerLinkId ? 'updating' : 'adding'} header link: ` + error.message);
+                            console.error(`Error saving header link ${headerLinkId ? 'update' : 'add'}:`, error);
+                        })
+                        .finally(() => {
+                            if(submitBtn) submitBtn.disabled = false;
+                        });
+                });
+
+                function resetHeaderNavForm() {
+                     if(headerLinkIdInput) headerLinkIdInput.value = '';
+                     if(headerLinkTextInput) headerLinkTextInput.value = '';
+                     if(headerLinkUrlInput) headerLinkUrlInput.value = '';
+                     if(headerLinkOrderInput) headerLinkOrderInput.value = '';
+                     const submitBtn = headerNavForm.querySelector('button[type="submit"]');
+                     if(submitBtn) submitBtn.textContent = 'Add Header Link';
+                     if(cancelHeaderEditButton) cancelHeaderEditButton.style.display = 'none';
+                }
+                 if(cancelHeaderEditButton) cancelHeaderEditButton.addEventListener('click', resetHeaderNavForm);
+
+
+                if (headerNavList) {
+                    headerNavList.addEventListener('click', (e) => {
+                        const target = e.target;
+                        const headerLinkId = target.dataset.id;
+                        if (!headerLinkId) return;
+
+                        if (target.classList.contains('edit-header-link')) {
+                            editHeaderLink(headerLinkId);
+                        } else if (target.classList.contains('delete-header-link')) {
+                            deleteHeaderLink(headerLinkId);
+                        }
+                    });
+                }
+
+                function editHeaderLink(headerLinkId) {
+                     if (!headerNavForm || !headerLinkIdInput || !headerLinkTextInput || !headerLinkUrlInput || !headerLinkOrderInput || !cancelHeaderEditButton) { console.warn("Header edit elements not found."); return; }
+                    database.ref(`settings/headerNav/${headerLinkId}`).once('value')
+                        .then(snapshot => {
+                            const link = snapshot.val();
+                            if (link) {
+                                headerLinkIdInput.value = headerLinkId;
+                                headerLinkTextInput.value = link.text || '';
+                                headerLinkUrlInput.value = link.url || '';
+                                headerLinkOrderInput.value = link.order || '';
+                                const submitBtn = headerNavForm.querySelector('button[type="submit"]');
+                                if(submitBtn) submitBtn.textContent = 'Update Header Link';
+                                if(cancelHeaderEditButton) cancelHeaderEditButton.style.display = 'inline-block';
+                                 if(headerNavForm) window.scrollTo({ top: headerNavForm.offsetTop - 100, behavior: 'smooth' });
+                            } else {
+                                alert("Header link not found for editing.");
+                            }
+                        })
+                        .catch(error => {
+                            alert("Error loading header link for editing: " + error.message);
+                            console.error("Error fetching header link for edit:", error);
+                        });
+                }
+
+                function deleteHeaderLink(headerLinkId) {
+                    if (confirm("Are you sure you want to delete this header link?")) {
+                        database.ref(`settings/headerNav/${headerLinkId}`).remove()
+                            .then(() => {
+                                alert("Header link deleted successfully!");
+                                resetHeaderNavForm();
+                            })
+                            .catch(error => {
+                                alert("Error deleting header link: " + error.message);
+                                console.error("Error deleting header link:", error);
+                            });
+                    }
+                }
+                 // Initial load handled by showSection('settings')
+            } else { console.warn("Header nav elements not found."); }
+
+
+            // Footer Navigation Management (Existing logic, updated)
+            if (footerNavForm && footerLinkIdInput && footerLinkTextInput && footerLinkUrlInput && cancelFooterEditButton && footerNavList && footerLoading && footerLinkOrderInput) {
+                function fetchFooterNavLinks() {
+                    footerNavList.innerHTML = '';
+                    footerLoading.style.display = 'block';
+
+                    database.ref('settings/footerNav').on('value', (snapshot) => {
+                         footerNavList.innerHTML = '';
+                         footerLoading.style.display = 'none';
+
+                        const links = snapshot.val();
+                        if (!links) {
+                            footerNavList.innerHTML = '<li class="loading-indicator text-gray-400">No footer links found.</li>';
+                            return;
+                        }
+
+                        const linkList = Object.keys(links).map(key => ({ id: key, ...links[key] }));
+                        linkList.sort((a, b) => (a.order || 0) - (b.order || 0)); // Sort by order field
+
+                        linkList.forEach(link => {
+                            const li = document.createElement('li');
+                            li.innerHTML = `
+                                <span>
+                                    ${link.text || 'Link'}: <a href="${link.url || '#'}" target="_blank" rel="noopener noreferrer">${link.url || 'N/A'}</a>
+                                    ${link.order !== undefined && link.order !== '' ? ` (Order: ${link.order})` : ''}
+                                </span>
+                                <div class="actions">
+                                    <button data-id="${link.id}" class="edit-footer-link btn btn-warning">Edit</button>
+                                    <button data-id="${link.id}" class="delete-footer-link btn btn-danger">Delete</button>
+                                </div>
+                            `;
+                            footerNavList.appendChild(li);
+                        });
+                    }, (error) => {
+                         footerNavList.innerHTML = '<li class="loading-indicator text-red-400">Error loading footer links.</li>';
+                         footerLoading.style.display = 'none';
+                         console.error("Error fetching footer nav links:", error);
+                    });
+                }
+
+                footerNavForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                     const submitBtn = footerNavForm.querySelector('button[type="submit"]');
+                     if(submitBtn) submitBtn.disabled = true;
+
+                    const footerLinkId = footerLinkIdInput.value;
+                    const text = footerLinkTextInput.value.trim();
+                    const url = footerLinkUrlInput.value.trim();
+                     const order = parseInt(footerLinkOrderInput.value);
+
+                    if (!text || !url) {
+                        alert("Link Text and URL are required for a footer link.");
+                         if(submitBtn) submitBtn.disabled = false;
+                        return;
+                    }
+
+                    const linkData = { text, url };
+                     if (!isNaN(order)) { linkData.order = order; }
+
+
+                    let operation;
+                    if (footerLinkId) {
+                         operation = database.ref(`settings/footerNav/${footerLinkId}`).update(linkData);
+                    } else {
+                         operation = database.ref('settings/footerNav').push(linkData);
+                    }
+
+                     operation
+                        .then(() => {
+                            alert(`Footer link ${footerLinkId ? 'updated' : 'added'} successfully!`);
+                            resetFooterNavForm();
+                        })
+                        .catch(error => {
+                            alert(`Error ${footerLinkId ? 'updating' : 'adding'} footer link: ` + error.message);
+                            console.error(`Error saving footer link ${footerLinkId ? 'update' : 'add'}:`, error);
+                        })
+                        .finally(() => {
+                            if(submitBtn) submitBtn.disabled = false;
+                        });
+                });
+
+                function resetFooterNavForm() {
+                     if(footerLinkIdInput) footerLinkIdInput.value = '';
+                     if(footerLinkTextInput) footerLinkTextInput.value = '';
+                     if(footerLinkUrlInput) footerLinkUrlInput.value = '';
+                     if(footerLinkOrderInput) footerLinkOrderInput.value = '';
+                     const submitBtn = footerNavForm.querySelector('button[type="submit"]');
+                     if(submitBtn) submitBtn.textContent = 'Add Footer Link';
+                     if(cancelFooterEditButton) cancelFooterEditButton.style.display = 'none';
+                }
+                 if(cancelFooterEditButton) cancelFooterEditButton.addEventListener('click', resetFooterNavForm);
+
+
+                if (footerNavList) {
+                    footerNavList.addEventListener('click', (e) => {
+                        const target = e.target;
+                        const footerLinkId = target.dataset.id;
+                        if (!footerLinkId) return;
+
+                        if (target.classList.contains('edit-footer-link')) {
+                            editFooterLink(footerLinkId);
+                        } else if (target.classList.contains('delete-footer-link')) {
+                            deleteFooterLink(footerLinkId);
+                        }
+                    });
+                }
+
+                function editFooterLink(footerLinkId) {
+                     if (!footerNavForm || !footerLinkIdInput || !footerLinkTextInput || !footerLinkUrlInput || !footerLinkOrderInput || !cancelFooterEditButton) { console.warn("Footer edit elements not found."); return; }
+                    database.ref(`settings/footerNav/${footerLinkId}`).once('value')
+                        .then(snapshot => {
+                            const link = snapshot.val();
+                            if (link) {
+                                footerLinkIdInput.value = footerLinkId;
+                                footerLinkTextInput.value = link.text || '';
+                                footerLinkUrlInput.value = link.url || '';
+                                footerLinkOrderInput.value = link.order || '';
+                                const submitBtn = footerNavForm.querySelector('button[type="submit"]');
+                                if(submitBtn) submitBtn.textContent = 'Update Footer Link';
+                                if(cancelFooterEditButton) cancelFooterEditButton.style.display = 'inline-block';
+                                 if(footerNavForm) window.scrollTo({ top: footerNavForm.offsetTop - 100, behavior: 'smooth' });
+                            } else {
+                                alert("Footer link not found for editing.");
+                            }
+                        })
+                        .catch(error => {
+                            alert("Error loading footer link for editing: " + error.message);
+                            console.error("Error fetching footer link for edit:", error);
+                        });
+                }
+
+                function deleteFooterLink(footerLinkId) {
+                    if (confirm("Are you sure you want to delete this footer link?")) {
+                        database.ref(`settings/footerNav/${footerLinkId}`).remove()
+                            .then(() => {
+                                alert("Footer link deleted successfully!");
+                                resetFooterNavForm();
+                            })
+                            .catch(error => {
+                                alert("Error deleting footer link: " + error.message);
+                                console.error("Error deleting footer link:", error);
+                            });
+                    }
+                }
+                 // Initial load handled by showSection('settings')
+            } else { console.warn("Footer nav elements not found."); }
+
+
+            // --- Initial Load ---
+            document.addEventListener('DOMContentLoaded', () => {
+                 handleHashChange(); // Determine and show the initial section based on URL hash
+
+                 // No need to fetch all data here anymore, it's triggered by showSection()
+            });
+
+             // Add listener for hash changes
+             window.addEventListener('hashchange', handleHashChange);
+
+
+        } catch (error) {
+             console.error("Firebase initialization failed:", error);
+             alert("Error initializing Firebase. Admin panel may not function correctly.");
+             // Hide everything if Firebase fails
+             const mainContent = document.getElementById('admin-main-content');
+             if(mainContent) mainContent.innerHTML = '<div class="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded relative" role="alert"><strong class="font-bold">Error!</strong><span> Failed to initialize Firebase. Please check console for details.</span></div>';
+              // Hide menu button
+             const openBtn = document.getElementById('open-menu-btn');
+              if(openBtn) openBtn.style.display = 'none';
+        }
+
+    </script>
+</body>
 </html>
