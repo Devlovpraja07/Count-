@@ -2,674 +2,567 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel (Testing) - Islamic Community Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#00796b"/>
+    <title>Islamic Life - Dynamic Ads</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Firebase SDKs -->
+
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script> 
-    <!-- Note: For full user management (listing all users), you'd typically need the Firebase Admin SDK on a backend/Cloud Function.
-         Client-side auth.listUsers() is not available. We'll simulate or fetch from a user collection if you create one. -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* ... (Keep all the CSS from the previous admin panel response) ... */
         :root {
-            --primary-color: #006400; --secondary-color: #004d00; --accent-color: #FFD700;
-            --light-bg: #f4f6f9; --sidebar-bg: #2c3e50; --sidebar-text: #ecf0f1;
-            --sidebar-active-bg: var(--primary-color); --text-color: #333; --card-bg: #ffffff;
-            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1); --danger-color: #dc3545;
-            --success-color: #28a745; --warning-color: #ffc107;
+            --primary-color: #00796b;
+            --secondary-color: #004d40;
+            --accent-color: #ffc107;
+            --light-bg: #f5f5f5;
+            --dark-text: #333;
+            --light-text: #fff;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--light-bg); color: var(--text-color); display: flex; min-height: 100vh; flex-direction: column; }
-        #admin-key-access-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; background-color: var(--sidebar-bg); color: var(--sidebar-text); }
-        .key-access-container { background-color: var(--card-bg); color: var(--text-color); padding: 2.5rem; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); width: 100%; max-width: 400px; text-align: center; }
-        .key-access-container h1 { color: var(--primary-color); margin-bottom: 0.5rem; }
-        .key-access-container p { margin-bottom: 1.5rem; font-size: 0.9rem; color: #777; }
-        .key-access-form input { width: 100%; padding: 12px; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
-        .key-access-form button { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 12px; border-radius: 5px; font-size: 1.1rem; cursor: pointer; transition: background-color 0.3s ease; }
-        .key-access-form button:hover { background-color: var(--secondary-color); }
-        #key-error-message { color: var(--danger-color); margin-top: 1rem; font-size: 0.9rem; display: none; }
-        #admin-panel-screen { display: none; flex-direction: row; width: 100%; flex-grow: 1; }
-        .admin-sidebar { width: 260px; background-color: var(--sidebar-bg); color: var(--sidebar-text); padding-top: 1.5rem; display: flex; flex-direction: column; transition: width 0.3s ease; }
-        .admin-sidebar .logo { text-align: center; margin-bottom: 2rem; padding: 0 1rem; }
-        .admin-sidebar .logo h2 { font-size: 1.5rem; color: var(--accent-color); }
-        .admin-sidebar .logo p { font-size: 0.8rem; opacity: 0.7; }
-        .admin-sidebar nav ul { list-style: none; }
-        .admin-sidebar nav ul li a { display: flex; align-items: center; padding: 1rem 1.5rem; color: var(--sidebar-text); text-decoration: none; transition: background-color 0.2s ease, color 0.2s ease; font-size: 0.95rem; }
-        .admin-sidebar nav ul li a i { margin-right: 12px; width: 20px; text-align: center; }
-        .admin-sidebar nav ul li a:hover, .admin-sidebar nav ul li a.active { background-color: var(--sidebar-active-bg); color: white; border-left: 3px solid var(--accent-color); padding-left: calc(1.5rem - 3px); }
-        .admin-sidebar .logout-link { margin-top: auto; }
-        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        .admin-header { background-color: var(--card-bg); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-bottom: 1px solid #e0e0e0; }
-        .admin-header h1 { font-size: 1.5rem; color: var(--primary-color); }
-        .admin-info span { margin-right: 10px; font-size: 0.9rem; }
-        .admin-info .fas { color: var(--primary-color); }
-        .admin-content { padding: 1.5rem; flex-grow: 1; }
-        .content-section { display: none; }
-        .content-section.active { display: block; }
-        .content-title { font-size: 1.8rem; color: var(--text-color); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-color); }
-        .dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .dash-card { background-color: var(--card-bg); padding: 1.5rem; border-radius: 8px; box-shadow: var(--shadow); display: flex; align-items: center; }
-        .dash-card .icon { font-size: 2.5rem; padding: 1rem; border-radius: 50%; margin-right: 1rem; color: white; }
-        .dash-card .icon.users { background-color: #17a2b8; }
-        .dash-card .icon.content { background-color: #28a745; }
-        .dash-card .icon.activity { background-color: #ffc107; }
-        .dash-card .icon.settings { background-color: #6c757d; }
-        .dash-card .info h3 { font-size: 1.8rem; margin-bottom: 0.2rem; }
-        .dash-card .info p { font-size: 0.9rem; color: #666; }
-        .table-container { background-color: var(--card-bg); padding: 1.5rem; border-radius: 8px; box-shadow: var(--shadow); overflow-x: auto; }
-        .admin-table { width: 100%; border-collapse: collapse; }
-        .admin-table th, .admin-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
-        .admin-table th { background-color: var(--light-bg); font-weight: 600; color: var(--primary-color); }
-        .admin-table tbody tr:hover { background-color: #f1f1f1; }
-        .admin-table .actions a, .admin-table .actions button { color: var(--primary-color); margin-right: 8px; text-decoration: none; background: none; border: none; cursor: pointer; font-size: 1rem; }
-        .admin-table .actions a:hover, .admin-table .actions button:hover { opacity: 0.7; }
-        .admin-table .actions .fa-trash-alt { color: var(--danger-color); }
-        .admin-table .actions .fa-user-slash { color: var(--warning-color); }
-        .admin-table .actions .fa-user-check { color: var(--success-color); }
-        .status-active { color: var(--success-color); font-weight: bold; }
-        .status-banned { color: var(--danger-color); font-weight: bold; }
-        .status-pending { color: var(--warning-color); font-weight: bold; }
-        .btn { padding: 10px 20px; border-radius: 5px; text-decoration: none; font-size: 0.9rem; cursor: pointer; border: none; transition: opacity 0.2s ease; }
-        .btn:hover { opacity: 0.85; }
-        .btn-primary { background-color: var(--primary-color); color: white; }
-        .btn-danger { background-color: var(--danger-color); color: white; }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .table-actions-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .table-actions-bar input[type="search"] { padding: 8px 12px; border-radius: 5px; border: 1px solid #ccc; min-width: 250px; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: .5rem; font-weight: 600; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        .modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 25px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); width: 90%; max-width: 600px; position: relative; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid #e9ecef; margin-bottom: 1rem; }
-        .modal-header h3 { font-size: 1.5rem; color: var(--primary-color); }
-        .close-modal { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close-modal:hover, .close-modal:focus { color: var(--text-color); text-decoration: none; }
-        .modal-body form label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        .modal-body form input, .modal-body form select, .modal-body form textarea { width: 100%; padding: 10px; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
-        .modal-footer { padding-top: 1rem; border-top: 1px solid #e9ecef; margin-top: 1rem; text-align: right; }
-        .modal-footer .btn + .btn { margin-left: 0.5rem; }
-        #nav-items-list li { background: #f9f9f9; padding: 10px; margin-bottom: 5px; border: 1px solid #eee; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        #nav-items-list li .actions button { margin-left: 5px; }
-        .loader-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .loader { border: 8px solid var(--light-bg); border-top: 8px solid var(--primary-color); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: var(--light-bg); color: var(--dark-text);
+            display: flex; flex-direction: column; min-height: 100vh;
+            overscroll-behavior-y: contain; direction: ltr;
+        }
+        .page {
+            display: none; flex-grow: 1; overflow-y: auto;
+            padding: 15px; padding-bottom: 80px;
+        }
+        .page.active { display: flex; flex-direction: column; }
+        .app-header {
+            background-color: var(--primary-color); color: var(--light-text);
+            padding: 15px; text-align: center; font-size: 1.6em; font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 100;
+        }
+        .footer-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background-color: var(--card-bg); display: flex; justify-content: space-around;
+            align-items: center; box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+            border-top: 1px solid #e0e0e0; z-index: 100; height: 65px;
+        }
+        .footer-nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #757575; font-size: 0.75em; padding: 8px 12px; cursor: pointer;
+            flex-grow: 1; text-decoration: none; transition: color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        .footer-nav-item i { font-size: 1.8em; margin-bottom: 4px; }
+        .footer-nav-item.active { color: var(--primary-color); transform: translateY(-2px); }
+        .footer-nav-item:active { transform: translateY(0px); }
 
-        @media (max-width: 768px) {
-            #admin-panel-screen { flex-direction: column; }
-            .admin-sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; padding-top: 0; align-items: center; }
-            .admin-sidebar .logo { margin-bottom: 0; padding: 0.8rem 1rem;} .admin-sidebar .logo h2 { font-size: 1.2rem; }
-            .admin-sidebar .logo p { display: none; } .admin-sidebar nav ul { display: flex; flex-direction: row; }
-            .admin-sidebar nav ul li a { padding: 0.8rem 1rem; font-size: 0.9rem; } .admin-sidebar nav ul li a i { margin-right: 5px; }
-            .admin-sidebar nav ul li a.active { border-left: none; border-bottom: 3px solid var(--accent-color); }
-            .admin-sidebar .logout-link { margin-top: 0; margin-left: auto; } .main-wrapper { width: 100%; }
-            .admin-header h1 { font-size: 1.2rem; } .dashboard-cards { grid-template-columns: 1fr; }
+        .post-card {
+            background-color: var(--card-bg); border-radius: 12px; padding: 20px;
+            margin-bottom: 20px; box-shadow: var(--shadow); cursor: pointer;
+            border-left: 5px solid var(--primary-color);
+            transition: transform 0.2s ease-in-out;
         }
+        .post-card:hover { transform: translateY(-3px); }
+        .post-card-thumbnail {
+            width: 100%; max-height: 220px; object-fit: cover;
+            border-radius: 8px; margin-bottom: 15px;
+        }
+        .post-card h2 { font-size: 1.4em; color: var(--primary-color); margin-top: 0; margin-bottom: 10px; }
+        .post-card p.description {
+            font-size: 1em; line-height: 1.6; color: #555; margin-bottom: 10px;
+            white-space: pre-wrap;
+            max-height: 6.4em; /* approx 4 lines */
+            overflow: hidden; text-overflow: ellipsis;
+            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+        }
+        .post-card small.post-meta { font-size: 0.85em; color: #777; display: block; margin-top: 10px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--secondary-color); }
+        .form-group input[type="text"], .form-group input[type="url"], .form-group textarea {
+            width: 100%; padding: 12px; border: 1px solid #ccc;
+            border-radius: 8px; font-size: 1em; font-family: inherit;
+        }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .form-button {
+            background-color: var(--primary-color); color: var(--light-text); border: none;
+            padding: 15px 25px; font-size: 1.1em; border-radius: 8px; cursor: pointer;
+            transition: background-color 0.3s ease; width: 100%; font-weight: 500;
+        }
+
+        .user-page-content i { font-size: 5em; color: var(--primary-color); margin-bottom: 20px; }
+        .user-page-content p { font-size: 1.1em; margin-bottom: 10px; }
+
+        /* Ad Slot Styling (Generic - specific ad scripts might override) */
+        .ad-slot {
+            width: 100%; margin: 15px auto; display: flex; justify-content: center;
+            align-items: center; background-color: #e9e9e9; /* Placeholder bg */
+            overflow: hidden; /* Important for fixed-width ads */
+            padding: 5px 0; /* Some padding for visual separation */
+        }
+        .ad-slot:empty { /* Hide if no ad code is injected or if ad fails to load to this div */
+            min-height: 0; /* Was 50px or 90px, allow it to collapse */
+            padding: 0;
+            margin: 0;
+            border: 1px dashed #ddd; /* Visual cue for empty slot in dev */
+        }
+         .ad-slot-banner { min-height: 90px; } /* Default for 728x90 or similar */
+         .ad-slot-native { padding: 10px; background-color: transparent; }
+
+
+        .offline-banner {
+            background-color: var(--accent-color); color: var(--dark-text); padding: 10px;
+            text-align: center; width: 100%; position: fixed; top: 0; left: 0;
+            z-index: 1001; display: none; font-weight: 500;
+        }
+        #install-button-container { text-align: center; margin: 20px 0; }
+        #install-pwa-btn {
+            background-color: var(--accent-color); color: var(--dark-text); border: none;
+            padding: 12px 25px; font-size: 1em; border-radius: 8px; cursor: pointer;
+            display: none; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Full Screen Post View Styles */
+        #full-post-view-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--light-bg); /* Solid background for full screen feel */
+            z-index: 1000;
+            display: none;
+            flex-direction: column; /* Make it a flex container */
+            padding: 0;
+        }
+        #full-post-view-page.active { display: flex; }
+
+        .full-post-content-wrapper { /* This is now the main scrollable area */
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Wrapper itself doesn't scroll, body does */
+        }
+        .full-post-header {
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+        .full-post-header h2 {
+            font-size: 1.3em; margin: 0;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        #close-full-post-btn {
+            background: none; border: none; font-size: 1.8em;
+            color: var(--light-text); cursor: pointer; line-height: 1; padding: 0 5px;
+        }
+
+        .full-post-body {
+            padding: 15px;
+            overflow-y: auto; /* Scrollable content */
+            flex-grow: 1; /* Takes up remaining space */
+            background-color: var(--card-bg);
+        }
+        .full-post-body img.full-post-thumbnail {
+            width: 100%;
+            max-height: 35vh; /* Max height relative to viewport */
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .full-post-body p.full-post-description {
+            font-size: 1.05em;
+            line-height: 1.7;
+            color: #333;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+        .full-post-meta-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .full-post-link-container {
+            margin-top: 15px; margin-bottom: 20px; padding: 15px;
+            background-color: #e8f5e9; /* Light green background */
+            border-radius: 8px;
+            text-align: center;
+        }
+        .full-post-link-container a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            word-break: break-all;
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--accent-color);
+            color: var(--dark-text);
+            border-radius: 5px;
+        }
+        .full-post-link-container a:hover { opacity: 0.8; }
+
+        .text-center { text-align: center; }
+        .mt-20 { margin-top: 20px; }
+        /* Global Ad Script Container (for popunders, social bars etc that are not visible elements) */
+        #global-ad-scripts { display: none; }
     </style>
 </head>
 <body>
-    <div id="loader" class="loader-container" style="display:none;"><div class="loader"></div></div>
 
-    <!-- Admin Key Access Screen -->
-    <div id="admin-key-access-screen" style="display: flex;">
-        <div class="key-access-container">
-            <h1><i class="fas fa-key"></i> Admin Access</h1>
-            <p>Enter the access key to continue.</p>
-            <form id="admin-key-form" class="key-access-form">
-                <input type="password" id="admin-access-key" placeholder="Access Key" required>
-                <button type="submit">Enter Panel</button>
-            </form>
-            <p id="key-error-message">Invalid access key.</p>
+    <div class="offline-banner" id="offline-banner">
+        You are currently offline. Content may be limited.
+    </div>
+    <div id="global-ad-scripts">
+        <!-- Popunders, Social Bar scripts will be injected here by loadAdConfigurations -->
+    </div>
+
+    <!-- Page: Home -->
+    <div id="home-page" class="page active">
+        <header class="app-header">Islamic Life</header>
+        <div id="install-button-container">
+            <button id="install-pwa-btn">Install App</button>
+        </div>
+        
+        <div id="ad-slot-home-top-banner" class="ad-slot ad-slot-banner"></div>
+        <div id="ad-slot-home-native" class="ad-slot ad-slot-native"></div>
+
+
+        <div id="posts-container">
+            <p class="text-center" style="padding: 30px;">Loading posts...</p>
+        </div>
+        
+        <div id="ad-slot-home-bottom-banner" class="ad-slot ad-slot-banner"></div>
+    </div>
+
+    <!-- Page: Add Post -->
+    <div id="add-post-page" class="page">
+        <header class="app-header">Add New Post</header>
+        <form id="add-post-form">
+            <div class="form-group"> <label for="post-title-input">Title:</label> <input type="text" id="post-title-input" required> </div>
+            <div class="form-group"> <label for="post-description-input">Description:</label> <textarea id="post-description-input" rows="5" required></textarea> </div>
+            <div class="form-group"> <label for="post-thumbnail-input">Thumbnail URL:</label> <input type="url" id="post-thumbnail-input" placeholder="https://example.com/image.jpg"> </div>
+            <div class="form-group"> <label for="post-url-input">External URL:</label> <input type="url" id="post-url-input" placeholder="https://example.com/source-link"> </div>
+            <button type="submit" class="form-button">Publish Post</button>
+        </form>
+        <div id="ad-slot-add-post-banner" class="ad-slot ad-slot-banner mt-20"></div>
+    </div>
+
+    <!-- Page: User -->
+    <div id="user-page" class="page">
+        <header class="app-header">User Profile</header>
+        <div class="user-page-content text-center">
+            <i class="fas fa-user-cog"></i>
+            <p>User Profile & Settings</p>
+            <p>© <span id="current-year"></span> Islamic Life PWA</p>
         </div>
     </div>
 
-    <!-- Main Admin Panel (Hidden by default) -->
-    <div id="admin-panel-screen">
-        <aside class="admin-sidebar">
-            <div class="logo">
-                <h2><i class="fas fa-mosque"></i> Admin</h2>
-                <p>Islamic Community Hub</p>
-            </div>
-            <nav>
-                <ul>
-                    <li><a href="#" class="nav-link active" data-target="dashboard-view"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="#" class="nav-link" data-target="user-management-view"><i class="fas fa-users-cog"></i> User Management</a></li>
-                    <li><a href="#" class="nav-link" data-target="nav-management-view"><i class="fas fa-sitemap"></i> Nav Management</a></li>
-                    <li><a href="#" class="nav-link" data-target="content-management-view"><i class="fas fa-file-alt"></i> Content (Demo)</a></li>
-                    <li><a href="#" class="nav-link" data-target="settings-view"><i class="fas fa-cogs"></i> Settings (Demo)</a></li>
-                    <li class="logout-link"><a href="#" id="admin-logout-btn"><i class="fas fa-sign-out-alt"></i> Exit Panel</a></li>
-                </ul>
-            </nav>
-        </aside>
-
-        <div class="main-wrapper">
-            <header class="admin-header">
-                <h1 id="current-section-title">Dashboard</h1>
-                <div class="admin-info">
-                    <span>Welcome, <strong id="admin-name-display">Test Admin</strong>!</span>
-                    <i class="fas fa-user-shield fa-lg"></i>
-                </div>
+    <!-- Full Screen Post View Page -->
+    <div id="full-post-view-page">
+        <div class="full-post-content-wrapper">
+            <header class="full-post-header">
+                <h2 id="full-post-title">Post Title</h2>
+                <button id="close-full-post-btn" aria-label="Close">×</button>
             </header>
-
-            <main class="admin-content">
-                <!-- Dashboard Section -->
-                <section id="dashboard-view" class="content-section active">
-                    <!-- ... (Dashboard content same as before) ... -->
-                     <h2 class="content-title">Overview</h2>
-                    <div class="dashboard-cards">
-                        <div class="dash-card">
-                            <div class="icon users"><i class="fas fa-users"></i></div>
-                            <div class="info"> <h3 id="total-users-count">0</h3> <p>Total Users</p> </div>
-                        </div>
-                        <div class="dash-card">
-                            <div class="icon content"><i class="fas fa-file-signature"></i></div>
-                            <div class="info"> <h3 id="total-posts-count">0</h3> <p>Content/Posts</p> </div>
-                        </div>
-                         <div class="dash-card">
-                            <div class="icon activity"><i class="fas fa-sitemap"></i></div>
-                            <div class="info"> <h3 id="total-nav-links-count">0</h3> <p>Navigation Links</p> </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- User Management Section -->
-                <section id="user-management-view" class="content-section">
-                    <h2 class="content-title">User Management</h2>
-                     <p class="info-text" style="margin-bottom:1rem; font-style:italic; color:#555;">Note: Full user listing requires Admin SDK. This section demonstrates UI with dummy data or data from a 'users' collection if available.</p>
-                    <div class="table-actions-bar">
-                        <input type="search" id="user-search-input" placeholder="Search users (name, email)...">
-                        <!-- Add user might need more complex logic if not just using Firebase Auth -->
-                    </div>
-                    <div class="table-container">
-                        <table class="admin-table" id="users-table">
-                            <thead>
-                                <tr>
-                                    <th>User ID (UID)</th>
-                                    <th>Display Name</th>
-                                    <th>Email</th>
-                                    <th>Provider</th>
-                                    <th>Status</th>
-                                    <th>Created At</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Navigation Management Section -->
-                <section id="nav-management-view" class="content-section">
-                    <h2 class="content-title">App Navigation Management</h2>
-                    <div class="form-container" style="background:var(--card-bg); padding:1.5rem; border-radius:8px; box-shadow:var(--shadow); margin-bottom:1.5rem;">
-                        <form id="add-nav-item-form">
-                            <input type="hidden" id="edit-nav-item-id">
-                            <div class="form-group">
-                                <label for="nav-item-label">Label (Text):</label>
-                                <input type="text" id="nav-item-label" placeholder="e.g., Home" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="nav-item-icon">Font Awesome Icon Class:</label>
-                                <input type="text" id="nav-item-icon" placeholder="e.g., fas fa-home" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="nav-item-target">Target Page/Action:</label>
-                                <input type="text" id="nav-item-target" placeholder="e.g., index.html or prayerTimesView" required>
-                                <small>For internal PWA views, use a unique ID. For external links, use full URL.</small>
-                            </div>
-                             <div class="form-group">
-                                <label for="nav-item-order">Order:</label>
-                                <input type="number" id="nav-item-order" placeholder="e.g., 1" value="1" min="1" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Add/Update Nav Item</button>
-                            <button type="button" class="btn btn-secondary" id="cancel-edit-nav-btn" style="display:none;">Cancel Edit</button>
-                        </form>
-                    </div>
-                    <div class="table-container">
-                        <h3>Current Navigation Items (Drag to reorder - coming soon)</h3>
-                        <ul id="nav-items-list" style="list-style: none; padding: 0;">
-                            <!-- Nav items will be listed here -->
-                        </ul>
-                    </div>
-                </section>
-
-                <!-- Content Management Section (Demo) -->
-                <section id="content-management-view" class="content-section">
-                    <h2 class="content-title">Content Management (Demo)</h2>
-                    <p>This section is for managing app content. (Functionality not implemented)</p>
-                </section>
-
-                <!-- Settings Section (Demo) -->
-                <section id="settings-view" class="content-section">
-                    <h2 class="content-title">Settings (Demo)</h2>
-                    <p>This section is for app settings. (Functionality not implemented)</p>
-                </section>
-            </main>
+            <div class="full-post-body">
+                <div id="ad-slot-full-post-top-banner" class="ad-slot ad-slot-banner"></div>
+                <img src="" alt="Post Thumbnail" id="full-post-thumbnail" class="full-post-thumbnail" style="display:none;">
+                <p id="full-post-description" class="full-post-description"></p>
+                <div id="full-post-link-container" class="full-post-link-container" style="display:none;">
+                    <a href="#" id="full-post-external-link" target="_blank" rel="noopener noreferrer">Visit Link</a>
+                </div>
+                <div id="full-post-meta-info" class="full-post-meta-info">Meta Information</div>
+                <div id="ad-slot-full-post-native" class="ad-slot ad-slot-native"></div>
+                <div id="ad-slot-full-post-bottom-banner" class="ad-slot ad-slot-banner"></div>
+            </div>
         </div>
     </div>
 
-    <!-- Modals (User modals same as before) -->
-    <!-- ... (Keep User Details, Edit User, Confirm Delete Modals) ... -->
-     <div id="user-details-modal" class="modal">
-        <div class="modal-content"> <div class="modal-header"> <h3>User Details</h3> <span class="close-modal" onclick="closeModal('user-details-modal')">×</span> </div> <div class="modal-body" id="user-details-body"></div> <div class="modal-footer"> <button class="btn btn-secondary" onclick="closeModal('user-details-modal')">Close</button> </div> </div>
-    </div>
-    <div id="edit-user-modal" class="modal"> <!-- For more complex user edits -->
-         <div class="modal-content"> <div class="modal-header"> <h3>Edit User Details</h3> <span class="close-modal" onclick="closeModal('edit-user-modal')">×</span> </div> <div class="modal-body"> <form id="edit-user-details-form"> <input type="hidden" id="edit-user-details-uid"> <div class="form-group"><label for="edit-user-details-name">Display Name:</label><input type="text" id="edit-user-details-name"></div> <div class="form-group"><label for="edit-user-details-role">Role (Stored in DB):</label><input type="text" id="edit-user-details-role" placeholder="e.g., user, editor"></div> </form> </div> <div class="modal-footer"> <button class="btn btn-secondary" onclick="closeModal('edit-user-modal')">Cancel</button> <button class="btn btn-primary" onclick="saveUserDetailsChanges()">Save Changes</button> </div> </div>
-    </div>
-     <div id="confirm-delete-modal" class="modal"> <div class="modal-content"> <div class="modal-header"> <h3>Confirm Deletion</h3> <span class="close-modal" onclick="closeModal('confirm-delete-modal')">×</span> </div> <div class="modal-body"> <p>Are you sure you want to delete user <strong id="delete-user-name-confirm"></strong> (UID: <strong id="delete-user-id-confirm"></strong>)?</p> <p style="color: var(--danger-color);">This action will delete the user from Firebase Authentication.</p> </div> <div class="modal-footer"> <button type="button" class="btn btn-secondary" onclick="closeModal('confirm-delete-modal')">Cancel</button> <button type="button" class="btn btn-danger" id="confirm-delete-button">Yes, Delete User</button> </div> </div> </div>
-
+    <nav class="footer-nav">
+        <a href="#home" class="footer-nav-item active" data-page="home-page"> <i class="fas fa-home"></i><span>Home</span> </a>
+        <a href="#add" class="footer-nav-item" data-page="add-post-page"> <i class="fas fa-plus-circle"></i><span>Add Post</span> </a>
+        <a href="#user" class="footer-nav-item" data-page="user-page"> <i class="fas fa-user"></i><span>User</span> </a>
+    </nav>
 
     <script>
         // --- Firebase Configuration ---
-        // IMPORTANT: Replace with your actual Firebase project configuration!
         const firebaseConfig = {
-            apiKey: "AIzaSyAY3hXmpCXJUVrBtOaosPY_tsse3sx-O5o", // From your JSON
-            authDomain: "nima-d4d7d.firebaseapp.com",          // Constructed: project_id.firebaseapp.com
-            databaseURL: "https://nima-d4d7d-default-rtdb.asia-southeast1.firebasedatabase.app", // From your JSON
-            projectId: "nima-d4d7d",                           // From your JSON
-            storageBucket: "nima-d4d7d.appspot.com",         // Standard format
-            messagingSenderId: "919311840182",              // From project_info.project_number - VERIFY
-            appId: "GET_YOUR_WEB_APP_ID_FROM_FIREBASE_CONSOLE_FOR_NIMA_PROJECT", // ****** GET THIS FROM FIREBASE CONSOLE ******
+            apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
+            authDomain: "rn-gfx-tool.firebaseapp.com",
+            databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rn-gfx-tool",
+            storageBucket: "rn-gfx-tool.firebasestorage.app",
+            messagingSenderId: "163149358541",
+            appId: "1:163149358541:android:2ef6d22fcd23e77ee09084"
         };
-
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth(); // Firebase Auth service
-        const db = firebase.database(); // Firebase Realtime Database service
+        const database = firebase.database();
 
-        // --- Hardcoded Access Key & Session ---
-        const ACCESS_KEY = "rajax2570"; 
-        const SESSION_STORAGE_KEY = "adminPanelAccessGranted_nima";
-        const loader = document.getElementById('loader');
+        // --- DOM Elements ---
+        const pages = document.querySelectorAll('.page');
+        const navItems = document.querySelectorAll('.footer-nav-item');
+        const postsContainer = document.getElementById('posts-container');
+        const addPostForm = document.getElementById('add-post-form');
+        const installButton = document.getElementById('install-pwa-btn');
+        const offlineBanner = document.getElementById('offline-banner');
+        const globalAdScriptsContainer = document.getElementById('global-ad-scripts');
+        document.getElementById('current-year').textContent = new Date().getFullYear();
 
-        function showLoader(show) { loader.style.display = show ? 'flex' : 'none'; }
+        const fullPostViewPage = document.getElementById('full-post-view-page');
+        const fullPostTitle = document.getElementById('full-post-title');
+        const fullPostThumbnail = document.getElementById('full-post-thumbnail');
+        const fullPostDescription = document.getElementById('full-post-description');
+        const fullPostLinkContainer = document.getElementById('full-post-link-container');
+        const fullPostExternalLink = document.getElementById('full-post-external-link');
+        const fullPostMetaInfo = document.getElementById('full-post-meta-info');
+        const closeFullPostBtn = document.getElementById('close-full-post-btn');
 
-
-        // --- DOM Elements --- (mostly same as before)
-        const adminKeyAccessScreen = document.getElementById('admin-key-access-screen');
-        const adminPanelScreen = document.getElementById('admin-panel-screen');
-        const adminKeyForm = document.getElementById('admin-key-form');
-        const keyErrorMessage = document.getElementById('key-error-message');
-        const currentSectionTitle = document.getElementById('current-section-title');
-        const navLinks = document.querySelectorAll('.nav-link');
-        const contentSections = document.querySelectorAll('.content-section');
-        const adminNameDisplay = document.getElementById('admin-name-display');
-        const adminLogoutBtn = document.getElementById('admin-logout-btn');
-        
-        const addNavItemForm = document.getElementById('add-nav-item-form');
-        const navItemsListUl = document.getElementById('nav-items-list');
-        const cancelEditNavBtn = document.getElementById('cancel-edit-nav-btn');
-        let editingNavItemId = null;
-
-        // --- Key Access & Panel Display Logic (same as before) ---
-        adminKeyForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            showLoader(true);
-            const enteredKey = document.getElementById('admin-access-key').value;
-            if (enteredKey === ACCESS_KEY) {
-                sessionStorage.setItem(SESSION_STORAGE_KEY, 'true');
-                showAdminPanel();
-            } else {
-                keyErrorMessage.style.display = 'block';
-                sessionStorage.removeItem(SESSION_STORAGE_KEY);
-                showLoader(false);
-            }
+        // --- PWA Installation --- (Same as before)
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e; if (installButton) installButton.style.display = 'block';
         });
+        if (installButton) {
+            installButton.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') installButton.style.display = 'none';
+                    deferredPrompt = null;
+                }
+            });
+        }
+        window.addEventListener('appinstalled', () => { if (installButton) installButton.style.display = 'none'; deferredPrompt = null; });
 
-        function showAdminPanel() {
-            adminKeyAccessScreen.style.display = 'none';
-            adminPanelScreen.style.display = 'flex';
-            keyErrorMessage.style.display = 'none';
-            adminNameDisplay.textContent = "Test Admin";
-            loadDashboardData(); 
-            fetchUsersFromCollection(); // Changed from loadUsers to reflect Firebase fetching
-            loadNavItems();
-            showLoader(false);
+        // --- Page Navigation --- (Same as before)
+        function navigateToPage(pageId) {
+            pages.forEach(page => page.classList.remove('active'));
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) targetPage.classList.add('active');
+            navItems.forEach(item => { item.classList.remove('active'); if (item.dataset.page === pageId) item.classList.add('active'); });
+            window.scrollTo(0,0);
+        }
+        navItems.forEach(item => item.addEventListener('click', (e) => { e.preventDefault(); navigateToPage(item.dataset.page); }));
+        
+        // --- Full Screen Post View Logic ---
+        function showFullPostView(post) {
+            if(!post) return;
+            fullPostTitle.textContent = post.title || "Untitled Post";
+            fullPostDescription.innerHTML = post.description ? post.description.replace(/\n/g, '<br>') : "No description available.";
+
+            if (post.thumbnail && post.thumbnail.trim() !== '') {
+                fullPostThumbnail.src = post.thumbnail;
+                fullPostThumbnail.alt = post.title || "Post image";
+                fullPostThumbnail.style.display = 'block';
+            } else {
+                fullPostThumbnail.style.display = 'none';
+            }
+
+            if (post.url && post.url.trim() !== '') {
+                try {
+                    new URL(post.url); // Validate URL slightly
+                    fullPostExternalLink.href = post.url;
+                    // fullPostExternalLink.textContent = "Visit Source"; // Or post.url
+                    fullPostLinkContainer.style.display = 'block';
+                } catch (_) {
+                    fullPostLinkContainer.style.display = 'none';
+                }
+            } else {
+                fullPostLinkContainer.style.display = 'none';
+            }
+
+            let metaText = "";
+            if (post.source && post.source.trim() !== '') {
+                metaText += `Source: ${post.source}`;
+            }
+            if (post.timestamp) {
+                metaText += (metaText ? " | " : "") + `Added: ${new Date(post.timestamp).toLocaleDateString()}`;
+            }
+            fullPostMetaInfo.textContent = metaText || "No meta information.";
+            
+            fullPostViewPage.classList.add('active');
+            // Ensure body cannot scroll when full screen view is active
+            document.body.style.overflow = 'hidden';
         }
 
-        adminLogoutBtn.addEventListener('click', (e) => { /* ... same ... */ 
-            e.preventDefault();
-            sessionStorage.removeItem(SESSION_STORAGE_KEY); 
-            adminPanelScreen.style.display = 'none';
-            adminKeyAccessScreen.style.display = 'flex';
-            document.getElementById('admin-access-key').value = ''; 
-        });
-        
-        window.addEventListener('load', () => {
-            showLoader(true);
-            if (sessionStorage.getItem(SESSION_STORAGE_KEY) === 'true') {
-                showAdminPanel();
-            } else {
-                adminKeyAccessScreen.style.display = 'flex';
-                adminPanelScreen.style.display = 'none';
-                showLoader(false);
-            }
-        });
+        if (closeFullPostBtn) {
+            closeFullPostBtn.addEventListener('click', () => {
+                fullPostViewPage.classList.remove('active');
+                document.body.style.overflow = 'auto'; // Restore body scroll
+            });
+        }
 
-        // --- Navigation Logic (same as before) ---
-        navLinks.forEach(link => { /* ... same ... */ 
-            link.addEventListener('click', (e) => {
+        // --- Post Management (Firebase) ---
+        function renderPostCard(postKey, postData) {
+            const postCard = document.createElement('div');
+            postCard.className = 'post-card';
+            postCard.dataset.postId = postKey; 
+
+            let thumbnailHtml = (postData.thumbnail && postData.thumbnail.trim() !== '') ? `<img src="${postData.thumbnail}" alt="${postData.title || ''}" class="post-card-thumbnail" onerror="this.style.display='none';">` : '';
+            
+            let metaInfo = '';
+            if (postData.timestamp) {
+                metaInfo = `Added: ${new Date(postData.timestamp).toLocaleDateString()}`;
+            } else if (postData.source) {
+                metaInfo = `Source: ${postData.source}`;
+            }
+
+            postCard.innerHTML = `
+                ${thumbnailHtml}
+                <h2>${postData.title || 'Untitled Post'}</h2>
+                <p class="description">${postData.description || 'No description.'}</p> 
+                <small class="post-meta">${metaInfo}</small>
+            `;
+            postCard.addEventListener('click', () => showFullPostView(postData));
+            return postCard;
+        }
+
+        function displayPostsFromFirebase(posts) {
+            if (!postsContainer) return;
+            postsContainer.innerHTML = ''; 
+            if (!posts || Object.keys(posts).length === 0) {
+                postsContainer.innerHTML = '<p class="text-center" style="padding: 20px;">No posts yet. Be the first to add one!</p>';
+                return;
+            }
+            const postsArray = Object.entries(posts)
+                .map(([key, value]) => ({ ...value, id: key }))
+                .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+
+            postsArray.forEach(post => {
+                postsContainer.appendChild(renderPostCard(post.id, post));
+            });
+        }
+
+        function fetchPosts() {
+            const postsRef = database.ref('posts');
+            postsRef.on('value', (snapshot) => {
+                const posts = snapshot.val();
+                displayPostsFromFirebase(posts);
+            }, (error) => {
+                console.error("Firebase read failed (posts): " + error.code);
+                if(postsContainer) postsContainer.innerHTML = '<p class="text-center" style="padding: 20px; color: red;">Error loading posts.</p>';
+            });
+        }
+
+        // --- Add Post Form Handling (Firebase) --- (Same as before)
+        if (addPostForm) {
+            addPostForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                navLinks.forEach(nav => nav.classList.remove('active'));
-                link.classList.add('active');
-                const targetId = link.getAttribute('data-target');
-                contentSections.forEach(section => {
-                    section.classList.remove('active');
-                    if (section.id === targetId) {
-                        section.classList.add('active');
-                        currentSectionTitle.textContent = link.textContent.trim();
-                    }
-                });
-                if (targetId === 'user-management-view') fetchUsersFromCollection();
-                if (targetId === 'nav-management-view') loadNavItems();
+                const newPostData = {
+                    title: document.getElementById('post-title-input').value.trim(),
+                    description: document.getElementById('post-description-input').value.trim(),
+                    thumbnail: document.getElementById('post-thumbnail-input').value.trim(),
+                    url: document.getElementById('post-url-input').value.trim(),
+                    source: "PWA User", timestamp: firebase.database.ServerValue.TIMESTAMP
+                };
+                if (!newPostData.title || !newPostData.description) { alert("Title and Description are required."); return; }
+                database.ref('posts').push().set(newPostData)
+                    .then(() => { alert('Post added!'); addPostForm.reset(); navigateToPage('home-page'); })
+                    .catch((error) => { console.error("Error adding post: ", error); alert("Failed to add post."); });
             });
-        });
-        // --- Modal Handling (same as before) ---
-        function openModal(modalId) { document.getElementById(modalId).style.display = 'block'; }
-        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
-        window.onclick = function(event) { /* ... same ... */ 
-             document.querySelectorAll('.modal').forEach(modal => {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            });
-        };
-
-        // --- Dashboard Data ---
-        async function loadDashboardData() {
-            showLoader(true);
-            try {
-                // Fetch users from your 'users' collection in RTDB
-                const usersSnapshot = await db.ref('users').once('value');
-                const usersData = usersSnapshot.val();
-                const userCount = usersData ? Object.keys(usersData).length : 0;
-                document.getElementById('total-users-count').textContent = userCount;
-
-                const navSnapshot = await db.ref('appNavigation').once('value');
-                const navData = navSnapshot.val();
-                const navCount = navData ? Object.keys(navData).length : 0;
-                document.getElementById('total-nav-links-count').textContent = navCount;
-
-
-                // Dummy data for other cards
-                document.getElementById('total-posts-count').textContent = '0'; // Update if you track this
-            } catch (error) {
-                console.error("Error loading dashboard data:", error);
-                document.getElementById('total-users-count').textContent = 'N/A';
-            } finally {
-                showLoader(false);
-            }
-        }
-
-        // --- User Management with Firebase ---
-        // **IMPORTANT**: Listing all users directly from Firebase Auth (auth.listUsers()) is an Admin SDK feature,
-        // not available on the client-side for security reasons.
-        // We will fetch users from a 'users' collection in Realtime Database if you store them there
-        // after they sign up/log in on the main app.
-
-        async function fetchUsersFromCollection() {
-            showLoader(true);
-            const usersTableBody = document.getElementById('users-table').getElementsByTagName('tbody')[0];
-            usersTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading users...</td></tr>';
-            
-            try {
-                const snapshot = await db.ref('users').once('value'); // Assuming you have a 'users' node
-                const usersData = snapshot.val();
-                currentUsers = []; // Reset local cache
-                if (usersData) {
-                    for (const uid in usersData) {
-                        currentUsers.push({ uid, ...usersData[uid] });
-                    }
-                }
-                renderUsersTable();
-            } catch (error) {
-                console.error("Error fetching users from DB:", error);
-                usersTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger-color);">Error loading users: ${error.message}</td></tr>`;
-            } finally {
-                showLoader(false);
-            }
         }
         
-        let currentUsers = []; // To hold users fetched from Firebase
+        // --- Ad Loading from Firebase ---
+        function injectAdScript(container, scriptContent) {
+            if (container && scriptContent) {
+                // Clear previous ad if any (important for banners if code changes)
+                // container.innerHTML = ''; // This might break Adsterra if it relies on its own DOM manipulation
+                
+                // For scripts that need to be run, creating script elements is more reliable
+                const SCRIPT_REGEX = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+                let match;
+                let lastIndex = 0;
+                let hasScripts = false;
 
-        function renderUsersTable() {
-            const usersTableBody = document.getElementById('users-table').getElementsByTagName('tbody')[0];
-            usersTableBody.innerHTML = ''; 
-            
-            const searchTerm = document.getElementById('user-search-input').value.toLowerCase();
-            const filteredUsers = currentUsers.filter(user => 
-                (user.displayName && user.displayName.toLowerCase().includes(searchTerm)) || 
-                (user.email && user.email.toLowerCase().includes(searchTerm))
-            );
+                // Append non-script HTML directly
+                while ((match = SCRIPT_REGEX.exec(scriptContent)) !== null) {
+                    hasScripts = true;
+                    container.insertAdjacentHTML('beforeend', scriptContent.substring(lastIndex, match.index));
+                    lastIndex = SCRIPT_REGEX.lastIndex;
 
-            if (filteredUsers.length === 0) {
-                 usersTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No users found or match search.</td></tr>';
-                 return;
+                    const scriptTag = document.createElement('script');
+                    // Extract src if present
+                    const srcMatch = match[0].match(/src=["']([^"']+)["']/);
+                    if (srcMatch) {
+                        scriptTag.src = srcMatch[1];
+                    }
+                    // Extract inline content
+                    const inlineContentMatch = match[0].match(/<script[^>]*>([\s\S]*?)<\/script>/);
+                    if (inlineContentMatch && inlineContentMatch[1].trim()) {
+                        scriptTag.textContent = inlineContentMatch[1].trim();
+                    }
+                    scriptTag.async = false; // Try to load in order, though Adsterra might handle async itself
+                    container.appendChild(scriptTag);
+                }
+                // Append any remaining non-script HTML
+                if (lastIndex < scriptContent.length) {
+                    container.insertAdjacentHTML('beforeend', scriptContent.substring(lastIndex));
+                }
+                
+                // If no script tags found, just set innerHTML (for plain HTML native ads)
+                if (!hasScripts) {
+                    container.innerHTML = scriptContent;
+                }
             }
+        }
 
-            filteredUsers.forEach(user => {
-                const row = usersTableBody.insertRow();
-                const creationTime = user.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : (user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A');
-                const userStatus = user.disabled ? 'Banned' : 'Active'; // Assuming 'disabled' means banned
+        function loadAdConfigurations() {
+            const adConfigsRef = database.ref('ad_configurations');
+            adConfigsRef.on('value', (snapshot) => {
+                const configs = snapshot.val();
+                if (configs) {
+                    console.log("Ad configurations loaded:", configs);
+                    // Home Page Ads
+                    injectAdScript(document.getElementById('ad-slot-home-top-banner'), configs.home_top_banner);
+                    injectAdScript(document.getElementById('ad-slot-home-native'), configs.home_native_ad);
+                    injectAdScript(document.getElementById('ad-slot-home-bottom-banner'), configs.home_bottom_banner);
+                    
+                    // Add Post Page Ads
+                    injectAdScript(document.getElementById('ad-slot-add-post-banner'), configs.add_post_page_banner);
 
-                row.innerHTML = `
-                    <td>${user.uid}</td>
-                    <td>${user.displayName || 'N/A'}</td>
-                    <td>${user.email || 'N/A'}</td>
-                    <td>${user.providerData?.[0]?.providerId || user.provider || 'Email'}</td>
-                    <td><span class="status-${userStatus.toLowerCase()}">${userStatus}</span></td>
-                    <td>${creationTime}</td>
-                    <td class="actions">
-                        <a href="#" title="Edit User Details" onclick="openEditUserDetailsModal('${user.uid}')"><i class="fas fa-edit"></i></a>
-                        ${!user.disabled ? 
-                            `<button title="Disable User (Ban)" onclick="toggleUserDisabled('${user.uid}', true)"><i class="fas fa-user-slash"></i></button>` :
-                            `<button title="Enable User (Unban)" onclick="toggleUserDisabled('${user.uid}', false)"><i class="fas fa-user-check"></i></button>`
-                        }
-                        <button title="Delete User from Auth" onclick="confirmDeleteAuthUser('${user.uid}', '${user.displayName || user.email}')"><i class="fas fa-trash-alt"></i></button>
-                    </td>
-                `;
+                    // Full Post View Ads
+                    injectAdScript(document.getElementById('ad-slot-full-post-top-banner'), configs.full_post_top_banner);
+                    injectAdScript(document.getElementById('ad-slot-full-post-native'), configs.full_post_native_ad);
+                    injectAdScript(document.getElementById('ad-slot-full-post-bottom-banner'), configs.full_post_bottom_banner);
+
+                    // Global Scripts (Popunders, Social Bar)
+                    if (globalAdScriptsContainer) {
+                         globalAdScriptsContainer.innerHTML = ''; // Clear previous global scripts
+                         if(configs.global_popunder_script) {
+                            const popunderDiv = document.createElement('div');
+                            injectAdScript(popunderDiv, configs.global_popunder_script);
+                            globalAdScriptsContainer.appendChild(popunderDiv);
+                         }
+                         if(configs.global_social_bar_script) {
+                            const socialDiv = document.createElement('div');
+                            injectAdScript(socialDiv, configs.global_social_bar_script);
+                            globalAdScriptsContainer.appendChild(socialDiv);
+                         }
+                    }
+                } else {
+                    console.log("No ad configurations found in Firebase.");
+                }
+            }, (error) => {
+                console.error("Firebase read failed (ad_configurations): " + error.code);
             });
         }
-        document.getElementById('user-search-input').addEventListener('input', renderUsersTable);
 
-
-        function openEditUserDetailsModal(uid) {
-            const user = currentUsers.find(u => u.uid === uid);
-            if (!user) { alert('User not found!'); return; }
-            document.getElementById('edit-user-details-uid').value = uid;
-            document.getElementById('edit-user-details-name').value = user.displayName || '';
-            document.getElementById('edit-user-details-role').value = user.role || 'user'; // Assuming 'role' is stored in your DB 'users' collection
-            openModal('edit-user-modal');
-        }
-
-        async function saveUserDetailsChanges() {
-            showLoader(true);
-            const uid = document.getElementById('edit-user-details-uid').value;
-            const newName = document.getElementById('edit-user-details-name').value;
-            const newRole = document.getElementById('edit-user-details-role').value;
-
-            try {
-                // Update in Realtime Database 'users' collection
-                await db.ref(`users/${uid}`).update({
-                    displayName: newName,
-                    role: newRole 
-                });
-                // Note: Updating Firebase Auth displayName requires Admin SDK or for user to be logged in.
-                // For this admin panel, we primarily update the DB record.
-                alert('User details updated in database successfully!');
-                fetchUsersFromCollection(); // Refresh list
-                closeModal('edit-user-modal');
-            } catch (error) {
-                console.error("Error saving user details:", error);
-                alert(`Failed to update user details: ${error.message}`);
-            } finally {
-                showLoader(false);
-            }
-        }
-
-
-        async function toggleUserDisabled(uid, shouldDisable) {
-            // IMPORTANT: Disabling/Enabling a user in Firebase Auth REQUIRES Admin SDK.
-            // This function will SIMULATE the UI change and update a 'disabled' flag in your RTDB 'users' collection.
-            // For actual disabling in Auth, you'd call a Cloud Function.
-            showLoader(true);
-            try {
-                await db.ref(`users/${uid}`).update({ disabled: shouldDisable });
-                alert(`User ${shouldDisable ? 'disabled' : 'enabled'} in database (Simulating Auth change). Call Admin SDK for actual Auth disable/enable.`);
-                fetchUsersFromCollection(); // Refresh list
-            } catch (error) {
-                console.error("Error updating user disabled status in DB:", error);
-                alert(`Failed: ${error.message}`);
-            } finally {
-                showLoader(false);
-            }
-        }
-
-        let authUserIdToDelete = null;
-        let authUserNameToDelete = null;
-        function confirmDeleteAuthUser(uid, name) {
-            // IMPORTANT: Deleting a user from Firebase Auth REQUIRES Admin SDK.
-            // This will SIMULATE UI change and delete from RTDB 'users' collection.
-            authUserIdToDelete = uid;
-            authUserNameToDelete = name;
-            document.getElementById('delete-user-name-confirm').textContent = name;
-            document.getElementById('delete-user-id-confirm').textContent = uid;
-            openModal('confirm-delete-modal');
-        }
-
-        document.getElementById('confirm-delete-button').addEventListener('click', async () => {
-            if (authUserIdToDelete) {
-                showLoader(true);
-                try {
-                    // Delete from 'users' collection in RTDB
-                    await db.ref(`users/${authUserIdToDelete}`).remove();
-                    alert(`User ${authUserNameToDelete} (UID: ${authUserIdToDelete}) removed from database. For Auth deletion, call Admin SDK.`);
-                    fetchUsersFromCollection(); // Refresh user list
-                    loadDashboardData(); // Update dashboard counts
-                    closeModal('confirm-delete-modal');
-                } catch (error) {
-                    console.error("Error deleting user from DB:", error);
-                    alert(`Failed to delete user from DB: ${error.message}`);
-                } finally {
-                    authUserIdToDelete = null;
-                    authUserNameToDelete = null;
-                    showLoader(false);
-                }
-            }
-        });
-
-
-        // --- Navigation Management with Firebase Realtime Database ---
-        addNavItemForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoader(true);
-            const label = document.getElementById('nav-item-label').value;
-            const icon = document.getElementById('nav-item-icon').value;
-            const target = document.getElementById('nav-item-target').value;
-            const order = parseInt(document.getElementById('nav-item-order').value);
-
-            const navItemData = { label, icon, target, order, createdAt: firebase.database.ServerValue.TIMESTAMP };
-
-            try {
-                if (editingNavItemId) {
-                    await db.ref('appNavigation/' + editingNavItemId).update(navItemData);
-                    alert('Navigation item updated!');
-                } else {
-                    await db.ref('appNavigation').push(navItemData);
-                    alert('Navigation item added!');
-                }
-                addNavItemForm.reset();
-                document.getElementById('edit-nav-item-id').value = '';
-                editingNavItemId = null;
-                cancelEditNavBtn.style.display = 'none';
-                loadNavItems();
-                loadDashboardData(); // Update dashboard
-            } catch (error) {
-                console.error("Error saving nav item: ", error);
-                alert(`Error: ${error.message}`);
-            } finally {
-                showLoader(false);
-            }
-        });
+        // --- Service Worker --- (Same as before)
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').then(reg => console.log('SW reg: ', reg.scope)).catch(err => console.log('SW err: ', err)); }); }
+        // --- Online/Offline --- (Same as before)
+        function updateOnlineStatus() { offlineBanner.style.display = navigator.onLine ? 'none' : 'block'; }
+        window.addEventListener('online', updateOnlineStatus); window.addEventListener('offline', updateOnlineStatus);
         
-        cancelEditNavBtn.addEventListener('click', () => {
-            addNavItemForm.reset();
-            document.getElementById('edit-nav-item-id').value = '';
-            editingNavItemId = null;
-            cancelEditNavBtn.style.display = 'none';
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            navigateToPage('home-page');
+            fetchPosts(); 
+            loadAdConfigurations(); // Load ads
+            updateOnlineStatus();
         });
-
-        async function loadNavItems() {
-            showLoader(true);
-            navItemsListUl.innerHTML = '<li>Loading navigation items...</li>';
-            try {
-                const snapshot = await db.ref('appNavigation').orderByChild('order').once('value');
-                navItemsListUl.innerHTML = ''; // Clear
-                if (snapshot.exists()) {
-                    snapshot.forEach(childSnapshot => {
-                        const key = childSnapshot.key;
-                        const item = childSnapshot.val();
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <span><i class="${item.icon}"></i> ${item.label} (Order: ${item.order}, Target: ${item.target})</span>
-                            <span class="actions">
-                                <button class="btn btn-secondary btn-sm" onclick="editNavItem('${key}')"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteNavItem('${key}')"><i class="fas fa-trash"></i></button>
-                            </span>
-                        `;
-                        navItemsListUl.appendChild(li);
-                    });
-                } else {
-                    navItemsListUl.innerHTML = '<li>No navigation items found. Add some above.</li>';
-                }
-            } catch (error) {
-                console.error("Error loading nav items:", error);
-                navItemsListUl.innerHTML = `<li>Error: ${error.message}</li>`;
-            } finally {
-                showLoader(false);
-            }
-        }
-
-        function editNavItem(key) {
-            showLoader(true);
-            db.ref('appNavigation/' + key).once('value').then(snapshot => {
-                if (snapshot.exists()) {
-                    const item = snapshot.val();
-                    document.getElementById('edit-nav-item-id').value = key;
-                    document.getElementById('nav-item-label').value = item.label;
-                    document.getElementById('nav-item-icon').value = item.icon;
-                    document.getElementById('nav-item-target').value = item.target;
-                    document.getElementById('nav-item-order').value = item.order;
-                    editingNavItemId = key;
-                    cancelEditNavBtn.style.display = 'inline-block';
-                    document.getElementById('nav-item-label').focus();
-                } else {
-                    alert('Item not found for editing.');
-                }
-            }).catch(error => alert(`Error fetching item: ${error.message}`))
-            .finally(() => showLoader(false));
-        }
-
-        async function deleteNavItem(key) {
-            if (confirm('Are you sure you want to delete this navigation item?')) {
-                showLoader(true);
-                try {
-                    await db.ref('appNavigation/' + key).remove();
-                    alert('Navigation item deleted!');
-                    loadNavItems();
-                    loadDashboardData(); // Update dashboard
-                } catch (error) {
-                    console.error("Error deleting nav item:", error);
-                    alert(`Error: ${error.message}`);
-                } finally {
-                    showLoader(false);
-                }
-            }
-        }
-
     </script>
 </body>
 </html>
