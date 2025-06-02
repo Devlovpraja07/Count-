@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#00796b"/>
-    <title>Islamic Life - Dynamic Ads</title>
+    <meta name="theme-color" content="#00796b"/> <!-- Default theme color -->
+    <title>Islamic Life - HTML & Dark Mode</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,13 +22,34 @@
             --light-text: #fff;
             --card-bg: #ffffff;
             --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --border-color: #e0e0e0;
+            --header-bg: var(--primary-color);
+            --header-text: var(--light-text);
+            --link-color: var(--primary-color);
         }
+
+        body.dark-mode {
+            --primary-color: #1de9b6; /* Brighter teal for dark mode */
+            --secondary-color: #00bfa5; 
+            --accent-color: #ffd600; /* Brighter yellow */
+            --light-bg: #121212;   /* Very dark grey */
+            --dark-text: #e0e0e0;    /* Light grey text */
+            --light-text: #000000;   /* Black text on light accent elements */
+            --card-bg: #1e1e1e;    /* Darker grey for cards */
+            --shadow: 0 4px 12px rgba(0,0,0,0.3); /* Darker shadow */
+            --border-color: #333333;
+            --header-bg: #1f1f1f; /* Dark header */
+            --header-text: var(--primary-color);
+            --link-color: var(--primary-color);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', Roboto, Arial, sans-serif;
             background-color: var(--light-bg); color: var(--dark-text);
             display: flex; flex-direction: column; min-height: 100vh;
             overscroll-behavior-y: contain; direction: ltr;
+            transition: background-color 0.3s, color 0.3s;
         }
         .page {
             display: none; flex-grow: 1; overflow-y: auto;
@@ -36,30 +57,46 @@
         }
         .page.active { display: flex; flex-direction: column; }
         .app-header {
-            background-color: var(--primary-color); color: var(--light-text);
-            padding: 15px; text-align: center; font-size: 1.6em; font-weight: 500;
+            background-color: var(--header-bg); color: var(--header-text);
+            padding: 10px 15px; text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .app-header h1 {
+            font-size: 1.4em; font-weight: 500; margin: 0; flex-grow: 1; text-align: center;
+        }
+        .dark-mode-toggle-btn { /* Common class for all dark mode toggles */
+            background: none; border: none; color: var(--header-text);
+            font-size: 1.5em; cursor: pointer; padding: 5px;
+        }
+        body.dark-mode .dark-mode-toggle-btn .fa-moon { display: none; }
+        body:not(.dark-mode) .dark-mode-toggle-btn .fa-sun { display: none; }
+
+
         .footer-nav {
+            background-color: var(--card-bg); border-top: 1px solid var(--border-color);
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background-color: var(--card-bg); display: flex; justify-content: space-around;
+            display: flex; justify-content: space-around;
             align-items: center; box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
-            border-top: 1px solid #e0e0e0; z-index: 100; height: 65px;
+            z-index: 100; height: 65px;
         }
         .footer-nav-item {
+            color: #757575; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #757575; font-size: 0.75em; padding: 8px 12px; cursor: pointer;
+            font-size: 0.75em; padding: 8px 12px; cursor: pointer;
             flex-grow: 1; text-decoration: none; transition: color 0.2s ease-in-out, transform 0.1s ease-in-out;
         }
+        body.dark-mode .footer-nav-item { color: #aaa; }
         .footer-nav-item i { font-size: 1.8em; margin-bottom: 4px; }
         .footer-nav-item.active { color: var(--primary-color); transform: translateY(-2px); }
         .footer-nav-item:active { transform: translateY(0px); }
+
 
         .post-card {
             background-color: var(--card-bg); border-radius: 12px; padding: 20px;
             margin-bottom: 20px; box-shadow: var(--shadow); cursor: pointer;
             border-left: 5px solid var(--primary-color);
-            transition: transform 0.2s ease-in-out;
+            transition: transform 0.2s ease-in-out, background-color 0.3s, border-color 0.3s;
         }
         .post-card:hover { transform: translateY(-3px); }
         .post-card-thumbnail {
@@ -67,46 +104,52 @@
             border-radius: 8px; margin-bottom: 15px;
         }
         .post-card h2 { font-size: 1.4em; color: var(--primary-color); margin-top: 0; margin-bottom: 10px; }
-        .post-card p.description {
-            font-size: 1em; line-height: 1.6; color: #555; margin-bottom: 10px;
-            white-space: pre-wrap;
-            max-height: 6.4em; /* approx 4 lines */
-            overflow: hidden; text-overflow: ellipsis;
-            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+        .post-card div.description { /* Changed from p.description to div for consistency */
+            font-size: 1em; line-height: 1.6; color: var(--dark-text); margin-bottom: 10px;
+            max-height: 7em; 
+            overflow: hidden; 
         }
-        .post-card small.post-meta { font-size: 0.85em; color: #777; display: block; margin-top: 10px; }
+        .post-card div.description strong { font-weight: bold; color: var(--primary-color); }
+        .post-card div.description em { font-style: italic; }
+        .post-card div.description a { color: var(--link-color); text-decoration: underline; }
+        .post-card div.description ul, .post-card div.description ol { margin-left: 20px; margin-bottom: 10px; }
+        .post-card div.description blockquote { 
+            border-left: 3px solid var(--accent-color); 
+            padding-left: 10px; margin-left: 5px; font-style: italic; color: #777;
+        }
+        body.dark-mode .post-card div.description blockquote { color: #aaa; }
 
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--secondary-color); }
+
+        .post-card small.post-meta { font-size: 0.85em; color: #777; display: block; margin-top: 10px; }
+        body.dark-mode .post-card small.post-meta { color: #aaa; }
+
+
+        .form-group label { color: var(--secondary-color); display: block; margin-bottom: 8px; font-weight: bold;}
         .form-group input[type="text"], .form-group input[type="url"], .form-group textarea {
-            width: 100%; padding: 12px; border: 1px solid #ccc;
+            background-color: var(--card-bg); color: var(--dark-text); border: 1px solid var(--border-color);
+            width: 100%; padding: 12px;
             border-radius: 8px; font-size: 1em; font-family: inherit;
         }
-        .form-group textarea { min-height: 120px; resize: vertical; }
+        .form-group textarea { min-height: 150px; resize: vertical; }
         .form-button {
             background-color: var(--primary-color); color: var(--light-text); border: none;
             padding: 15px 25px; font-size: 1.1em; border-radius: 8px; cursor: pointer;
             transition: background-color 0.3s ease; width: 100%; font-weight: 500;
         }
-
         .user-page-content i { font-size: 5em; color: var(--primary-color); margin-bottom: 20px; }
         .user-page-content p { font-size: 1.1em; margin-bottom: 10px; }
 
-        /* Ad Slot Styling (Generic - specific ad scripts might override) */
+
         .ad-slot {
             width: 100%; margin: 15px auto; display: flex; justify-content: center;
-            align-items: center; background-color: #e9e9e9; /* Placeholder bg */
-            overflow: hidden; /* Important for fixed-width ads */
-            padding: 5px 0; /* Some padding for visual separation */
+            align-items: center; background-color: var(--card-bg); 
+            border: 1px dashed var(--border-color);
+            overflow: hidden; 
+            padding: 5px 0; 
         }
-        .ad-slot:empty { /* Hide if no ad code is injected or if ad fails to load to this div */
-            min-height: 0; /* Was 50px or 90px, allow it to collapse */
-            padding: 0;
-            margin: 0;
-            border: 1px dashed #ddd; /* Visual cue for empty slot in dev */
-        }
-         .ad-slot-banner { min-height: 90px; } /* Default for 728x90 or similar */
-         .ad-slot-native { padding: 10px; background-color: transparent; }
+        .ad-slot:empty { min-height: 0; padding: 0; margin: 0; border: 1px dashed #ddd; }
+        .ad-slot-banner { min-height: 90px; } 
+        .ad-slot-native { padding: 10px; background-color: transparent; }
 
 
         .offline-banner {
@@ -121,78 +164,77 @@
             display: none; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        /* Full Screen Post View Styles */
         #full-post-view-page {
+            background-color: var(--light-bg); 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--light-bg); /* Solid background for full screen feel */
-            z-index: 1000;
-            display: none;
-            flex-direction: column; /* Make it a flex container */
-            padding: 0;
+            z-index: 1000; display: none; flex-direction: column; padding: 0;
         }
         #full-post-view-page.active { display: flex; }
 
-        .full-post-content-wrapper { /* This is now the main scrollable area */
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* Wrapper itself doesn't scroll, body does */
+        .full-post-content-wrapper { 
+            width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; 
         }
         .full-post-header {
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            background-color: var(--primary-color);
-            color: var(--light-text);
-            flex-shrink: 0; /* Prevent header from shrinking */
+            padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--header-bg); color: var(--header-text);
+            flex-shrink: 0;
         }
-        .full-post-header h2 {
-            font-size: 1.3em; margin: 0;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        #close-full-post-btn {
-            background: none; border: none; font-size: 1.8em;
-            color: var(--light-text); cursor: pointer; line-height: 1; padding: 0 5px;
-        }
+        .full-post-header h2 { font-size: 1.3em; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1; text-align: center;}
+        #close-full-post-btn { background: none; border: none; font-size: 1.8em; color: var(--header-text); cursor: pointer; line-height: 1; padding: 0 5px; }
 
         .full-post-body {
-            padding: 15px;
-            overflow-y: auto; /* Scrollable content */
-            flex-grow: 1; /* Takes up remaining space */
-            background-color: var(--card-bg);
+            padding: 20px; overflow-y: auto; flex-grow: 1; background-color: var(--card-bg);
         }
         .full-post-body img.full-post-thumbnail {
-            width: 100%;
-            max-height: 35vh; /* Max height relative to viewport */
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            width: 100%; max-height: 40vh; object-fit: contain; 
+            border-radius: 8px; margin-bottom: 20px; background-color: #eee; 
         }
-        .full-post-body p.full-post-description {
-            font-size: 1.05em;
-            line-height: 1.7;
-            color: #333;
-            white-space: pre-wrap;
-            margin-bottom: 20px;
+        body.dark-mode .full-post-body img.full-post-thumbnail { background-color: #2a2a2a; }
+
+        .full-post-body div.full-post-description { /* Changed from p to div */
+            font-size: 1.1em; line-height: 1.8; color: var(--dark-text); white-space: normal; margin-bottom: 20px;
         }
+        .full-post-body div.full-post-description strong { font-weight: bold; color: var(--primary-color); }
+        .full-post-body div.full-post-description em { font-style: italic; }
+        .full-post-body div.full-post-description a { color: var(--link-color); text-decoration: underline; }
+        .full-post-body div.full-post-description ul, .full-post-body div.full-post-description ol { margin-left: 25px; margin-bottom: 15px; }
+        .full-post-body div.full-post-description li { margin-bottom: 5px; }
+        .full-post-body div.full-post-description blockquote { 
+            border-left: 4px solid var(--accent-color); 
+            padding: 10px 15px; margin: 15px 0; font-style: italic; 
+            background-color: rgba(0,0,0,0.03); border-radius: 4px;
+        }
+        body.dark-mode .full-post-body div.full-post-description blockquote { 
+            background-color: rgba(255,255,255,0.05); 
+        }
+        .full-post-body div.full-post-description pre {
+            background-color: #f0f0f0; color: #333; padding: 15px;
+            border-radius: 5px; overflow-x: auto; white-space: pre-wrap;
+            font-family: 'Courier New', Courier, monospace; font-size: 0.95em; margin: 15px 0;
+        }
+        body.dark-mode .full-post-body div.full-post-description pre {
+            background-color: #2c2c2c; color: #eee;
+        }
+        .full-post-body div.full-post-description img { 
+            max-width: 100%; height: auto; border-radius: 5px; margin: 10px 0;
+        }
+
+
         .full-post-meta-info {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 20px;
-            padding-top: 10px;
-            border-top: 1px solid #f0f0f0;
+            font-size: 0.9em; color: #777; margin-bottom: 20px; padding-top: 10px;
+            border-top: 1px solid var(--border-color);
         }
+        body.dark-mode .full-post-meta-info { color: #aaa; }
         .full-post-link-container {
             margin-top: 15px; margin-bottom: 20px; padding: 15px;
-            background-color: #e8f5e9; /* Light green background */
+            background-color: #e8f5e9; 
             border-radius: 8px;
             text-align: center;
         }
+        body.dark-mode .full-post-link-container { background-color: #223322; }
         .full-post-link-container a {
-            color: var(--secondary-color);
+            color: var(--dark-text);
             text-decoration: none;
             font-weight: bold;
             font-size: 1.1em;
@@ -200,36 +242,36 @@
             display: inline-block;
             padding: 10px 20px;
             background-color: var(--accent-color);
-            color: var(--dark-text);
             border-radius: 5px;
         }
         .full-post-link-container a:hover { opacity: 0.8; }
-
         .text-center { text-align: center; }
         .mt-20 { margin-top: 20px; }
-        /* Global Ad Script Container (for popunders, social bars etc that are not visible elements) */
         #global-ad-scripts { display: none; }
     </style>
 </head>
-<body>
+<body class=""> 
 
     <div class="offline-banner" id="offline-banner">
         You are currently offline. Content may be limited.
     </div>
-    <div id="global-ad-scripts">
-        <!-- Popunders, Social Bar scripts will be injected here by loadAdConfigurations -->
-    </div>
+    <div id="global-ad-scripts"></div>
 
     <!-- Page: Home -->
     <div id="home-page" class="page active">
-        <header class="app-header">Islamic Life</header>
+        <header class="app-header">
+            <button id="dark-mode-toggle-home" class="dark-mode-toggle-btn" aria-label="Toggle Dark Mode">
+                <i class="fas fa-moon"></i><i class="fas fa-sun"></i>
+            </button>
+            <h1>Islamic Life</h1>
+            <div style="width: 40px;"></div> <!-- Spacer to balance the toggle button -->
+        </header>
         <div id="install-button-container">
             <button id="install-pwa-btn">Install App</button>
         </div>
         
         <div id="ad-slot-home-top-banner" class="ad-slot ad-slot-banner"></div>
         <div id="ad-slot-home-native" class="ad-slot ad-slot-native"></div>
-
 
         <div id="posts-container">
             <p class="text-center" style="padding: 30px;">Loading posts...</p>
@@ -240,12 +282,21 @@
 
     <!-- Page: Add Post -->
     <div id="add-post-page" class="page">
-        <header class="app-header">Add New Post</header>
+        <header class="app-header">
+             <button id="dark-mode-toggle-add" class="dark-mode-toggle-btn" aria-label="Toggle Dark Mode">
+                <i class="fas fa-moon"></i><i class="fas fa-sun"></i>
+            </button>
+            <h1>Add New Post</h1>
+            <div style="width: 40px;"></div> 
+        </header>
         <form id="add-post-form">
             <div class="form-group"> <label for="post-title-input">Title:</label> <input type="text" id="post-title-input" required> </div>
-            <div class="form-group"> <label for="post-description-input">Description:</label> <textarea id="post-description-input" rows="5" required></textarea> </div>
+            <div class="form-group"> 
+                <label for="post-description-input">Description (HTML or Plain Text):</label> 
+                <textarea id="post-description-input" rows="10" required placeholder="Enter your post content. You can use HTML tags..."></textarea>
+            </div>
             <div class="form-group"> <label for="post-thumbnail-input">Thumbnail URL:</label> <input type="url" id="post-thumbnail-input" placeholder="https://example.com/image.jpg"> </div>
-            <div class="form-group"> <label for="post-url-input">External URL:</label> <input type="url" id="post-url-input" placeholder="https://example.com/source-link"> </div>
+            <div class="form-group"> <label for="post-url-input">External URL (Optional):</label> <input type="url" id="post-url-input" placeholder="https://example.com/source-link"> </div>
             <button type="submit" class="form-button">Publish Post</button>
         </form>
         <div id="ad-slot-add-post-banner" class="ad-slot ad-slot-banner mt-20"></div>
@@ -253,7 +304,13 @@
 
     <!-- Page: User -->
     <div id="user-page" class="page">
-        <header class="app-header">User Profile</header>
+         <header class="app-header">
+             <button id="dark-mode-toggle-user" class="dark-mode-toggle-btn" aria-label="Toggle Dark Mode">
+                <i class="fas fa-moon"></i><i class="fas fa-sun"></i>
+            </button>
+            <h1>User Profile</h1>
+            <div style="width: 40px;"></div> 
+        </header>
         <div class="user-page-content text-center">
             <i class="fas fa-user-cog"></i>
             <p>User Profile & Settings</p>
@@ -265,17 +322,20 @@
     <div id="full-post-view-page">
         <div class="full-post-content-wrapper">
             <header class="full-post-header">
+                 <button id="dark-mode-toggle-full-post" class="dark-mode-toggle-btn" aria-label="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i><i class="fas fa-sun"></i>
+                </button>
                 <h2 id="full-post-title">Post Title</h2>
-                <button id="close-full-post-btn" aria-label="Close">×</button>
+                <button id="close-full-post-btn" aria-label="Close">×</button> <!-- ID is 'close-full-post-btn' -->
             </header>
             <div class="full-post-body">
                 <div id="ad-slot-full-post-top-banner" class="ad-slot ad-slot-banner"></div>
                 <img src="" alt="Post Thumbnail" id="full-post-thumbnail" class="full-post-thumbnail" style="display:none;">
-                <p id="full-post-description" class="full-post-description"></p>
+                <div id="full-post-description" class="full-post-description"></div> 
                 <div id="full-post-link-container" class="full-post-link-container" style="display:none;">
                     <a href="#" id="full-post-external-link" target="_blank" rel="noopener noreferrer">Visit Link</a>
                 </div>
-                <div id="full-post-meta-info" class="full-post-meta-info">Meta Information</div>
+                <div id="full-post-meta-info" class="full-post-meta-info"></div>
                 <div id="ad-slot-full-post-native" class="ad-slot ad-slot-native"></div>
                 <div id="ad-slot-full-post-bottom-banner" class="ad-slot ad-slot-banner"></div>
             </div>
@@ -291,7 +351,7 @@
     <script>
         // --- Firebase Configuration ---
         const firebaseConfig = {
-            apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
+            apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho", // Replace with your actual config
             authDomain: "rn-gfx-tool.firebaseapp.com",
             databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "rn-gfx-tool",
@@ -312,6 +372,10 @@
         const globalAdScriptsContainer = document.getElementById('global-ad-scripts');
         document.getElementById('current-year').textContent = new Date().getFullYear();
 
+        // All Dark Mode Toggles
+        const allDarkModeToggles = document.querySelectorAll('.dark-mode-toggle-btn');
+
+        // Full Screen Post View Elements
         const fullPostViewPage = document.getElementById('full-post-view-page');
         const fullPostTitle = document.getElementById('full-post-title');
         const fullPostThumbnail = document.getElementById('full-post-thumbnail');
@@ -319,9 +383,39 @@
         const fullPostLinkContainer = document.getElementById('full-post-link-container');
         const fullPostExternalLink = document.getElementById('full-post-external-link');
         const fullPostMetaInfo = document.getElementById('full-post-meta-info');
+        // THIS IS THE CRITICAL LINE FOR THE ERROR:
         const closeFullPostBtn = document.getElementById('close-full-post-btn');
 
-        // --- PWA Installation --- (Same as before)
+
+        // --- Dark Mode Logic ---
+        function applyDarkModePreference() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'enabled';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#121212'); 
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#00796b');
+            }
+        }
+
+        function toggleDarkMode() {
+            if (document.body.classList.contains('dark-mode')) {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#00796b');
+            } else {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#121212');
+            }
+        }
+        
+        allDarkModeToggles.forEach(toggle => {
+             toggle.addEventListener('click', toggleDarkMode);
+        });
+
+        // --- PWA Installation ---
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault(); deferredPrompt = e; if (installButton) installButton.style.display = 'block';
@@ -337,7 +431,7 @@
         }
         window.addEventListener('appinstalled', () => { if (installButton) installButton.style.display = 'none'; deferredPrompt = null; });
 
-        // --- Page Navigation --- (Same as before)
+        // --- Page Navigation ---
         function navigateToPage(pageId) {
             pages.forEach(page => page.classList.remove('active'));
             const targetPage = document.getElementById(pageId);
@@ -349,50 +443,54 @@
         
         // --- Full Screen Post View Logic ---
         function showFullPostView(post) {
-            if(!post) return;
-            fullPostTitle.textContent = post.title || "Untitled Post";
-            fullPostDescription.innerHTML = post.description ? post.description.replace(/\n/g, '<br>') : "No description available.";
-
-            if (post.thumbnail && post.thumbnail.trim() !== '') {
-                fullPostThumbnail.src = post.thumbnail;
-                fullPostThumbnail.alt = post.title || "Post image";
-                fullPostThumbnail.style.display = 'block';
-            } else {
-                fullPostThumbnail.style.display = 'none';
+            if(!post || !fullPostViewPage) return; // Guard clause
+            
+            if(fullPostTitle) fullPostTitle.textContent = post.title || "Untitled Post";
+            if(fullPostDescription) fullPostDescription.innerHTML = post.description || "<p>No description available.</p>"; 
+            
+            if (fullPostThumbnail) {
+                if (post.thumbnail && post.thumbnail.trim() !== '') {
+                    fullPostThumbnail.src = post.thumbnail;
+                    fullPostThumbnail.alt = post.title || "Post image";
+                    fullPostThumbnail.style.display = 'block';
+                } else {
+                    fullPostThumbnail.style.display = 'none';
+                }
             }
 
-            if (post.url && post.url.trim() !== '') {
-                try {
-                    new URL(post.url); // Validate URL slightly
-                    fullPostExternalLink.href = post.url;
-                    // fullPostExternalLink.textContent = "Visit Source"; // Or post.url
-                    fullPostLinkContainer.style.display = 'block';
-                } catch (_) {
+            if (fullPostLinkContainer && fullPostExternalLink) {
+                if (post.url && post.url.trim() !== '') {
+                    try {
+                        new URL(post.url); 
+                        fullPostExternalLink.href = post.url;
+                        fullPostLinkContainer.style.display = 'block';
+                    } catch (_) {
+                        fullPostLinkContainer.style.display = 'none';
+                    }
+                } else {
                     fullPostLinkContainer.style.display = 'none';
                 }
-            } else {
-                fullPostLinkContainer.style.display = 'none';
             }
 
-            let metaText = "";
-            if (post.source && post.source.trim() !== '') {
-                metaText += `Source: ${post.source}`;
+            if (fullPostMetaInfo) {
+                let metaText = "";
+                if (post.source && post.source.trim() !== '') metaText += `Source: ${post.source}`;
+                if (post.timestamp) metaText += (metaText ? " | " : "") + `Added: ${new Date(post.timestamp).toLocaleDateString()}`;
+                fullPostMetaInfo.innerHTML = metaText || "No meta information.";
             }
-            if (post.timestamp) {
-                metaText += (metaText ? " | " : "") + `Added: ${new Date(post.timestamp).toLocaleDateString()}`;
-            }
-            fullPostMetaInfo.textContent = metaText || "No meta information.";
             
             fullPostViewPage.classList.add('active');
-            // Ensure body cannot scroll when full screen view is active
             document.body.style.overflow = 'hidden';
         }
 
-        if (closeFullPostBtn) {
+        // Event listener for the close button
+        if (closeFullPostBtn) { // This check is important
             closeFullPostBtn.addEventListener('click', () => {
-                fullPostViewPage.classList.remove('active');
-                document.body.style.overflow = 'auto'; // Restore body scroll
+                if(fullPostViewPage) fullPostViewPage.classList.remove('active');
+                document.body.style.overflow = 'auto'; 
             });
+        } else {
+            console.warn("Could not find closeFullPostBtn element. Full screen close might not work.");
         }
 
         // --- Post Management (Firebase) ---
@@ -404,165 +502,125 @@
             let thumbnailHtml = (postData.thumbnail && postData.thumbnail.trim() !== '') ? `<img src="${postData.thumbnail}" alt="${postData.title || ''}" class="post-card-thumbnail" onerror="this.style.display='none';">` : '';
             
             let metaInfo = '';
-            if (postData.timestamp) {
-                metaInfo = `Added: ${new Date(postData.timestamp).toLocaleDateString()}`;
-            } else if (postData.source) {
-                metaInfo = `Source: ${postData.source}`;
-            }
+            if (postData.timestamp) metaInfo = `Added: ${new Date(postData.timestamp).toLocaleDateString()}`;
+            else if (postData.source) metaInfo = `Source: ${postData.source}`;
 
-            postCard.innerHTML = `
-                ${thumbnailHtml}
-                <h2>${postData.title || 'Untitled Post'}</h2>
-                <p class="description">${postData.description || 'No description.'}</p> 
-                <small class="post-meta">${metaInfo}</small>
-            `;
+            const descriptionDiv = document.createElement('div');
+            descriptionDiv.className = 'description';
+            descriptionDiv.innerHTML = postData.description || 'No description.'; 
+
+            postCard.innerHTML = `${thumbnailHtml}<h2>${postData.title || 'Untitled Post'}</h2>`;
+            postCard.appendChild(descriptionDiv); 
+            postCard.innerHTML += `<small class="post-meta">${metaInfo}</small>`;
+
             postCard.addEventListener('click', () => showFullPostView(postData));
             return postCard;
         }
 
-        function displayPostsFromFirebase(posts) {
-            if (!postsContainer) return;
-            postsContainer.innerHTML = ''; 
-            if (!posts || Object.keys(posts).length === 0) {
-                postsContainer.innerHTML = '<p class="text-center" style="padding: 20px;">No posts yet. Be the first to add one!</p>';
-                return;
-            }
-            const postsArray = Object.entries(posts)
-                .map(([key, value]) => ({ ...value, id: key }))
-                .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
-
-            postsArray.forEach(post => {
-                postsContainer.appendChild(renderPostCard(post.id, post));
-            });
-        }
-
-        function fetchPosts() {
+        function fetchPosts() { 
             const postsRef = database.ref('posts');
             postsRef.on('value', (snapshot) => {
                 const posts = snapshot.val();
-                displayPostsFromFirebase(posts);
+                 if (!postsContainer) return;
+                postsContainer.innerHTML = ''; 
+                if (!posts || Object.keys(posts).length === 0) {
+                    postsContainer.innerHTML = '<p class="text-center" style="padding: 20px;">No posts yet. Click (+) to add one!</p>';
+                    return;
+                }
+                const postsArray = Object.entries(posts)
+                    .map(([key, value]) => ({ ...value, id: key }))
+                    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+                postsArray.forEach(post => {
+                    if(postsContainer) postsContainer.appendChild(renderPostCard(post.id, post));
+                });
             }, (error) => {
                 console.error("Firebase read failed (posts): " + error.code);
                 if(postsContainer) postsContainer.innerHTML = '<p class="text-center" style="padding: 20px; color: red;">Error loading posts.</p>';
             });
-        }
-
-        // --- Add Post Form Handling (Firebase) --- (Same as before)
+         }
+        
+        // --- Add Post Form Handling (Firebase) ---
         if (addPostForm) {
             addPostForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const newPostData = {
                     title: document.getElementById('post-title-input').value.trim(),
-                    description: document.getElementById('post-description-input').value.trim(),
+                    description: document.getElementById('post-description-input').value, // Store raw HTML
                     thumbnail: document.getElementById('post-thumbnail-input').value.trim(),
                     url: document.getElementById('post-url-input').value.trim(),
-                    source: "PWA User", timestamp: firebase.database.ServerValue.TIMESTAMP
+                    source: "PWA User", 
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
                 };
                 if (!newPostData.title || !newPostData.description) { alert("Title and Description are required."); return; }
                 database.ref('posts').push().set(newPostData)
-                    .then(() => { alert('Post added!'); addPostForm.reset(); navigateToPage('home-page'); })
+                    .then(() => { alert('Post added successfully!'); addPostForm.reset(); navigateToPage('home-page'); })
                     .catch((error) => { console.error("Error adding post: ", error); alert("Failed to add post."); });
             });
         }
         
         // --- Ad Loading from Firebase ---
-        function injectAdScript(container, scriptContent) {
+        function injectAdScript(container, scriptContent) { 
             if (container && scriptContent) {
-                // Clear previous ad if any (important for banners if code changes)
-                // container.innerHTML = ''; // This might break Adsterra if it relies on its own DOM manipulation
-                
-                // For scripts that need to be run, creating script elements is more reliable
                 const SCRIPT_REGEX = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
-                let match;
-                let lastIndex = 0;
-                let hasScripts = false;
-
-                // Append non-script HTML directly
+                let match; let lastIndex = 0; let hasScripts = false;
+                container.innerHTML = ''; 
                 while ((match = SCRIPT_REGEX.exec(scriptContent)) !== null) {
                     hasScripts = true;
                     container.insertAdjacentHTML('beforeend', scriptContent.substring(lastIndex, match.index));
                     lastIndex = SCRIPT_REGEX.lastIndex;
-
                     const scriptTag = document.createElement('script');
-                    // Extract src if present
                     const srcMatch = match[0].match(/src=["']([^"']+)["']/);
-                    if (srcMatch) {
-                        scriptTag.src = srcMatch[1];
-                    }
-                    // Extract inline content
+                    if (srcMatch) scriptTag.src = srcMatch[1];
                     const inlineContentMatch = match[0].match(/<script[^>]*>([\s\S]*?)<\/script>/);
-                    if (inlineContentMatch && inlineContentMatch[1].trim()) {
-                        scriptTag.textContent = inlineContentMatch[1].trim();
-                    }
-                    scriptTag.async = false; // Try to load in order, though Adsterra might handle async itself
-                    container.appendChild(scriptTag);
+                    if (inlineContentMatch && inlineContentMatch[1].trim()) scriptTag.textContent = inlineContentMatch[1].trim();
+                    try { container.appendChild(scriptTag); } catch(e) { console.error("Error appending ad script:", e, scriptTag); }
                 }
-                // Append any remaining non-script HTML
-                if (lastIndex < scriptContent.length) {
-                    container.insertAdjacentHTML('beforeend', scriptContent.substring(lastIndex));
-                }
-                
-                // If no script tags found, just set innerHTML (for plain HTML native ads)
-                if (!hasScripts) {
-                    container.innerHTML = scriptContent;
-                }
+                if (lastIndex < scriptContent.length) container.insertAdjacentHTML('beforeend', scriptContent.substring(lastIndex));
+                if (!hasScripts && scriptContent.trim() !== "") container.innerHTML = scriptContent;
+            } else if (container) {
+                container.innerHTML = ''; 
             }
         }
-
-        function loadAdConfigurations() {
-            const adConfigsRef = database.ref('ad_configurations');
+        function loadAdConfigurations() { 
+             const adConfigsRef = database.ref('ad_configurations');
             adConfigsRef.on('value', (snapshot) => {
                 const configs = snapshot.val();
                 if (configs) {
-                    console.log("Ad configurations loaded:", configs);
-                    // Home Page Ads
                     injectAdScript(document.getElementById('ad-slot-home-top-banner'), configs.home_top_banner);
                     injectAdScript(document.getElementById('ad-slot-home-native'), configs.home_native_ad);
                     injectAdScript(document.getElementById('ad-slot-home-bottom-banner'), configs.home_bottom_banner);
-                    
-                    // Add Post Page Ads
                     injectAdScript(document.getElementById('ad-slot-add-post-banner'), configs.add_post_page_banner);
-
-                    // Full Post View Ads
                     injectAdScript(document.getElementById('ad-slot-full-post-top-banner'), configs.full_post_top_banner);
                     injectAdScript(document.getElementById('ad-slot-full-post-native'), configs.full_post_native_ad);
                     injectAdScript(document.getElementById('ad-slot-full-post-bottom-banner'), configs.full_post_bottom_banner);
-
-                    // Global Scripts (Popunders, Social Bar)
+                    
                     if (globalAdScriptsContainer) {
-                         globalAdScriptsContainer.innerHTML = ''; // Clear previous global scripts
-                         if(configs.global_popunder_script) {
-                            const popunderDiv = document.createElement('div');
-                            injectAdScript(popunderDiv, configs.global_popunder_script);
-                            globalAdScriptsContainer.appendChild(popunderDiv);
-                         }
-                         if(configs.global_social_bar_script) {
-                            const socialDiv = document.createElement('div');
-                            injectAdScript(socialDiv, configs.global_social_bar_script);
-                            globalAdScriptsContainer.appendChild(socialDiv);
-                         }
+                         globalAdScriptsContainer.innerHTML = ''; 
+                         if(configs.global_popunder_script) { const div = document.createElement('div'); injectAdScript(div, configs.global_popunder_script); globalAdScriptsContainer.appendChild(div); }
+                         if(configs.global_social_bar_script) { const div = document.createElement('div'); injectAdScript(div, configs.global_social_bar_script); globalAdScriptsContainer.appendChild(div); }
                     }
-                } else {
-                    console.log("No ad configurations found in Firebase.");
-                }
-            }, (error) => {
-                console.error("Firebase read failed (ad_configurations): " + error.code);
-            });
+                } else { console.log("No ad configurations found.");}
+            }, (error) => console.error("Ad config load error: ", error.code));
         }
 
-        // --- Service Worker --- (Same as before)
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').then(reg => console.log('SW reg: ', reg.scope)).catch(err => console.log('SW err: ', err)); }); }
-        // --- Online/Offline --- (Same as before)
-        function updateOnlineStatus() { offlineBanner.style.display = navigator.onLine ? 'none' : 'block'; }
+        // --- Service Worker --- 
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered. Scope: ', reg.scope)).catch(err => console.log('SW registration failed: ', err)); }); }
+        
+        // --- Online/Offline --- 
+        function updateOnlineStatus() { 
+            if (offlineBanner) offlineBanner.style.display = navigator.onLine ? 'none' : 'block';
+        }
         window.addEventListener('online', updateOnlineStatus); window.addEventListener('offline', updateOnlineStatus);
         
         // --- Initial Load ---
         document.addEventListener('DOMContentLoaded', () => {
+            applyDarkModePreference(); 
             navigateToPage('home-page');
             fetchPosts(); 
-            loadAdConfigurations(); // Load ads
+            loadAdConfigurations(); 
             updateOnlineStatus();
         });
+
     </script>
 </body>
 </html>
