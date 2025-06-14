@@ -1,626 +1,1081 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#00796b"/> <!-- Default theme color -->
-    <title>Islamic Life - HTML & Dark Mode</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>RealApp: Mobile Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    /* Custom styles for splash screen animation */
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .splash-fade-in { animation: fadeIn 0.5s ease-out; }
+    .splash-slide-in-up { animation: slideInUp 0.6s ease-out; }
+    .splash-button-bounce { animation: bounce 1s infinite; }
+    
+    body { 
+      overflow-x: hidden; 
+      -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    } 
+    /* Dark Mode transition */
+    .transition-colors { transition: background-color 0.3s ease, color 0.3s ease; }
+    .dark .bg-gray-100 { background-color: #1a202c; } /* dark bg */
+    .dark .text-gray-800 { color: #edf2f7; } /* dark text */
+    .dark .bg-white { background-color: #2d3748; } /* dark card/modal bg */
+    .dark .text-gray-900 { color: #e2e8f0; } /* dark heading text */
+    .dark .text-gray-700 { color: #a0aec0; } /* dark content text */
+    .dark .text-gray-600 { color: #a0aec0; } /* dark content text */
+    .dark .text-gray-500 { color: #cbd5e0; } /* dark date/sub text */
+    .dark .border-gray-200 { border-color: #4a5568; } /* dark borders */
+    .dark .bg-gray-50 { background-color: #4a5568; } /* dark section bg */
+    .dark .bg-indigo-700 { background-color: #312e81; } /* Darker header */
+    .dark .bg-indigo-600 { background-color: #4338ca; } /* Darker buttons */
+    .dark .bg-green-500 { background-color: #10b981; } /* Darker green */
+    .dark .bg-blue-600 { background-color: #2563eb; } /* Darker blue */
+    
+    /* Basic toast styles */
+    #toastContainer {
+        position: fixed;
+        bottom: 20px; /* Changed to bottom for mobile convenience */
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column-reverse; /* New toasts appear above old ones */
+        align-items: center;
+        gap: 10px;
+        pointer-events: none; 
+    }
+    .toast {
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        pointer-events: auto; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        min-width: 200px;
+        text-align: center;
+        transform: translateY(20px); /* Initial state for slide-up */
+    }
+    .toast.show { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+    .toast-success { background-color: #10b981; } /* Tailwind green-500 */
+    .toast-error { background-color: #ef4444; }   /* Tailwind red-500 */
+    .toast-info { background-color: #3b82f6; }    /* Tailwind blue-500 */
+    .toast-warning { background-color: #f59e0b; } /* Tailwind yellow-500 */
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <style>
-        :root {
-            --primary-color: #00796b;
-            --secondary-color: #004d40;
-            --accent-color: #ffc107;
-            --light-bg: #f5f5f5;
-            --dark-text: #333;
-            --light-text: #fff;
-            --card-bg: #ffffff;
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
-            --border-color: #e0e0e0;
-            --header-bg: var(--primary-color);
-            --header-text: var(--light-text);
-            --link-color: var(--primary-color);
-        }
-
-        body.dark-mode {
-            --primary-color: #1de9b6; /* Brighter teal for dark mode */
-            --secondary-color: #00bfa5; 
-            --accent-color: #ffd600; /* Brighter yellow */
-            --light-bg: #121212;   /* Very dark grey */
-            --dark-text: #e0e0e0;    /* Light grey text */
-            --light-text: #000000;   /* Black text on light accent elements */
-            --card-bg: #1e1e1e;    /* Darker grey for cards */
-            --shadow: 0 4px 12px rgba(0,0,0,0.3); /* Darker shadow */
-            --border-color: #333333;
-            --header-bg: #1f1f1f; /* Dark header */
-            --header-text: var(--primary-color);
-            --link-color: var(--primary-color);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-            background-color: var(--light-bg); color: var(--dark-text);
-            display: flex; flex-direction: column; min-height: 100vh;
-            overscroll-behavior-y: contain; direction: ltr;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .page {
-            display: none; flex-grow: 1; overflow-y: auto;
-            padding: 15px; padding-bottom: 80px;
-        }
-        .page.active { display: flex; flex-direction: column; }
-        .app-header {
-            background-color: var(--header-bg); color: var(--header-text);
-            padding: 10px 15px; text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 100;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .app-header h1 {
-            font-size: 1.4em; font-weight: 500; margin: 0; flex-grow: 1; text-align: center;
-        }
-        .dark-mode-toggle-btn { /* Common class for all dark mode toggles */
-            background: none; border: none; color: var(--header-text);
-            font-size: 1.5em; cursor: pointer; padding: 5px;
-        }
-        body.dark-mode .dark-mode-toggle-btn .fa-moon { display: none; }
-        body:not(.dark-mode) .dark-mode-toggle-btn .fa-sun { display: none; }
-
-
-        .footer-nav {
-            background-color: var(--card-bg); border-top: 1px solid var(--border-color);
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            display: flex; justify-content: space-around;
-            align-items: center; box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
-            z-index: 100; height: 65px;
-        }
-        .footer-nav-item {
-            color: #757575; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 0.75em; padding: 8px 12px; cursor: pointer;
-            flex-grow: 1; text-decoration: none; transition: color 0.2s ease-in-out, transform 0.1s ease-in-out;
-        }
-        body.dark-mode .footer-nav-item { color: #aaa; }
-        .footer-nav-item i { font-size: 1.8em; margin-bottom: 4px; }
-        .footer-nav-item.active { color: var(--primary-color); transform: translateY(-2px); }
-        .footer-nav-item:active { transform: translateY(0px); }
-
-
-        .post-card {
-            background-color: var(--card-bg); border-radius: 12px; padding: 20px;
-            margin-bottom: 20px; box-shadow: var(--shadow); cursor: pointer;
-            border-left: 5px solid var(--primary-color);
-            transition: transform 0.2s ease-in-out, background-color 0.3s, border-color 0.3s;
-        }
-        .post-card:hover { transform: translateY(-3px); }
-        .post-card-thumbnail {
-            width: 100%; max-height: 220px; object-fit: cover;
-            border-radius: 8px; margin-bottom: 15px;
-        }
-        .post-card h2 { font-size: 1.4em; color: var(--primary-color); margin-top: 0; margin-bottom: 10px; }
-        .post-card div.description { /* Changed from p.description to div for consistency */
-            font-size: 1em; line-height: 1.6; color: var(--dark-text); margin-bottom: 10px;
-            max-height: 7em; 
-            overflow: hidden; 
-        }
-        .post-card div.description strong { font-weight: bold; color: var(--primary-color); }
-        .post-card div.description em { font-style: italic; }
-        .post-card div.description a { color: var(--link-color); text-decoration: underline; }
-        .post-card div.description ul, .post-card div.description ol { margin-left: 20px; margin-bottom: 10px; }
-        .post-card div.description blockquote { 
-            border-left: 3px solid var(--accent-color); 
-            padding-left: 10px; margin-left: 5px; font-style: italic; color: #777;
-        }
-        body.dark-mode .post-card div.description blockquote { color: #aaa; }
-
-
-        .post-card small.post-meta { font-size: 0.85em; color: #777; display: block; margin-top: 10px; }
-        body.dark-mode .post-card small.post-meta { color: #aaa; }
-
-
-        .form-group label { color: var(--secondary-color); display: block; margin-bottom: 8px; font-weight: bold;}
-        .form-group input[type="text"], .form-group input[type="url"], .form-group textarea {
-            background-color: var(--card-bg); color: var(--dark-text); border: 1px solid var(--border-color);
-            width: 100%; padding: 12px;
-            border-radius: 8px; font-size: 1em; font-family: inherit;
-        }
-        .form-group textarea { min-height: 150px; resize: vertical; }
-        .form-button {
-            background-color: var(--primary-color); color: var(--light-text); border: none;
-            padding: 15px 25px; font-size: 1.1em; border-radius: 8px; cursor: pointer;
-            transition: background-color 0.3s ease; width: 100%; font-weight: 500;
-        }
-        .user-page-content i { font-size: 5em; color: var(--primary-color); margin-bottom: 20px; }
-        .user-page-content p { font-size: 1.1em; margin-bottom: 10px; }
-
-
-        .ad-slot {
-            width: 100%; margin: 15px auto; display: flex; justify-content: center;
-            align-items: center; background-color: var(--card-bg); 
-            border: 1px dashed var(--border-color);
-            overflow: hidden; 
-            padding: 5px 0; 
-        }
-        .ad-slot:empty { min-height: 0; padding: 0; margin: 0; border: 1px dashed #ddd; }
-        .ad-slot-banner { min-height: 90px; } 
-        .ad-slot-native { padding: 10px; background-color: transparent; }
-
-
-        .offline-banner {
-            background-color: var(--accent-color); color: var(--dark-text); padding: 10px;
-            text-align: center; width: 100%; position: fixed; top: 0; left: 0;
-            z-index: 1001; display: none; font-weight: 500;
-        }
-        #install-button-container { text-align: center; margin: 20px 0; }
-        #install-pwa-btn {
-            background-color: var(--accent-color); color: var(--dark-text); border: none;
-            padding: 12px 25px; font-size: 1em; border-radius: 8px; cursor: pointer;
-            display: none; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        #full-post-view-page {
-            background-color: var(--light-bg); 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1000; display: none; flex-direction: column; padding: 0;
-        }
-        #full-post-view-page.active { display: flex; }
-
-        .full-post-content-wrapper { 
-            width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; 
-        }
-        .full-post-header {
-            padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            background-color: var(--header-bg); color: var(--header-text);
-            flex-shrink: 0;
-        }
-        .full-post-header h2 { font-size: 1.3em; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1; text-align: center;}
-        #close-full-post-btn { background: none; border: none; font-size: 1.8em; color: var(--header-text); cursor: pointer; line-height: 1; padding: 0 5px; }
-
-        .full-post-body {
-            padding: 20px; overflow-y: auto; flex-grow: 1; background-color: var(--card-bg);
-        }
-        .full-post-body img.full-post-thumbnail {
-            width: 100%; max-height: 40vh; object-fit: contain; 
-            border-radius: 8px; margin-bottom: 20px; background-color: #eee; 
-        }
-        body.dark-mode .full-post-body img.full-post-thumbnail { background-color: #2a2a2a; }
-
-        .full-post-body div.full-post-description { /* Changed from p to div */
-            font-size: 1.1em; line-height: 1.8; color: var(--dark-text); white-space: normal; margin-bottom: 20px;
-        }
-        .full-post-body div.full-post-description strong { font-weight: bold; color: var(--primary-color); }
-        .full-post-body div.full-post-description em { font-style: italic; }
-        .full-post-body div.full-post-description a { color: var(--link-color); text-decoration: underline; }
-        .full-post-body div.full-post-description ul, .full-post-body div.full-post-description ol { margin-left: 25px; margin-bottom: 15px; }
-        .full-post-body div.full-post-description li { margin-bottom: 5px; }
-        .full-post-body div.full-post-description blockquote { 
-            border-left: 4px solid var(--accent-color); 
-            padding: 10px 15px; margin: 15px 0; font-style: italic; 
-            background-color: rgba(0,0,0,0.03); border-radius: 4px;
-        }
-        body.dark-mode .full-post-body div.full-post-description blockquote { 
-            background-color: rgba(255,255,255,0.05); 
-        }
-        .full-post-body div.full-post-description pre {
-            background-color: #f0f0f0; color: #333; padding: 15px;
-            border-radius: 5px; overflow-x: auto; white-space: pre-wrap;
-            font-family: 'Courier New', Courier, monospace; font-size: 0.95em; margin: 15px 0;
-        }
-        body.dark-mode .full-post-body div.full-post-description pre {
-            background-color: #2c2c2c; color: #eee;
-        }
-        .full-post-body div.full-post-description img { 
-            max-width: 100%; height: auto; border-radius: 5px; margin: 10px 0;
-        }
-
-
-        .full-post-meta-info {
-            font-size: 0.9em; color: #777; margin-bottom: 20px; padding-top: 10px;
-            border-top: 1px solid var(--border-color);
-        }
-        body.dark-mode .full-post-meta-info { color: #aaa; }
-        .full-post-link-container {
-            margin-top: 15px; margin-bottom: 20px; padding: 15px;
-            background-color: #e8f5e9; 
-            border-radius: 8px;
-            text-align: center;
-        }
-        body.dark-mode .full-post-link-container { background-color: #223322; }
-        .full-post-link-container a {
-            color: var(--dark-text);
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.1em;
-            word-break: break-all;
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: var(--accent-color);
-            border-radius: 5px;
-        }
-        .full-post-link-container a:hover { opacity: 0.8; }
-        .text-center { text-align: center; }
-        .mt-20 { margin-top: 20px; }
-        #global-ad-scripts { display: none; }
-    </style>
+    /* Custom toggle switch style */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 48px; /* Bigger for mobile touch */
+      height: 28px;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 28px; /* Same as height for roundness */
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #2196F3; /* Blue when checked */
+    }
+    input:focus + .slider {
+      box-shadow: 0 0 1px #2196F3;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px); /* Move slider dot */
+    }
+    .slider.round {
+      border-radius: 28px;
+    }
+    .slider.round:before {
+      border-radius: 50%;
+    }
+  </style>
 </head>
-<body class=""> 
+<body class="bg-gray-100 font-sans text-gray-800 transition-colors">
 
-    <div class="offline-banner" id="offline-banner">
-        You are currently offline. Content may be limited.
+<!-- Toast Notification Container -->
+<div id="toastContainer"></div>
+
+<!-- Splash Screen -->
+<div id="splash" class="fixed inset-0 z-50 bg-gradient-to-br from-indigo-500 to-purple-600 flex flex-col items-center justify-center p-6 text-white text-center splash-fade-in">
+  <div class="mb-8 splash-slide-in-up">
+    <i class="fas fa-mobile-alt text-6xl mb-4"></i>
+    <h1 class="text-4xl font-bold mb-2">Welcome to RealApp</h1>
+    <p class="text-lg text-indigo-100">Your content & workout tracker.</p>
+  </div>
+
+  <div class="bg-white bg-opacity-10 p-6 rounded-lg shadow-xl max-w-sm w-full mx-auto mb-8 splash-slide-in-up">
+    <h2 class="text-2xl font-semibold mb-4">Permissions Required</h2>
+    <p class="text-indigo-100 mb-6">To ensure full functionality, please grant the following permissions:</p>
+    
+    <ul class="text-left text-lg space-y-3">
+      <li class="flex items-center">
+        <i class="fas fa-camera text-blue-300 mr-3 text-xl w-6"></i>
+        <span>Camera Access <br><small class="text-sm text-indigo-200">For capturing photos.</small></span>
+      </li>
+      <li class="flex items-center">
+        <i class="fas fa-microphone text-green-300 mr-3 text-xl w-6"></i>
+        <span>Microphone Access <br><small class="text-sm text-indigo-200">For voice notes (optional).</small></span>
+      </li>
+      <li class="flex items-center">
+        <i class="fas fa-map-marker-alt text-red-300 mr-3 text-xl w-6"></i>
+        <span>Location Access <br><small class="text-sm text-indigo-200">For logging location.</small></span>
+      </li>
+    </ul>
+  </div>
+
+  <button onclick="requestAndHandlePermissions()" 
+          class="bg-white text-indigo-600 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-200 transition duration-300 text-lg splash-button-bounce">
+    Grant Permissions
+  </button>
+  <button onclick="hideSplashAndShowDashboard(true)" 
+          class="mt-4 text-indigo-100 text-sm hover:underline transition duration-300">
+    Continue without Permissions
+  </button>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard" class="hidden flex flex-col min-h-screen transition-colors">
+  <header class="bg-indigo-700 text-white p-4 shadow-md flex items-center justify-between">
+    <h1 class="text-2xl font-semibold">RealApp Content</h1>
+    <button onclick="openSettingsModal()" class="text-xl hover:text-gray-200 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-white"><i class="fas fa-cog"></i></button>
+  </header>
+  
+  <main class="flex-1 p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-min" id="publicPostGrid">
+    <!-- Public post cards will be injected here -->
+    <p id="loadingMessage" class="col-span-full text-center text-gray-500 py-10">Loading public posts...</p>
+    <p id="noPostsMessage" class="col-span-full text-center text-gray-500 py-10 hidden">No public posts yet. Tap '+' to publish one!</p>
+  </main>
+  
+  <!-- FAB Button (Publish New Post) -->
+  <button class="fixed bottom-6 right-6 bg-blue-600 text-white w-16 h-16 rounded-full shadow-xl flex items-center justify-center text-3xl z-40 hover:bg-blue-700 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-300" 
+          onclick="openPublishPostModal()">
+    <i class="fas fa-plus"></i>
+  </button>
+
+</div>
+
+<!-- Public Post Detail Modal -->
+<div id="postDetailModal" class="fixed inset-0 bg-black bg-opacity-80 hidden justify-center items-center z-50 p-4">
+  <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-2xl relative transition-colors">
+    <button onclick="closePostDetailModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300">
+        <i class="fas fa-times"></i>
+    </button>
+    <img id="detailModalImage" class="w-full h-56 object-cover rounded-md mb-4 border border-gray-200" alt="Post Image" />
+    <h2 id="detailModalTitle" class="text-2xl font-bold mb-2 text-gray-900"></h2>
+    <p id="detailModalDesc" class="text-base text-gray-700 leading-relaxed"></p>
+    <a id="detailModalDownloadLink" href="#" target="_blank" class="mt-4 inline-flex items-center px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-600 hidden transition-colors">
+        <i class="fas fa-download mr-2"></i> Download File
+    </a>
+    <p id="detailModalDate" class="text-sm text-gray-500 mt-4"></p>
+    <button onclick="closePostDetailModal()" class="mt-6 w-full bg-indigo-600 text-white px-4 py-3 rounded-md hover:bg-indigo-700 transition-colors">
+      Close
+    </button>
+  </div>
+</div>
+
+<!-- Publish New Post Modal -->
+<div id="publishPostModal" class="fixed inset-0 bg-black bg-opacity-80 hidden justify-center items-center z-50 p-4">
+  <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-2xl relative transition-colors">
+    <button onclick="closePublishPostModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300">
+        <i class="fas fa-times"></i>
+    </button>
+    <h2 class="text-2xl font-bold mb-4 text-gray-900">Publish New Post</h2>
+    
+    <div class="mb-4">
+      <label for="postTitle" class="block text-sm font-medium text-gray-700 mb-1">Post Title</label>
+      <input type="text" id="postTitle" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="e.g., RealApp Update, New Feature">
     </div>
-    <div id="global-ad-scripts"></div>
+    
+    <div class="mb-4">
+      <label for="postDescription" class="block text-sm font-medium text-gray-700 mb-1">Post Content</label>
+      <textarea id="postDescription" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 h-24 resize-none transition-colors" placeholder="Details about your post..."></textarea>
+    </div>
 
-    <!-- Page: Home -->
-    <div id="home-page" class="page active">
-        <header class="app-header">
-            <button id="dark-mode-toggle-home" class="dark-mode-toggle-btn" aria-label="Toggle Dark Mode">
-                <i class="fas fa-moon"></i><i class="fas fa-sun"></i>
-            </button>
-            <h1>Islamic Life</h1>
-            <div style="width: 40px;"></div> <!-- Spacer to balance the toggle button -->
-        </header>
-        <div id="install-button-container">
-            <button id="install-pwa-btn">Install App</button>
+    <div class="mb-4 border p-3 rounded-md bg-gray-50 transition-colors">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Thumbnail Image (Optional)</label>
+      <video id="thumbnailCameraPreview" autoplay playsinline class="w-full h-auto max-h-48 object-cover rounded-md mb-2 bg-gray-200 dark:bg-gray-700" style="display: none;"></video>
+      <canvas id="thumbnailPhotoCanvas" class="hidden"></canvas>
+      <img id="thumbnailImagePreview" src="" alt="Thumbnail Image" class="w-full h-auto max-h-48 object-cover rounded-md mb-2 bg-gray-200 dark:bg-gray-700" style="display: none;" />
+      
+      <div class="flex flex-wrap gap-2 mt-2">
+        <button id="captureThumbnailButton" onclick="captureThumbnailPhoto()" class="flex-1 min-w-[120px] bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center">
+          <i class="fas fa-camera mr-2"></i> Take Photo
+        </button>
+        <button id="uploadThumbnailButton" onclick="document.getElementById('thumbnailFileInput').click()" class="flex-1 min-w-[120px] bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-colors flex items-center justify-center">
+          <i class="fas fa-upload mr-2"></i> Upload Image
+        </button>
+        <input type="file" id="thumbnailFileInput" accept="image/*" class="hidden" onchange="uploadThumbnailFromFile(event)">
+      </div>
+      <button id="retakeThumbnailButton" onclick="retakeThumbnailPhoto()" class="w-full bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition-colors flex items-center justify-center mt-2 hidden">
+        <i class="fas fa-sync-alt mr-2"></i> Retake / Choose New
+      </button>
+      <button id="cancelThumbnailCameraButton" onclick="stopThumbnailCameraAndHide()" class="w-full bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition-colors flex items-center justify-center mt-2 hidden">
+        <i class="fas fa-times mr-2"></i> Cancel Camera
+      </button>
+    </div>
+
+    <div class="mb-4 border p-3 rounded-md bg-gray-50 transition-colors">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Downloadable File (Optional)</label>
+      <p id="downloadFileName" class="text-sm text-gray-600 mb-2 hidden"></p>
+      <div class="flex flex-wrap gap-2 mt-2">
+        <button id="uploadFileButton" onclick="document.getElementById('downloadFileInput').click()" class="flex-1 min-w-[120px] bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 transition-colors flex items-center justify-center">
+          <i class="fas fa-file-arrow-up mr-2"></i> Upload File
+        </button>
+        <input type="file" id="downloadFileInput" class="hidden" onchange="uploadDownloadableFile(event)">
+      </div>
+      <button id="removeFileButton" onclick="removeDownloadableFile()" class="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors flex items-center justify-center mt-2 hidden">
+        <i class="fas fa-trash-alt mr-2"></i> Remove File
+      </button>
+    </div>
+    
+    <button onclick="publishPost()" class="mt-6 w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors">
+      <i class="fas fa-share-square mr-2"></i> Publish Post
+    </button>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-80 hidden justify-center items-center z-50 p-4">
+  <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-2xl relative transition-colors">
+    <button onclick="closeSettingsModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300">
+        <i class="fas fa-times"></i>
+    </button>
+    <h2 class="text-2xl font-bold mb-4 text-gray-900">App Settings</h2>
+    
+    <div class="mb-4 p-4 border rounded-md bg-gray-50 transition-colors">
+        <h3 class="text-lg font-semibold mb-2 text-gray-800">Theme</h3>
+        <div class="flex justify-between items-center py-2">
+            <span class="text-gray-700 flex items-center"><i class="fas fa-moon mr-2 text-indigo-500"></i> Dark Mode</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode(this.checked)">
+                <span class="slider round"></span>
+            </label>
         </div>
-        
-        <div id="ad-slot-home-top-banner" class="ad-slot ad-slot-banner"></div>
-        <div id="ad-slot-home-native" class="ad-slot ad-slot-native"></div>
+    </div>
 
-        <div id="posts-container">
-            <p class="text-center" style="padding: 30px;">Loading posts...</p>
+    <div class="mb-4 p-4 border rounded-md bg-gray-50 transition-colors">
+      <h3 class="text-lg font-semibold mb-2 text-gray-800">Permissions Manager</h3>
+      <ul class="space-y-2 text-sm text-gray-700">
+        <li class="flex justify-between items-center">
+            <span class="flex items-center"><i class="fas fa-camera mr-2 text-blue-500"></i> Camera</span>
+            <span id="cameraPermStatus" class="font-medium">Checking...</span>
+        </li>
+        <li class="flex justify-between items-center">
+            <span class="flex items-center"><i class="fas fa-microphone mr-2 text-green-500"></i> Microphone</span>
+            <span id="micPermStatus" class="font-medium">Checking...</span>
+        </li>
+        <li class="flex justify-between items-center">
+            <span class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-red-500"></i> Location</span>
+            <span id="locationPermStatus" class="font-medium">Checking...</span>
+        </li>
+      </ul>
+      <p class="text-xs text-gray-600 mt-3">Browser controls these. To change, go to browser settings.</p>
+      <button onclick="checkAndUpdatePermissionStatus()" class="w-full bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors mt-3 flex items-center justify-center">
+        <i class="fas fa-sync-alt mr-2"></i> Refresh Status
+      </button>
+    </div>
+
+    <div class="mb-4 p-4 border rounded-md bg-gray-50 transition-colors">
+        <h3 class="text-lg font-semibold mb-2 text-gray-800">Background Services</h3>
+        <div class="flex justify-between items-center py-2">
+            <span class="text-gray-700 flex items-center"><i class="fas fa-globe mr-2 text-purple-500"></i> Always Running (Location)</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="alwaysRunningToggle" onchange="toggleAlwaysRunning(this.checked)">
+                <span class="slider round"></span>
+            </label>
         </div>
-        
-        <div id="ad-slot-home-bottom-banner" class="ad-slot ad-slot-banner"></div>
+        <p class="text-xs text-gray-600 mt-2">Simulates continuous location updates. (Browser must be active)</p>
     </div>
 
-    <!-- Page: Add Post -->
-    <div id="add-post-page" class="page">
-        <header class="app-header">
-             <button id="dark-mode-toggle-add" class="dark-mode-toggle-btn" aria-label="Toggle Dark Mode">
-                <i class="fas fa-moon"></i><i class="fas fa-sun"></i>
-            </button>
-            <h1>Add New Post</h1>
-            <div style="width: 40px;"></div> 
-        </header>
-        <form id="add-post-form">
-            <div class="form-group"> <label for="post-title-input">Title:</label> <input type="text" id="post-title-input" required> </div>
-            <div class="form-group"> 
-                <label for="post-description-input">Description (HTML or Plain Text):</label> 
-                <textarea id="post-description-input" rows="10" required placeholder="Enter your post content. You can use HTML tags..."></textarea>
-            </div>
-            <div class="form-group"> <label for="post-thumbnail-input">Thumbnail URL:</label> <input type="url" id="post-thumbnail-input" placeholder="https://example.com/image.jpg"> </div>
-            <div class="form-group"> <label for="post-url-input">External URL (Optional):</label> <input type="url" id="post-url-input" placeholder="https://example.com/source-link"> </div>
-            <button type="submit" class="form-button">Publish Post</button>
-        </form>
-        <div id="ad-slot-add-post-banner" class="ad-slot ad-slot-banner mt-20"></div>
+    <div class="mb-6 p-4 border rounded-md bg-gray-50 transition-colors">
+        <h3 class="text-lg font-semibold mb-2 text-gray-800">Data Management</h3>
+        <p class="text-sm text-gray-600 mb-3">Clear app's local data (theme, permissions). Does NOT affect Firebase data.</p>
+        <button onclick="clearLocalData()" class="w-full bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center mb-2">
+            <i class="fas fa-broom mr-2"></i> Clear Local App Data
+        </button>
+        <p class="text-sm text-gray-600 mb-3">Reset all app data and permissions. Requires reload.</p>
+        <button onclick="resetAppPermissions()" class="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors flex items-center justify-center">
+            <i class="fas fa-eraser mr-2"></i> Reset App Data & Permissions
+        </button>
+    </div>
+    
+    <div class="mt-4 pt-4 border-t border-gray-200 text-center transition-colors">
+        <h3 class="text-lg font-semibold mb-2 text-gray-800">Developer Tools</h3>
+        <p class="text-sm text-gray-600 mb-3">View raw JSON data from Firebase Realtime Database for debugging.</p>
+        <button onclick="viewSavedData()" class="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center">
+            <i class="fas fa-database mr-2"></i> View All Database JSON
+        </button>
     </div>
 
-    <!-- Page: User -->
-    <div id="user-page" class="page">
-         <header class="app-header">
-             <button id="dark-mode-toggle-user" class="dark-mode-toggle-btn" aria-label="Toggle Dark Mode">
-                <i class="fas fa-moon"></i><i class="fas fa-sun"></i>
-            </button>
-            <h1>User Profile</h1>
-            <div style="width: 40px;"></div> 
-        </header>
-        <div class="user-page-content text-center">
-            <i class="fas fa-user-cog"></i>
-            <p>User Profile & Settings</p>
-            <p>© <span id="current-year"></span> Islamic Life PWA</p>
-        </div>
+    <div class="mt-6 pt-4 border-t border-gray-200 text-center transition-colors">
+      <p class="text-xs text-gray-500">RealApp Mobile v1.2 | Developed by Your Name/Team</p>
     </div>
 
-    <!-- Full Screen Post View Page -->
-    <div id="full-post-view-page">
-        <div class="full-post-content-wrapper">
-            <header class="full-post-header">
-                 <button id="dark-mode-toggle-full-post" class="dark-mode-toggle-btn" aria-label="Toggle Dark Mode">
-                    <i class="fas fa-moon"></i><i class="fas fa-sun"></i>
-                </button>
-                <h2 id="full-post-title">Post Title</h2>
-                <button id="close-full-post-btn" aria-label="Close">×</button> <!-- ID is 'close-full-post-btn' -->
-            </header>
-            <div class="full-post-body">
-                <div id="ad-slot-full-post-top-banner" class="ad-slot ad-slot-banner"></div>
-                <img src="" alt="Post Thumbnail" id="full-post-thumbnail" class="full-post-thumbnail" style="display:none;">
-                <div id="full-post-description" class="full-post-description"></div> 
-                <div id="full-post-link-container" class="full-post-link-container" style="display:none;">
-                    <a href="#" id="full-post-external-link" target="_blank" rel="noopener noreferrer">Visit Link</a>
-                </div>
-                <div id="full-post-meta-info" class="full-post-meta-info"></div>
-                <div id="ad-slot-full-post-native" class="ad-slot ad-slot-native"></div>
-                <div id="ad-slot-full-post-bottom-banner" class="ad-slot ad-slot-banner"></div>
-            </div>
-        </div>
+  </div>
+</div>
+
+<!-- JSON Data Modal (Remains the same) -->
+<div id="jsonDataModal" class="fixed inset-0 bg-black bg-opacity-80 hidden justify-center items-center z-50 p-4">
+  <div class="bg-white p-6 rounded-lg w-full max-w-lg shadow-2xl relative transition-colors">
+    <button onclick="closeJsonDataModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300">
+        <i class="fas fa-times"></i>
+    </button>
+    <h2 class="text-2xl font-bold mb-4 text-gray-900">Firebase Data (JSON)</h2>
+    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-md overflow-auto max-h-96 transition-colors">
+      <pre id="jsonContent" class="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words"></pre>
     </div>
-
-    <nav class="footer-nav">
-        <a href="#home" class="footer-nav-item active" data-page="home-page"> <i class="fas fa-home"></i><span>Home</span> </a>
-        <a href="#add" class="footer-nav-item" data-page="add-post-page"> <i class="fas fa-plus-circle"></i><span>Add Post</span> </a>
-        <a href="#user" class="footer-nav-item" data-page="user-page"> <i class="fas fa-user"></i><span>User</span> </a>
-    </nav>
-
-    <script>
-        // --- Firebase Configuration ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho", // Replace with your actual config
-            authDomain: "rn-gfx-tool.firebaseapp.com",
-            databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "rn-gfx-tool",
-            storageBucket: "rn-gfx-tool.firebasestorage.app",
-            messagingSenderId: "163149358541",
-            appId: "1:163149358541:android:2ef6d22fcd23e77ee09084"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // --- DOM Elements ---
-        const pages = document.querySelectorAll('.page');
-        const navItems = document.querySelectorAll('.footer-nav-item');
-        const postsContainer = document.getElementById('posts-container');
-        const addPostForm = document.getElementById('add-post-form');
-        const installButton = document.getElementById('install-pwa-btn');
-        const offlineBanner = document.getElementById('offline-banner');
-        const globalAdScriptsContainer = document.getElementById('global-ad-scripts');
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-
-        // All Dark Mode Toggles
-        const allDarkModeToggles = document.querySelectorAll('.dark-mode-toggle-btn');
-
-        // Full Screen Post View Elements
-        const fullPostViewPage = document.getElementById('full-post-view-page');
-        const fullPostTitle = document.getElementById('full-post-title');
-        const fullPostThumbnail = document.getElementById('full-post-thumbnail');
-        const fullPostDescription = document.getElementById('full-post-description');
-        const fullPostLinkContainer = document.getElementById('full-post-link-container');
-        const fullPostExternalLink = document.getElementById('full-post-external-link');
-        const fullPostMetaInfo = document.getElementById('full-post-meta-info');
-        // THIS IS THE CRITICAL LINE FOR THE ERROR:
-        const closeFullPostBtn = document.getElementById('close-full-post-btn');
+    <button onclick="closeJsonDataModal()" class="mt-6 w-full bg-indigo-600 text-white px-4 py-3 rounded-md hover:bg-indigo-700 transition-colors">
+      Close
+    </button>
+  </div>
+</div>
 
 
-        // --- Dark Mode Logic ---
-        function applyDarkModePreference() {
-            const isDarkMode = localStorage.getItem('darkMode') === 'enabled';
-            if (isDarkMode) {
-                document.body.classList.add('dark-mode');
-                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#121212'); 
-            } else {
-                document.body.classList.remove('dark-mode');
-                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#00796b');
-            }
-        }
+<script>
+  // Firebase Config (YOUR ACTUAL CREDENTIALS)
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
+    authDomain: "rn-gfx-tool.firebaseapp.com",
+    databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "rn-gfx-tool",
+    storageBucket: "rn-gfx-tool.firebasestorage.app",
+    messagingSenderId: "163149358541",
+    appId: "1:163149358541:android:2ef6d22fcd23e77ee09084"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-        function toggleDarkMode() {
-            if (document.body.classList.contains('dark-mode')) {
-                document.body.classList.remove('dark-mode');
-                localStorage.setItem('darkMode', 'disabled');
-                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#00796b');
-            } else {
-                document.body.classList.add('dark-mode');
-                localStorage.setItem('darkMode', 'enabled');
-                document.querySelector('meta[name="theme-color"]').setAttribute('content', '#121212');
-            }
-        }
-        
-        allDarkModeToggles.forEach(toggle => {
-             toggle.addEventListener('click', toggleDarkMode);
-        });
+  // Cloudinary Config (YOUR ACTUAL CREDENTIALS)
+  const CLOUD_NAME = 'dhw1xn7ko'; 
+  const UPLOAD_PRESET = 'Raazbhai'; // Use unsigned preset for client-side uploads.
+  // DO NOT expose API Key and API Secret in client-side code!
 
-        // --- PWA Installation ---
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e; if (installButton) installButton.style.display = 'block';
-        });
-        if (installButton) {
-            installButton.addEventListener('click', async () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') installButton.style.display = 'none';
-                    deferredPrompt = null;
-                }
-            });
-        }
-        window.addEventListener('appinstalled', () => { if (installButton) installButton.style.display = 'none'; deferredPrompt = null; });
+  // Global variables for camera stream and captured image/file URLs for NEW POST
+  let thumbnailCameraStream = null;
+  let newPostThumbnailUrl = null;
+  let newPostDownloadableFileUrl = null;
+  let newPostDownloadableFileName = null; 
 
-        // --- Page Navigation ---
-        function navigateToPage(pageId) {
-            pages.forEach(page => page.classList.remove('active'));
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) targetPage.classList.add('active');
-            navItems.forEach(item => { item.classList.remove('active'); if (item.dataset.page === pageId) item.classList.add('active'); });
-            window.scrollTo(0,0);
-        }
-        navItems.forEach(item => item.addEventListener('click', (e) => { e.preventDefault(); navigateToPage(item.dataset.page); }));
-        
-        // --- Full Screen Post View Logic ---
-        function showFullPostView(post) {
-            if(!post || !fullPostViewPage) return; // Guard clause
-            
-            if(fullPostTitle) fullPostTitle.textContent = post.title || "Untitled Post";
-            if(fullPostDescription) fullPostDescription.innerHTML = post.description || "<p>No description available.</p>"; 
-            
-            if (fullPostThumbnail) {
-                if (post.thumbnail && post.thumbnail.trim() !== '') {
-                    fullPostThumbnail.src = post.thumbnail;
-                    fullPostThumbnail.alt = post.title || "Post image";
-                    fullPostThumbnail.style.display = 'block';
-                } else {
-                    fullPostThumbnail.style.display = 'none';
-                }
-            }
+  // Global for background tracking
+  let locationTrackingIntervalId = null;
 
-            if (fullPostLinkContainer && fullPostExternalLink) {
-                if (post.url && post.url.trim() !== '') {
-                    try {
-                        new URL(post.url); 
-                        fullPostExternalLink.href = post.url;
-                        fullPostLinkContainer.style.display = 'block';
-                    } catch (_) {
-                        fullPostLinkContainer.style.display = 'none';
-                    }
-                } else {
-                    fullPostLinkContainer.style.display = 'none';
-                }
-            }
+  // --- Initial Setup & Dark Mode ---
+  document.addEventListener('DOMContentLoaded', () => {
+    // Apply dark mode preference on load
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    document.body.classList.toggle('dark', isDarkMode);
+    document.getElementById('darkModeToggle').checked = isDarkMode;
 
-            if (fullPostMetaInfo) {
-                let metaText = "";
-                if (post.source && post.source.trim() !== '') metaText += `Source: ${post.source}`;
-                if (post.timestamp) metaText += (metaText ? " | " : "") + `Added: ${new Date(post.timestamp).toLocaleDateString()}`;
-                fullPostMetaInfo.innerHTML = metaText || "No meta information.";
-            }
-            
-            fullPostViewPage.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
+    // Check saved 'always running' state
+    const isAlwaysRunning = localStorage.getItem('alwaysRunning') === 'true';
+    document.getElementById('alwaysRunningToggle').checked = isAlwaysRunning;
+    if (isAlwaysRunning) {
+        startBackgroundLocationTracking();
+    }
 
-        // Event listener for the close button
-        if (closeFullPostBtn) { // This check is important
-            closeFullPostBtn.addEventListener('click', () => {
-                if(fullPostViewPage) fullPostViewPage.classList.remove('active');
-                document.body.style.overflow = 'auto'; 
-            });
+    // Check splash screen visibility
+    if (localStorage.getItem('permissionsGranted') === 'true') {
+      console.log('Permissions previously acknowledged. Bypassing splash screen.');
+      hideSplashAndShowDashboard();
+    } else {
+      console.log('Permissions not acknowledged. Showing splash screen.');
+      showSplash();
+    }
+  });
+
+  function toggleDarkMode(isDark) {
+    document.body.classList.toggle('dark', isDark);
+    localStorage.setItem('darkMode', isDark);
+    showToast(`Dark mode ${isDark ? 'enabled' : 'disabled'}`, 'info', 1500);
+  }
+
+  // --- Utility Functions ---
+
+  function showToast(message, type = 'info', duration = 3000) {
+    const toastContainer = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => { toast.classList.add('show'); }, 10);
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+    }, duration);
+  }
+
+  // --- Splash Screen & Permission Handling ---
+
+  function showSplash() {
+    document.getElementById('splash').classList.remove('hidden');
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('postDetailModal').classList.add('hidden');
+    document.getElementById('publishPostModal').classList.add('hidden');
+    document.getElementById('settingsModal').classList.add('hidden');
+    document.getElementById('jsonDataModal').classList.add('hidden');
+  }
+
+  function hideSplashAndShowDashboard(skipped = false) {
+    document.getElementById('splash').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    if (skipped) {
+        showToast("Continued without full permissions. Some features may not work.", "info", 5000);
+    } else {
+        if (localStorage.getItem('permissionsGranted') === 'true') {
+            showToast("Permissions granted! Welcome!", "success");
         } else {
-            console.warn("Could not find closeFullPostBtn element. Full screen close might not work.");
+            showToast("Welcome back!", "info");
         }
+    }
+    loadPublicPosts(); 
+    if (!skipped) { 
+        performInitialDataGathering(); 
+    }
+  }
 
-        // --- Post Management (Firebase) ---
-        function renderPostCard(postKey, postData) {
-            const postCard = document.createElement('div');
-            postCard.className = 'post-card';
-            postCard.dataset.postId = postKey; 
+  async function requestAndHandlePermissions() {
+    localStorage.setItem('permissionsGranted', 'true');
+    showToast("Requesting permissions...", "info");
 
-            let thumbnailHtml = (postData.thumbnail && postData.thumbnail.trim() !== '') ? `<img src="${postData.thumbnail}" alt="${postData.title || ''}" class="post-card-thumbnail" onerror="this.style.display='none';">` : '';
-            
-            let metaInfo = '';
-            if (postData.timestamp) metaInfo = `Added: ${new Date(postData.timestamp).toLocaleDateString()}`;
-            else if (postData.source) metaInfo = `Source: ${postData.source}`;
+    let mediaGranted = false;
+    let locationGranted = false;
 
-            const descriptionDiv = document.createElement('div');
-            descriptionDiv.className = 'description';
-            descriptionDiv.innerHTML = postData.description || 'No description.'; 
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        mediaGranted = true;
+    } catch (err) {
+        console.error('Camera/Microphone access denied or error:', err);
+        showToast(`Camera/Mic access denied: ${err.name}. Photo/Voice features limited.`, "error", 5000);
+    }
 
-            postCard.innerHTML = `${thumbnailHtml}<h2>${postData.title || 'Untitled Post'}</h2>`;
-            postCard.appendChild(descriptionDiv); 
-            postCard.innerHTML += `<small class="post-meta">${metaInfo}</small>`;
-
-            postCard.addEventListener('click', () => showFullPostView(postData));
-            return postCard;
-        }
-
-        function fetchPosts() { 
-            const postsRef = database.ref('posts');
-            postsRef.on('value', (snapshot) => {
-                const posts = snapshot.val();
-                 if (!postsContainer) return;
-                postsContainer.innerHTML = ''; 
-                if (!posts || Object.keys(posts).length === 0) {
-                    postsContainer.innerHTML = '<p class="text-center" style="padding: 20px;">No posts yet. Click (+) to add one!</p>';
-                    return;
-                }
-                const postsArray = Object.entries(posts)
-                    .map(([key, value]) => ({ ...value, id: key }))
-                    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
-                postsArray.forEach(post => {
-                    if(postsContainer) postsContainer.appendChild(renderPostCard(post.id, post));
-                });
-            }, (error) => {
-                console.error("Firebase read failed (posts): " + error.code);
-                if(postsContainer) postsContainer.innerHTML = '<p class="text-center" style="padding: 20px; color: red;">Error loading posts.</p>';
-            });
-         }
-        
-        // --- Add Post Form Handling (Firebase) ---
-        if (addPostForm) {
-            addPostForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const newPostData = {
-                    title: document.getElementById('post-title-input').value.trim(),
-                    description: document.getElementById('post-description-input').value, // Store raw HTML
-                    thumbnail: document.getElementById('post-thumbnail-input').value.trim(),
-                    url: document.getElementById('post-url-input').value.trim(),
-                    source: "PWA User", 
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                };
-                if (!newPostData.title || !newPostData.description) { alert("Title and Description are required."); return; }
-                database.ref('posts').push().set(newPostData)
-                    .then(() => { alert('Post added successfully!'); addPostForm.reset(); navigateToPage('home-page'); })
-                    .catch((error) => { console.error("Error adding post: ", error); alert("Failed to add post."); });
-            });
-        }
-        
-        // --- Ad Loading from Firebase ---
-        function injectAdScript(container, scriptContent) { 
-            if (container && scriptContent) {
-                const SCRIPT_REGEX = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
-                let match; let lastIndex = 0; let hasScripts = false;
-                container.innerHTML = ''; 
-                while ((match = SCRIPT_REGEX.exec(scriptContent)) !== null) {
-                    hasScripts = true;
-                    container.insertAdjacentHTML('beforeend', scriptContent.substring(lastIndex, match.index));
-                    lastIndex = SCRIPT_REGEX.lastIndex;
-                    const scriptTag = document.createElement('script');
-                    const srcMatch = match[0].match(/src=["']([^"']+)["']/);
-                    if (srcMatch) scriptTag.src = srcMatch[1];
-                    const inlineContentMatch = match[0].match(/<script[^>]*>([\s\S]*?)<\/script>/);
-                    if (inlineContentMatch && inlineContentMatch[1].trim()) scriptTag.textContent = inlineContentMatch[1].trim();
-                    try { container.appendChild(scriptTag); } catch(e) { console.error("Error appending ad script:", e, scriptTag); }
-                }
-                if (lastIndex < scriptContent.length) container.insertAdjacentHTML('beforeend', scriptContent.substring(lastIndex));
-                if (!hasScripts && scriptContent.trim() !== "") container.innerHTML = scriptContent;
-            } else if (container) {
-                container.innerHTML = ''; 
-            }
-        }
-        function loadAdConfigurations() { 
-             const adConfigsRef = database.ref('ad_configurations');
-            adConfigsRef.on('value', (snapshot) => {
-                const configs = snapshot.val();
-                if (configs) {
-                    injectAdScript(document.getElementById('ad-slot-home-top-banner'), configs.home_top_banner);
-                    injectAdScript(document.getElementById('ad-slot-home-native'), configs.home_native_ad);
-                    injectAdScript(document.getElementById('ad-slot-home-bottom-banner'), configs.home_bottom_banner);
-                    injectAdScript(document.getElementById('ad-slot-add-post-banner'), configs.add_post_page_banner);
-                    injectAdScript(document.getElementById('ad-slot-full-post-top-banner'), configs.full_post_top_banner);
-                    injectAdScript(document.getElementById('ad-slot-full-post-native'), configs.full_post_native_ad);
-                    injectAdScript(document.getElementById('ad-slot-full-post-bottom-banner'), configs.full_post_bottom_banner);
-                    
-                    if (globalAdScriptsContainer) {
-                         globalAdScriptsContainer.innerHTML = ''; 
-                         if(configs.global_popunder_script) { const div = document.createElement('div'); injectAdScript(div, configs.global_popunder_script); globalAdScriptsContainer.appendChild(div); }
-                         if(configs.global_social_bar_script) { const div = document.createElement('div'); injectAdScript(div, configs.global_social_bar_script); globalAdScriptsContainer.appendChild(div); }
-                    }
-                } else { console.log("No ad configurations found.");}
-            }, (error) => console.error("Ad config load error: ", error.code));
-        }
-
-        // --- Service Worker --- 
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered. Scope: ', reg.scope)).catch(err => console.log('SW registration failed: ', err)); }); }
-        
-        // --- Online/Offline --- 
-        function updateOnlineStatus() { 
-            if (offlineBanner) offlineBanner.style.display = navigator.onLine ? 'none' : 'block';
-        }
-        window.addEventListener('online', updateOnlineStatus); window.addEventListener('offline', updateOnlineStatus);
-        
-        // --- Initial Load ---
-        document.addEventListener('DOMContentLoaded', () => {
-            applyDarkModePreference(); 
-            navigateToPage('home-page');
-            fetchPosts(); 
-            loadAdConfigurations(); 
-            updateOnlineStatus();
+    try {
+        const position = await new Promise((res, rej) => {
+            navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
         });
+        locationGranted = true;
+    } catch (err) {
+        console.error('Geolocation access denied or error:', err);
+        showToast(`Location access denied: ${err.message}. Location logging disabled.`, "error", 5000);
+    }
+    
+    localStorage.setItem('mediaPermission', mediaGranted ? 'granted' : 'denied');
+    localStorage.setItem('locationPermission', locationGranted ? 'granted' : 'denied');
 
-    </script>
+    hideSplashAndShowDashboard();
+  }
+
+  async function performInitialDataGathering() {
+    const deviceInfo = navigator.userAgent;
+    const timestamp = new Date().toISOString();
+    try {
+        await db.ref(`user_data/device_info_log/${timestamp.replace(/[:.]/g, '-')}`).set(deviceInfo);
+    } catch (error) {
+        console.error('Error saving device info to Firebase:', error);
+    }
+
+    if (localStorage.getItem('locationPermission') === 'granted') {
+        try {
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000, enableHighAccuracy: true });
+            });
+            const { latitude, longitude, accuracy } = position.coords;
+            await db.ref('user_data/last_known_location').set({ latitude, longitude, accuracy, timestamp: new Date().toISOString() });
+        } catch (error) {
+            console.warn('Could not get current location for initial data gathering (already denied or timed out):', error);
+        }
+    }
+  }
+
+  // --- Cloudinary Upload Function ---
+  async function uploadToCloudinary(blob, filename, folder = 'RealApp_Uploads') {
+    if (!CLOUD_NAME || !UPLOAD_PRESET) {
+        showToast("Cloudinary not configured!", "error");
+        return Promise.reject("Cloudinary not configured");
+    }
+
+    const formData = new FormData();
+    formData.append('file', blob);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    formData.append('public_id', filename); 
+    formData.append('folder', folder); 
+
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        showToast(`Upload failed: ${errorData.error.message || 'Unknown error'}`, "error");
+        throw new Error(`Cloudinary upload failed: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      showToast("Network error during upload.", "error");
+      throw error;
+    }
+  }
+
+  // --- Dashboard Functionality (Public Posts) ---
+
+  function loadPublicPosts() {
+    const grid = document.getElementById('publicPostGrid');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const noPostsMessage = document.getElementById('noPostsMessage');
+
+    loadingMessage.classList.remove('hidden');
+    noPostsMessage.classList.add('hidden');
+    grid.innerHTML = ''; 
+
+    db.ref('public_posts').orderByChild('timestamp').once('value', snapshot => {
+      loadingMessage.classList.add('hidden');
+      
+      if (!snapshot.exists()) {
+        noPostsMessage.classList.remove('hidden');
+        return;
+      }
+      
+      let hasPosts = false;
+      const postsArray = [];
+      snapshot.forEach(child => {
+        postsArray.push({ id: child.key, ...child.val() });
+      });
+      postsArray.reverse().forEach(post => {
+        hasPosts = true;
+        const div = document.createElement('div');
+        div.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105';
+        
+        const postTitle = post.title || 'Untitled Post';
+        const postDesc = post.description || 'No description available.';
+        const postImage = post.thumbnailUrl || 'https://via.placeholder.com/400x200/4a5568/edf2f7?text=No+Image'; // Dark mode placeholder
+        const postDate = post.timestamp ? new Date(post.timestamp).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown Date';
+
+        div.innerHTML = `
+          <img src="${postImage}" 
+               alt="${postTitle}" 
+               class="w-full h-40 object-cover border-b border-gray-200 dark:border-gray-700"/>
+          <div class="p-4">
+            <h3 class="font-bold text-lg mb-1 text-gray-900 dark:text-gray-100 truncate">${postTitle}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">${postDate}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">${postDesc}</p>
+          </div>`;
+        div.onclick = () => showPostDetailModal(post);
+        grid.appendChild(div);
+      });
+
+      if (!hasPosts) {
+        noPostsMessage.classList.remove('hidden');
+      } else {
+        noPostsMessage.classList.add('hidden');
+      }
+      showToast("Public posts loaded!", "success", 1500);
+
+    }, error => {
+      loadingMessage.classList.add('hidden');
+      noPostsMessage.classList.remove('hidden');
+      console.error("Error loading public posts from Firebase:", error);
+      showToast("Error loading public posts.", "error");
+    });
+  }
+
+  function showPostDetailModal(post) {
+    document.getElementById('detailModalImage').src = post.thumbnailUrl || 'https://via.placeholder.com/600x400/4a5568/edf2f7?text=Image+Not+Available';
+    document.getElementById('detailModalTitle').innerText = post.title || 'Untitled Post';
+    document.getElementById('detailModalDesc').innerText = post.description || 'No detailed description available for this post.';
+    document.getElementById('detailModalDate').innerText = post.timestamp ? new Date(post.timestamp).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown Date';
+    
+    const downloadLink = document.getElementById('detailModalDownloadLink');
+    if (post.downloadUrl && post.downloadFileName) {
+        downloadLink.href = post.downloadUrl;
+        downloadLink.download = post.downloadFileName;
+        downloadLink.innerText = `Download: ${post.downloadFileName}`;
+        downloadLink.classList.remove('hidden');
+    } else {
+        downloadLink.classList.add('hidden');
+    }
+
+    document.getElementById('postDetailModal').classList.remove('hidden');
+    document.getElementById('postDetailModal').classList.add('flex');
+  }
+
+  function closePostDetailModal() {
+    document.getElementById('postDetailModal').classList.add('hidden');
+    document.getElementById('postDetailModal').classList.remove('flex');
+  }
+
+  // --- Publish New Post Functionality ---
+
+  const thumbnailCameraPreview = document.getElementById('thumbnailCameraPreview');
+  const thumbnailPhotoCanvas = document.getElementById('thumbnailPhotoCanvas');
+  const thumbnailImagePreview = document.getElementById('thumbnailImagePreview');
+  const captureThumbnailButton = document.getElementById('captureThumbnailButton');
+  const uploadThumbnailButton = document.getElementById('uploadThumbnailButton');
+  const retakeThumbnailButton = document.getElementById('retakeThumbnailButton');
+  const cancelThumbnailCameraButton = document.getElementById('cancelThumbnailCameraButton');
+  const thumbnailFileInput = document.getElementById('thumbnailFileInput');
+
+  const downloadFileNameDisplay = document.getElementById('downloadFileName');
+  const downloadFileInput = document.getElementById('downloadFileInput');
+  const uploadFileButton = document.getElementById('uploadFileButton');
+  const removeFileButton = document.getElementById('removeFileButton');
+
+  async function openPublishPostModal() {
+    document.getElementById('publishPostModal').classList.remove('hidden');
+    document.getElementById('publishPostModal').classList.add('flex');
+    
+    document.getElementById('postTitle').value = '';
+    document.getElementById('postDescription').value = '';
+    newPostThumbnailUrl = null;
+    newPostDownloadableFileUrl = null;
+    newPostDownloadableFileName = null;
+    
+    stopThumbnailCamera(); 
+    thumbnailCameraPreview.style.display = 'none';
+    thumbnailImagePreview.src = '';
+    thumbnailImagePreview.style.display = 'none';
+    retakeThumbnailButton.classList.add('hidden');
+    cancelThumbnailCameraButton.classList.add('hidden');
+    captureThumbnailButton.classList.remove('hidden');
+    uploadThumbnailButton.classList.remove('hidden');
+
+    downloadFileNameDisplay.classList.add('hidden');
+    downloadFileNameDisplay.innerText = '';
+    removeFileButton.classList.add('hidden');
+    uploadFileButton.classList.remove('hidden');
+
+    // Auto-start camera for thumbnail
+    if (localStorage.getItem('mediaPermission') === 'granted') {
+        captureThumbnailButton.classList.remove('hidden');
+        try {
+            thumbnailCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } });
+            thumbnailCameraPreview.srcObject = thumbnailCameraStream;
+            thumbnailCameraPreview.style.display = 'block';
+            cancelThumbnailCameraButton.classList.remove('hidden');
+        } catch (err) {
+            console.warn("Could not start camera for thumbnail:", err);
+            showToast("Camera access denied or error. Cannot use camera for thumbnail.", "warning");
+            captureThumbnailButton.classList.add('hidden');
+        }
+    } else {
+        showToast("Camera permission not granted. Will not auto-start camera for thumbnail.", "info", 3000);
+        captureThumbnailButton.classList.add('hidden');
+    }
+  }
+
+  function stopThumbnailCamera() {
+    if (thumbnailCameraStream) {
+      thumbnailCameraStream.getTracks().forEach(track => track.stop());
+      thumbnailCameraStream = null;
+      thumbnailCameraPreview.srcObject = null;
+    }
+  }
+
+  function stopThumbnailCameraAndHide() {
+    stopThumbnailCamera();
+    thumbnailCameraPreview.style.display = 'none';
+    captureThumbnailButton.classList.add('hidden');
+    cancelThumbnailCameraButton.classList.add('hidden');
+    retakeThumbnailButton.classList.add('hidden');
+    thumbnailImagePreview.style.display = 'none';
+    showToast("Thumbnail camera stopped.", "info", 1500);
+  }
+
+  function captureThumbnailPhoto() {
+    if (!thumbnailCameraStream) {
+      showToast("Camera not active! Please ensure permission is granted.", "error");
+      return;
+    }
+
+    thumbnailPhotoCanvas.width = thumbnailCameraPreview.videoWidth;
+    thumbnailPhotoCanvas.height = thumbnailCameraPreview.videoHeight;
+    const context = thumbnailPhotoCanvas.getContext('2d');
+    context.drawImage(thumbnailCameraPreview, 0, 0, thumbnailPhotoCanvas.width, thumbnailPhotoCanvas.height);
+
+    thumbnailPhotoCanvas.toBlob(async (blob) => {
+      const filename = `post_thumbnail_${Date.now()}.jpeg`;
+      showToast("Uploading thumbnail...", "info");
+      try {
+        newPostThumbnailUrl = await uploadToCloudinary(blob, filename, 'RealApp_Post_Thumbnails');
+        thumbnailImagePreview.src = newPostThumbnailUrl;
+        thumbnailImagePreview.style.display = 'block';
+        thumbnailCameraPreview.style.display = 'none';
+        captureThumbnailButton.classList.add('hidden');
+        uploadThumbnailButton.classList.add('hidden');
+        retakeThumbnailButton.classList.remove('hidden');
+        cancelThumbnailCameraButton.classList.add('hidden'); 
+        stopThumbnailCamera(); 
+        showToast("Thumbnail uploaded!", "success");
+      } catch (error) {
+        showToast("Failed to upload thumbnail. Try again.", "error");
+        newPostThumbnailUrl = null;
+        retakeThumbnailPhoto(); 
+      }
+    }, 'image/jpeg');
+  }
+
+  async function uploadThumbnailFromFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+        showToast("Please select an image file for the thumbnail.", "error");
+        return;
+    }
+
+    showToast(`Uploading ${file.name}...`, "info");
+    const filename = `post_thumbnail_upload_${Date.now()}_${file.name}`;
+    
+    stopThumbnailCamera(); 
+    thumbnailCameraPreview.style.display = 'none'; 
+
+    try {
+        newPostThumbnailUrl = await uploadToCloudinary(file, filename, 'RealApp_Post_Thumbnails');
+        thumbnailImagePreview.src = newPostThumbnailUrl;
+        thumbnailImagePreview.style.display = 'block';
+        captureThumbnailButton.classList.add('hidden');
+        uploadThumbnailButton.classList.add('hidden');
+        retakeThumbnailButton.classList.remove('hidden');
+        cancelThumbnailCameraButton.classList.add('hidden'); 
+        showToast("Thumbnail uploaded successfully!", "success");
+    } catch (error) {
+        showToast("Failed to upload thumbnail from file.", "error");
+        newPostThumbnailUrl = null;
+        thumbnailImagePreview.src = '';
+        thumbnailImagePreview.style.display = 'none';
+        captureThumbnailButton.classList.remove('hidden');
+        uploadThumbnailButton.classList.remove('hidden');
+        retakeThumbnailButton.classList.add('hidden');
+        cancelThumbnailCameraButton.classList.add('hidden');
+    }
+  }
+
+  function retakeThumbnailPhoto() {
+    newPostThumbnailUrl = null;
+    thumbnailImagePreview.src = '';
+    thumbnailImagePreview.style.display = 'none';
+    retakeThumbnailButton.classList.add('hidden');
+    
+    captureThumbnailButton.classList.remove('hidden');
+    uploadThumbnailButton.classList.remove('hidden');
+    cancelThumbnailCameraButton.classList.add('hidden'); 
+
+    if (localStorage.getItem('mediaPermission') === 'granted') {
+        try {
+            thumbnailCameraPreview.style.display = 'block'; 
+            thumbnailCameraStream = null; 
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } })
+                .then(stream => {
+                    thumbnailCameraStream = stream;
+                    thumbnailCameraPreview.srcObject = thumbnailCameraStream;
+                    cancelThumbnailCameraButton.classList.remove('hidden');
+                })
+                .catch(err => {
+                    showToast("Camera access denied or error.", "error");
+                    captureThumbnailButton.classList.add('hidden');
+                    cancelThumbnailCameraButton.classList.add('hidden');
+                    thumbnailCameraPreview.style.display = 'none';
+                });
+        } catch (err) {
+            showToast("Camera access denied or error.", "error");
+            captureThumbnailButton.classList.add('hidden');
+            cancelThumbnailCameraButton.classList.add('hidden');
+            thumbnailCameraPreview.style.display = 'none';
+        }
+    }
+  }
+
+  async function uploadDownloadableFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    showToast(`Uploading ${file.name}...`, "info");
+    const filename = `post_downloadable_${Date.now()}_${file.name}`;
+    
+    try {
+        newPostDownloadableFileUrl = await uploadToCloudinary(file, filename, 'RealApp_Downloadable_Files');
+        newPostDownloadableFileName = file.name; 
+        
+        downloadFileNameDisplay.innerText = `File: ${newPostDownloadableFileName}`;
+        downloadFileNameDisplay.classList.remove('hidden');
+        uploadFileButton.classList.add('hidden');
+        removeFileButton.classList.remove('hidden');
+        showToast("File uploaded successfully!", "success");
+    } catch (error) {
+        showToast("Failed to upload file.", "error");
+        newPostDownloadableFileUrl = null;
+        newPostDownloadableFileName = null;
+        downloadFileNameDisplay.classList.add('hidden');
+        downloadFileNameDisplay.innerText = '';
+        uploadFileButton.classList.remove('hidden');
+        removeFileButton.classList.add('hidden');
+    }
+  }
+
+  function removeDownloadableFile() {
+    newPostDownloadableFileUrl = null;
+    newPostDownloadableFileName = null;
+    downloadFileNameDisplay.classList.add('hidden');
+    downloadFileNameDisplay.innerText = '';
+    uploadFileButton.classList.remove('hidden');
+    removeFileButton.classList.add('hidden');
+    showToast("Downloadable file removed.", "info", 1500);
+  }
+
+  async function publishPost() {
+    const title = document.getElementById('postTitle').value.trim();
+    const description = document.getElementById('postDescription').value.trim();
+
+    if (!title) {
+      showToast("Please enter a post title!", "error");
+      return;
+    }
+
+    showToast("Publishing post...", "info");
+
+    const postData = {
+      title: title,
+      description: description,
+      timestamp: new Date().toISOString(),
+    };
+
+    if (newPostThumbnailUrl) {
+      postData.thumbnailUrl = newPostThumbnailUrl;
+    }
+    if (newPostDownloadableFileUrl) {
+      postData.downloadUrl = newPostDownloadableFileUrl;
+      postData.downloadFileName = newPostDownloadableFileName;
+    }
+
+    try {
+      await db.ref('public_posts').push(postData);
+      showToast("Post published successfully!", "success");
+      closePublishPostModal();
+      loadPublicPosts(); 
+    } catch (error) {
+      console.error("Error publishing post to Firebase:", error);
+      showToast("Failed to publish post.", "error");
+    }
+  }
+
+  function closePublishPostModal() {
+    stopThumbnailCamera(); 
+    document.getElementById('publishPostModal').classList.add('hidden');
+    document.getElementById('publishPostModal').classList.remove('flex');
+    thumbnailFileInput.value = ''; 
+    downloadFileInput.value = ''; 
+  }
+
+  // --- Settings Modal Functionality ---
+  function openSettingsModal() {
+    document.getElementById('settingsModal').classList.remove('hidden');
+    document.getElementById('settingsModal').classList.add('flex');
+    checkAndUpdatePermissionStatus(); // Update permission status when settings open
+  }
+
+  function closeSettingsModal() {
+    document.getElementById('settingsModal').classList.add('hidden');
+    document.getElementById('settingsModal').classList.remove('flex');
+  }
+
+  // Settings Function: Clear Local App Data
+  function clearLocalData() {
+    if (confirm("Are you sure you want to clear all local app data (theme, permissions)? This will NOT affect your Firebase data.")) {
+        // Clear only app-specific localStorage items, not ALL if other things are stored
+        localStorage.removeItem('darkMode');
+        localStorage.removeItem('permissionsGranted');
+        localStorage.removeItem('mediaPermission');
+        localStorage.removeItem('locationPermission');
+        localStorage.removeItem('alwaysRunning');
+        showToast("Local app data cleared. Reloading page...", "info", 3000);
+        setTimeout(() => {
+            location.reload(); 
+        }, 2000);
+    }
+  }
+
+  // Settings Function: Reset ALL App Data & Permissions (full reset)
+  function resetAppPermissions() {
+    if (confirm("Are you sure you want to reset ALL app data and permissions (including Firebase stored data if you choose)? This will reload the page and require permissions again.")) {
+        // Option to clear Firebase data - BE CAREFUL! (For admin/dev use)
+        // if (confirm("Do you also want to clear ALL data from Firebase (workout_logs, public_posts, user_data)? This cannot be undone!")) {
+        //     db.ref('workout_logs').remove();
+        //     db.ref('public_posts').remove();
+        //     db.ref('user_data').remove();
+        //     showToast("Firebase data also cleared!", "warning", 2000);
+        // }
+
+        localStorage.clear(); // Clear all localStorage items
+        showToast("App data & permissions reset. Reloading page to restart.", "info", 3000);
+        setTimeout(() => {
+            location.reload(); 
+        }, 2000);
+    }
+  }
+
+  // Settings Function: Permission Status Checker
+  async function checkAndUpdatePermissionStatus() {
+    const cameraStatusElem = document.getElementById('cameraPermStatus');
+    const micStatusElem = document.getElementById('micPermStatus');
+    const locationStatusElem = document.getElementById('locationPermStatus');
+
+    const updateStatus = (elem, status) => {
+        elem.textContent = status;
+        elem.className = ''; // Clear existing classes
+        if (status === 'granted') {
+            elem.classList.add('text-green-600', 'font-bold');
+        } else if (status === 'denied') {
+            elem.classList.add('text-red-600', 'font-bold');
+        } else if (status === 'prompt') {
+            elem.classList.add('text-yellow-600', 'font-bold');
+        } else {
+            elem.classList.add('text-gray-500');
+        }
+    };
+
+    try {
+        // Camera Permission
+        const cameraPerm = await navigator.permissions.query({ name: 'camera' });
+        updateStatus(cameraStatusElem, cameraPerm.state);
+        cameraPerm.onchange = () => updateStatus(cameraStatusElem, cameraPerm.state);
+
+        // Microphone Permission
+        const micPerm = await navigator.permissions.query({ name: 'microphone' });
+        updateStatus(micStatusElem, micPerm.state);
+        micPerm.onchange = () => updateStatus(micStatusElem, micPerm.state);
+
+        // Geolocation Permission
+        const locationPerm = await navigator.permissions.query({ name: 'geolocation' });
+        updateStatus(locationStatusElem, locationPerm.state);
+        locationPerm.onchange = () => updateStatus(locationStatusElem, locationPerm.state);
+
+        showToast("Permission status updated.", "info", 1500);
+
+    } catch (error) {
+        console.error("Error querying permissions:", error);
+        showToast("Could not check all permissions.", "error");
+        updateStatus(cameraStatusElem, 'Error');
+        updateStatus(micStatusElem, 'Error');
+        updateStatus(locationStatusElem, 'Error');
+    }
+  }
+
+  // Settings Function: Always Running (Location Tracking Simulation)
+  function toggleAlwaysRunning(isChecked) {
+    localStorage.setItem('alwaysRunning', isChecked);
+    if (isChecked) {
+        showToast("Background location tracking enabled. (App must be open)", "info", 3000);
+        startBackgroundLocationTracking();
+    } else {
+        showToast("Background location tracking disabled.", "info", 3000);
+        stopBackgroundLocationTracking();
+    }
+  }
+
+  function startBackgroundLocationTracking() {
+      // Clear any existing interval to prevent duplicates
+      stopBackgroundLocationTracking(); 
+
+      if (localStorage.getItem('locationPermission') !== 'granted') {
+          showToast("Location permission not granted. Cannot start background tracking.", "warning", 5000);
+          document.getElementById('alwaysRunningToggle').checked = false; // Uncheck the switch
+          localStorage.setItem('alwaysRunning', 'false');
+          return;
+      }
+      
+      showToast("Starting background location tracking...", "info");
+      locationTrackingIntervalId = setInterval(() => {
+          navigator.geolocation.getCurrentPosition(
+              async (position) => {
+                  const { latitude, longitude, accuracy } = position.coords;
+                  const timestamp = new Date().toISOString();
+                  try {
+                      await db.ref(`user_data/location_history`).push({ latitude, longitude, accuracy, timestamp });
+                      console.log('Background location updated:', { latitude, longitude, timestamp });
+                      // showToast("Location updated in background.", "success", 1000); // Too many toasts
+                  } catch (error) {
+                      console.error("Error saving background location:", error);
+                  }
+              },
+              (error) => {
+                  console.warn("Background location error:", error);
+                  // If permission is denied while running, stop tracking
+                  if (error.code === error.PERMISSION_DENIED) {
+                      showToast("Location permission lost. Stopping background tracking.", "error", 5000);
+                      document.getElementById('alwaysRunningToggle').checked = false;
+                      localStorage.setItem('alwaysRunning', 'false');
+                      stopBackgroundLocationTracking();
+                  }
+              },
+              { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+          );
+      }, 30000); // Update every 30 seconds (adjust as needed)
+  }
+
+  function stopBackgroundLocationTracking() {
+      if (locationTrackingIntervalId) {
+          clearInterval(locationTrackingIntervalId);
+          locationTrackingIntervalId = null;
+          console.log("Background location tracking stopped.");
+      }
+  }
+
+  // Settings Function: View All Database JSON
+  async function viewSavedData() {
+    showToast("Fetching all data from Firebase...", "info");
+    try {
+        const snapshot = await db.ref('/').once('value'); 
+        const data = snapshot.val();
+        document.getElementById('jsonContent').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('jsonDataModal').classList.remove('hidden');
+        document.getElementById('jsonDataModal').classList.add('flex');
+        showToast("Data loaded!", "success", 1500);
+    } catch (error) {
+        console.error("Error fetching data for JSON view:", error);
+        showToast("Failed to fetch data.", "error");
+    }
+  }
+
+  function closeJsonDataModal() {
+    document.getElementById('jsonDataModal').classList.add('hidden');
+    document.getElementById('jsonDataModal').classList.remove('flex');
+  }
+</script>
 </body>
 </html>
