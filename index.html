@@ -1,1250 +1,1559 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>RealApp: Mobile Dashboard</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontSize: {
-            'clamp-sm': 'clamp(0.875rem, 2vw, 1rem)',
-            'clamp-base': 'clamp(1rem, 2.5vw, 1.125rem)',
-            'clamp-lg': 'clamp(1.25rem, 3vw, 1.5rem)',
-            'clamp-xl': 'clamp(1.5rem, 4vw, 2rem)',
-            'clamp-2xl': 'clamp(2rem, 5vw, 2.5rem)',
-          },
-        },
-      },
-    };
-  </script>
-  <style>
-    /* Custom Animations */
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .splash-fade-in { animation: fadeIn 0.5s ease-out; }
-    .splash-slide-in-up { animation: slideInUp 0.6s ease-out; }
-    .splash-button-bounce { animation: bounce 1s infinite; }
-    .spinner { animation: spin 1s linear infinite; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Media App</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <!-- Cloudinary Widget CDN -->
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Heroicons (Corrected CDN) -->
+    <link href="https://unpkg.com/@heroicons/vue@2.1.5/24/outline/style.css" rel="stylesheet">
+    <link href="https://unpkg.com/@heroicons/vue@2.1.5/24/solid/style.css" rel="stylesheet">
 
-    /* Global Styles */
-    body {
-      overflow-x: hidden;
-      -webkit-tap-highlight-color: transparent;
-      font-size: 16px;
-      touch-action: manipulation;
-    }
+    <style>
+        /* iOS-like Base Styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-top: env(safe-area-inset-top, 0);
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+        body.dark-mode {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .container {
+            flex: 1;
+            padding-bottom: 80px;
+        }
 
-    /* Dark Mode Transitions */
-    .transition-colors {
-      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-    }
-    .dark .bg-gray-100 { background-color: #1a202c; }
-    .dark .text-gray-800 { color: #edf2f7; }
-    .dark .bg-white { background-color: #2d3748; }
-    .dark .text-gray-900 { color: #e2e8f0; }
-    .dark .text-gray-700 { color: #a0aec0; }
-    .dark .text-gray-600 { color: #a0aec0; }
-    .dark .text-gray-500 { color: #cbd5e0; }
-    .dark .border-gray-200 { border-color: #4a5568; }
-    .dark .bg-gray-50 { background-color: #4a5568; }
-    .dark .bg-indigo-700 { background-color: #312e81; }
-    .dark .bg-indigo-600 { background-color: #4338ca; }
-    .dark .bg-green-500 { background-color: #10b981; }
-    .dark .bg-blue-600 { background-color: #2563eb; }
+        /* Splash Screen */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6, #1e3a8a);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeOut 0.5s ease-in-out 2.5s forwards;
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+        .splash-logo {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 20px;
+            animation: pulse 1.5s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: #3b82f6;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
 
-    /* Toast Notifications */
-    #toastContainer {
-      position: fixed;
-      bottom: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1000;
-      display: flex;
-      flex-direction: column-reverse;
-      align-items: center;
-      gap: 0.5rem;
-      pointer-events: none;
-      width: 90%;
-      max-width: 400px;
-    }
-    .toast {
-      background-color: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      opacity: 0;
-      transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-      pointer-events: auto;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      text-align: center;
-      transform: translateY(20px);
-      font-size: clamp(0.875rem, 2vw, 1rem);
-    }
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .toast-success { background-color: #10b981; }
-    .toast-error { background-color: #ef4444; }
-    .toast-info { background-color: #3b82f6; }
-    .toast-warning { background-color: #f59e0b; }
+        /* iOS Components */
+        .ios-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            padding-top: calc(1rem + env(safe-area-inset-top));
+        }
+        .dark-mode .ios-header {
+            background: rgba(31, 41, 55, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-    /* Toggle Switch */
-    .toggle-switch {
-      position: relative;
-      display: inline-block;
-      width: 3rem;
-      height: 1.75rem;
-    }
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 1.75rem;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 1.25rem;
-      width: 1.25rem;
-      left: 0.25rem;
-      bottom: 0.25rem;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: #2196F3;
-    }
-    input:focus + .slider {
-      box-shadow: 0 0 2px #2196F3;
-    }
-    input:checked + .slider:before {
-      transform: translateX(1.25rem);
-    }
+        .footer-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 0;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        .dark-mode .footer-nav {
+            background: rgba(31, 41, 55, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .footer-nav a {
+            color: #6b7280;
+        }
+        .dark-mode .footer-nav a {
+            color: #9ca3af;
+        }
+        .footer-nav a.active {
+            color: #3b82f6;
+        }
+        .dark-mode .footer-nav a.active {
+            color: #60a5fa;
+        }
 
-    /* Responsive Modal */
-    .modal-content {
-      width: 100%;
-      max-width: 28rem;
-      max-height: 90vh;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    @media (max-width: 640px) {
-      .modal-content {
-        max-height: 100vh;
-        border-radius: 0;
-      }
-    }
+        /* iOS-like Cards */
+        .ios-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .dark-mode .ios-card {
+            background: #2d3748;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .ios-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
 
-    /* Ensure Thumbnails Are Visible */
-    .post-card img {
-      display: block;
-      width: 100%;
-      height: 160px; /* Fixed height for consistency */
-      object-fit: cover;
-    }
+        /* iOS-like Buttons */
+        .ios-button {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ios-button-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .ios-button-primary:hover {
+            background-color: #2563eb;
+        }
+        .ios-button-destructive {
+            background-color: #ef4444;
+            color: white;
+        }
+        .ios-button-destructive:hover {
+            background-color: #dc2626;
+        }
 
-    /* Lazy Load Images */
-    img[data-src] {
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    img[data-src].loaded {
-      opacity: 1;
-    }
-  </style>
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: calc(90px + env(safe-area-inset-bottom));
+            right: 20px;
+            background-color: #3b82f6;
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            font-size: 24px;
+            z-index: 900;
+            cursor: pointer;
+        }
+        .fab:hover {
+            transform: scale(1.1);
+            background-color: #2563eb;
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 440px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+        .dark-mode .modal-content {
+            background: #2d3748;
+            color: #e2e8f0;
+        }
+
+        /* iOS-like Inputs */
+        .ios-input {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            color: #1f2937;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1rem;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+            width: 100%;
+        }
+        .dark-mode .ios-input {
+            background: #4b5563;
+            color: #e2e8f0;
+            border-color: #6b7280;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Grid Layout */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 16px;
+        }
+        @media (min-width: 640px) {
+            .posts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 1024px) {
+            .posts-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (min-width: 1280px) {
+            .posts-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* YouTube Container */
+        .youtube-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+        }
+        .youtube-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* iOS-like Switch */
+        .ios-switch {
+            position: relative;
+            width: 51px;
+            height: 31px;
+        }
+        .ios-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .ios-switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #d1d5db;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+        .ios-switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 27px;
+            width: 27px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        .ios-switch input:checked + .ios-switch-slider {
+            background-color: #34c759;
+        }
+        .ios-switch input:checked + .ios-switch-slider:before {
+            transform: translateX(20px);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800 transition-colors">
-
-<!-- Toast Notification Container -->
-<div id="toastContainer" role="alert" aria-live="polite"></div>
-
-<!-- Splash Screen -->
-<div id="splash" class="fixed inset-0 z-50 bg-gradient-to-br from-indigo-500 to-purple-600 flex flex-col items-center justify-center p-4 text-white text-center splash-fade-in">
-  <div class="mb-6 splash-slide-in-up">
-    <i class="fas fa-mobile-alt text-5xl mb-3"></i>
-    <h1 class="text-clamp-2xl font-bold mb-2">Welcome to RealApp</h1>
-    <p class="text-clamp-base text-indigo-100">Your content & workout tracker.</p>
-  </div>
-
-  <div class="bg-white bg-opacity-10 p-5 rounded-lg shadow-xl w-full max-w-sm mx-auto mb-6 splash-slide-in-up">
-    <h2 class="text-clamp-xl font-semibold mb-3">Permissions Required</h2>
-    <p class="text-clamp-sm text-indigo-100 mb-4">To ensure full functionality, please grant the following permissions:</p>
-    
-    <ul class="text-left text-clamp-sm space-y-2">
-      <li class="flex items-start">
-        <i class="fas fa-camera text-blue-300 mr-2 text-lg mt-1"></i>
-        <span>Camera Access <br><small class="text-xs text-indigo-200">For capturing photos.</small></span>
-      </li>
-      <li class="flex items-start">
-        <i class="fas fa-microphone text-green-300 mr-2 text-lg mt-1"></i>
-        <span>Microphone Access <br><small class="text-xs text-indigo-200">For voice notes (optional).</small></span>
-      </li>
-      <li class="flex items-start">
-        <i class="fas fa-map-marker-alt text-red-300 mr-2 text-lg mt-1"></i>
-        <span>Location Access <br><small class="text-xs text-indigo-200">For logging location.</small></span>
-      </li>
-    </ul>
-  </div>
-
-  <button onclick="requestAndHandlePermissions()" 
-          class="bg-white text-indigo-600 font-bold py-3 px-6 rounded-full shadow-lg hover:bg-gray-200 transition duration-300 text-clamp-base splash-button-bounce min-w-[200px]" 
-          aria-label="Grant Permissions">
-    Grant Permissions
-  </button>
-  <button onclick="hideSplashAndShowDashboard(true)" 
-          class="mt-3 text-indigo-100 text-clamp-sm hover:underline transition duration-300" 
-          aria-label="Continue without Permissions">
-    Continue without Permissions
-  </button>
-</div>
-
-<!-- Dashboard -->
-<div id="dashboard" class="hidden flex flex-col min-h-screen transition-colors">
-  <header class="bg-indigo-700 text-white p-4 shadow-md flex items-center justify-between sticky top-0 z-40">
-    <h1 class="text-clamp-xl font-semibold">RealApp Content</h1>
-    <button onclick="openSettingsModal()" 
-            class="text-xl hover:text-gray-200 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-white" 
-            aria-label="Open Settings">
-      <i class="fas fa-cog"></i>
-    </button>
-  </header>
-  
-  <main class="flex-1 p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-min" id="publicPostGrid">
-    <div id="loadingMessage" class="col-span-full flex items-center justify-center text-gray-500 py-10 text-clamp-base">
-      <i class="fas fa-spinner spinner mr-2"></i> Loading public posts...
-    </div>
-    <p id="noPostsMessage" class="col-span-full text-center text-gray-500 py-10 hidden text-clamp-base">No public posts yet. Tap '+' to publish one!</p>
-    <div id="errorMessage" class="col-span-full text-center text-red-500 py-10 hidden text-clamp-base">
-      Failed to load posts. <button onclick="loadPublicPosts()" class="text-blue-500 underline">Retry</button>
-    </div>
-  </main>
-  
-  <!-- FAB Button (Publish New Post) -->
-  <button class="fixed bottom-6 right-6 bg-blue-600 text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-2xl z-40 hover:bg-blue-700 transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-300" 
-          onclick="openPublishPostModal()" 
-          aria-label="Publish New Post">
-    <i class="fas fa-plus"></i>
-  </button>
-</div>
-
-<!-- Public Post Detail Modal -->
-<div id="postDetailModal" class="fixed inset-0 bg-black bg-opacity-80 hidden flex justify-center items-center z-50 p-4" role="dialog" aria-labelledby="detailModalTitle">
-  <div class="bg-white p-6 rounded-lg modal-content shadow-2xl relative transition-colors">
-    <button onclick="closePostDetailModal()" 
-            class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300" 
-            aria-label="Close Modal">
-      <i class="fas fa-times"></i>
-    </button>
-    <img id="detailModalImage" data-src="" class="w-full h-48 object-cover rounded-md mb-4 border border-gray-200" alt="Post Image" loading="lazy" />
-    <h2 id="detailModalTitle" class="text-clamp-xl font-bold mb-2 text-gray-900"></h2>
-    <!-- Changed to div to support HTML rendering -->
-    <div id="detailModalDesc" class="text-clamp-base text-gray-700 leading-relaxed"></div>
-    <a id="detailModalDownloadLink" href="#" target="_blank" class="mt-4 inline-flex items-center px-4 py-2 bg-green-500 text-white text-clamp-sm font-medium rounded-md hover:bg-green-600 hidden transition-colors" download>
-      <i class="fas fa-download mr-2"></i> Download File
-    </a>
-    <p id="detailModalDate" class="text-clamp-sm text-gray-500 mt-4"></p>
-    <button onclick="closePostDetailModal()" 
-            class="mt-6 w-full bg-indigo-600 text-white px-4 py-3 rounded-md hover:bg-indigo-700 transition-colors text-clamp-base">
-      Close
-    </button>
-  </div>
-</div>
-
-<!-- Publish New Post Modal -->
-<div id="publishPostModal" class="fixed inset-0 bg-black bg-opacity-80 hidden flex justify-center items-center z-50 p-4" role="dialog" aria-labelledby="publishModalTitle">
-  <div class="bg-white p-6 rounded-lg modal-content shadow-2xl relative transition-colors">
-    <button onclick="closePublishPostModal()" 
-            class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300" 
-            aria-label="Close Modal">
-      <i class="fas fa-times"></i>
-    </button>
-    <h2 id="publishModalTitle" class="text-clamp-xl font-bold mb-4 text-gray-900">Publish New Post</h2>
-    
-    <div class="mb-4">
-      <label for="postTitle" class="block text-clamp-sm font-medium text-gray-700 mb-1">Post Title</label>
-      <input type="text" id="postTitle" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-clamp-base" placeholder="e.g., RealApp Update, New Feature" required />
-    </div>
-    
-    <div class="mb-4">
-      <label for="postDescription" class="block text-clamp-sm font-medium text-gray-700 mb-1">Post Content (HTML Supported)</label>
-      <textarea id="postDescription" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 h-24 resize-none transition-colors text-clamp-base" placeholder="e.g., <b>Bold text</b>, <a href='https://example.com'>Link</a>, or plain text..."></textarea>
+<body>
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-logo">🚀</div>
+        <h1 class="text-white text-2xl mt-4 font-semibold">Media App</h1>
     </div>
 
-    <div class="mb-4 border p-3 rounded-md bg-gray-50 transition-colors">
-      <label class="block text-clamp-sm font-medium text-gray-700 mb-2">Thumbnail Image (Optional)</label>
-      <video id="thumbnailCameraPreview" autoplay playsinline class="w-full h-auto max-h-48 object-cover rounded-md mb-2 bg-gray-200 dark:bg-gray-700" style="display: none;"></video>
-      <canvas id="thumbnailPhotoCanvas" class="hidden"></canvas>
-      <img id="thumbnailImagePreview" src="" alt="Thumbnail Image" class="w-full h-auto max-h-48 object-cover rounded-md mb-2 bg-gray-200 dark:bg-gray-700" style="display: none;" loading="lazy" />
-      
-      <div class="flex flex-wrap gap-2 mt-2">
-        <button id="captureThumbnailButton" onclick="captureThumbnailPhoto()" 
-                class="flex-1 min-w-[120px] bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center text-clamp-sm">
-          <i class="fas fa-camera mr-2"></i> Take Photo
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content text-center">
+            <h2 id="authModalTitle" class="text-2xl font-semibold mb-6">Welcome to Media App</h2>
+            
+            <!-- Email/Password Form -->
+            <div id="emailAuthForm">
+                <input type="email" id="emailInput" placeholder="Email" class="ios-input mb-3" autocomplete="email" required>
+                <input type="password" id="passwordInput" placeholder="Password" class="ios-input mb-3" autocomplete="current-password" required>
+                <input type="text" id="displayNameSignupInput" placeholder="Display Name (for Signup)" class="ios-input mb-4 hidden" autocomplete="name">
+                
+                <button id="emailAuthBtn" class="ios-button ios-button-primary w-full py-3 mb-4">
+                    <span id="emailAuthBtnText">Sign In</span>
+                </button>
+                
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    <span id="authToggleText">Don't have an account?</span> 
+                    <button id="authToggleBtn" class="text-blue-600 dark:text-blue-400 font-medium">Sign Up</button>
+                </p>
+            </div>
+
+            <div class="relative flex py-5 items-center">
+                <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                <span class="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">OR</span>
+                <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+
+            <button id="googleSignInBtn" class="ios-button w-full py-3 mb-4 bg-red-500 text-white hover:bg-red-600">
+                <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.0003 4.40932C13.9116 4.40932 15.6593 5.17645 16.9947 6.46788L19.9572 3.4005C18.0694 1.56475 15.3435 0.500977 12.0003 0.500977C7.30058 0.500977 3.23844 3.01429 1.29834 6.84078L5.34685 9.9405C6.27552 7.15197 8.9403 5.40932 12.0003 5.40932V4.40932Z" fill="#EA4335"/>
+                    <path d="M23.5 12.0003C23.5 11.2333 23.4357 10.4907 23.3093 9.77383H12V14.4697H18.8923C18.6659 15.9379 17.7554 17.2014 16.4627 18.0537V21.1444H20.2582C22.4287 19.0069 23.5 15.9333 23.5 12.0003Z" fill="#4285F4"/>
+                    <path d="M5.34685 14.0597L1.29834 17.1594C3.23844 20.9859 7.30058 23.5 12.0003 23.5C15.3435 23.5 18.0694 22.4362 19.9572 20.6005L16.9947 17.5332C15.6593 18.8246 13.9116 19.5917 12.0003 19.5917C8.9403 19.5917 6.27552 17.8491 5.34685 15.0597V14.0597Z" fill="#FBBC04"/>
+                    <path d="M12.0003 5.40929C13.6558 5.40929 15.1779 6.00767 16.3659 7.00401L19.589 3.86475C17.7845 2.2221 15.068 1.40929 12.0003 1.40929C8.93166 1.40929 6.20455 2.45524 4.39893 4.29892L7.61908 7.42085C8.80718 6.42451 10.3292 5.40929 12.0003 5.40929Z" fill="#34A853"/>
+                </svg>
+                Sign In with Google
+            </button>
+            <button id="continueAsGuestBtn" class="ios-button w-full py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                <i class="heroicons-outline-user-circle w-5 h-5 mr-2"></i>
+                Continue as Guest
+            </button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="ios-header p-4 flex justify-between items-center">
+        <h1 class="text-lg font-semibold">Media App</h1>
+        <div class="flex items-center space-x-4">
+            <label class="ios-switch">
+                <input id="darkModeToggle" type="checkbox">
+                <span class="ios-switch-slider"></span>
+            </label>
+            <button id="menuToggle" class="text-blue-600 dark:text-blue-300 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="heroicons-outline-bars-3 w-6 h-6"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Side Menu -->
+    <div id="menu" class="fixed top-0 right-0 w-80 h-full bg-white dark:bg-gray-800 shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-in-out pt-16">
+        <button id="closeMenuBtn" class="absolute top-4 right-4 text-gray-500 dark:text-gray-400 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+            <i class="heroicons-solid-x-mark w-6 h-6"></i>
         </button>
-        <button id="uploadThumbnailButton" onclick="document.getElementById('thumbnailFileInput').click()" 
-                class="flex-1 min-w-[120px] bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-colors flex items-center justify-center text-clamp-sm">
-          <i class="fas fa-upload mr-2"></i> Upload Image
-        </button>
-        <input type="file" id="thumbnailFileInput" accept="image/*" class="hidden" onchange="uploadThumbnailFromFile(event)">
-      </div>
-      <button id="retakeThumbnailButton" onclick="retakeThumbnailPhoto()" 
-              class="w-full bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition-colors flex items-center justify-center mt-2 hidden text-clamp-sm">
-        <i class="fas fa-sync-alt mr-2"></i> Retake / Choose New
-      </button>
-      <button id="cancelThumbnailCameraButton" onclick="stopThumbnailCameraAndHide()" 
-              class="w-full bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition-colors flex items-center justify-center mt-2 hidden text-clamp-sm">
-        <i class="fas fa-times mr-2"></i> Cancel Camera
-      </button>
+        <div class="p-4">
+            <div class="flex items-center mb-6">
+                <img id="menuProfilePhoto" src="https://via.placeholder.com/40?text=Profile" alt="Profile" class="w-10 h-10 rounded-full mr-3">
+                <div>
+                    <p id="menuUserName" class="font-medium">Guest User</p>
+                    <p id="menuUserEmail" class="text-sm text-gray-500 dark:text-gray-400">guest@example.com</p>
+                </div>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="#home" class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 menu-link">
+                    <i class="heroicons-outline-home w-6 h-6 mr-3"></i>
+                    <span>Home</span>
+                </a>
+                <a href="#profile" class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 menu-link">
+                    <i class="heroicons-outline-user-circle w-6 h-6 mr-3"></i>
+                    <span>Profile</span>
+                </a>
+                <button id="adminPanelBtn" class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left hidden menu-link">
+                    <i class="heroicons-outline-cog-6-tooth w-6 h-6 mr-3"></i>
+                    <span>Admin Panel</span>
+                </button>
+                <a href="#privacy" class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 menu-link">
+                    <i class="heroicons-outline-shield-check w-6 h-6 mr-3"></i>
+                    <span>Privacy Policy</span>
+                </a>
+                <a href="#feedback" class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 menu-link">
+                    <i class="heroicons-outline-chat-bubble-left-right w-6 h-6 mr-3"></i>
+                    <span>Feedback</span>
+                </a>
+                <a href="#about" class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 menu-link">
+                    <i class="heroicons-outline-information-circle w-6 h-6 mr-3"></i>
+                    <span>About</span>
+                </a>
+                <button id="logoutBtn" class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left menu-link">
+                    <i class="heroicons-outline-arrow-right-on-rectangle w-6 h-6 mr-3"></i>
+                    <span>Logout</span>
+                </button>
+            </nav>
+        </div>
     </div>
 
-    <div class="mb-4 border p-3 rounded-md bg-gray-50 transition-colors">
-      <label class="block text-clamp-sm font-medium text-gray-700 mb-2">Downloadable File (Optional)</label>
-      <p id="downloadFileName" class="text-clamp-sm text-gray-600 mb-2 hidden"></p>
-      <div class="flex flex-wrap gap-2 mt-2">
-        <button id="uploadFileButton" onclick="document.getElementById('downloadFileInput').click()" 
-                class="flex-1 min-w-[120px] bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 transition-colors flex items-center justify-center text-clamp-sm">
-          <i class="fas fa-file-arrow-up mr-2"></i> Upload File
-        </button>
-        <input type="file" id="downloadFileInput" class="hidden" onchange="uploadDownloadableFile(event)">
-      </div>
-      <button id="removeFileButton" onclick="removeDownloadableFile()" 
-              class="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors flex items-center justify-center mt-2 hidden text-clamp-sm">
-        <i class="fas fa-trash-alt mr-2"></i> Remove File
-      </button>
-    </div>
-    
-    <button onclick="publishPost()" 
-            class="mt-6 w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700 transition-colors text-clamp-base">
-      <i class="fas fa-share-square mr-2"></i> Publish Post
+    <!-- Main Content -->
+    <main id="mainContent" class="container mx-auto p-4 pt-20 hidden">
+        <h2 id="postsSectionTitle" class="text-xl font-semibold mb-4">Recent Posts</h2>
+        <div id="postsGrid" class="posts-grid"></div>
+        <div id="loading" class="text-center mt-8 hidden">
+            <div class="loading-spinner w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
+            <p class="mt-2 text-gray-500 dark:text-gray-400">Loading posts...</p>
+        </div>
+        <div id="noPostsMessage" class="text-center mt-8 p-4 text-gray-500 dark:text-gray-400 hidden">
+            <p><i class="heroicons-outline-folder-open w-6 h-6 inline-block align-middle mr-2"></i> No posts available. Be the first to create one!</p>
+        </div>
+    </main>
+
+    <!-- Profile Page -->
+    <section id="profilePage" class="container mx-auto p-4 pt-20 hidden">
+        <h2 class="text-xl font-semibold mb-4">Profile</h2>
+        <div class="ios-card p-6 flex flex-col items-center">
+            <img id="profilePhoto" src="https://via.placeholder.com/100?text=Profile" alt="Profile" class="w-24 h-24 rounded-full object-cover mb-4 border-2 border-blue-500">
+            <button id="changeProfilePhotoBtn" class="text-blue-600 dark:text-blue-400 text-sm mb-4 ios-button px-3 py-2">
+                <i class="heroicons-outline-camera w-5 h-5 mr-2"></i> Change Photo
+            </button>
+            
+            <div class="w-full max-w-sm">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Display Name</label>
+                <input type="text" id="displayNameInput" class="ios-input mb-4">
+                
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                <p id="userEmail" class="text-gray-500 dark:text-gray-400 mb-6 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg"></p>
+                
+                <button id="updateProfileBtn" class="ios-button ios-button-primary w-full py-3">
+                    <i class="heroicons-outline-arrow-path-rounded-square w-5 h-5 mr-2"></i>
+                    Update Profile
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Pages -->
+    <section id="privacyPage" class="container mx-auto p-4 pt-20 hidden">
+        <h2 class="text-xl font-semibold mb-4">Privacy Policy</h2>
+        <div class="ios-card p-6">
+            <p class="text-gray-700 dark:text-gray-300 mb-4">Your privacy is important to us. This app collects minimal personal data, primarily through Firebase Authentication (your email and display name if you sign in with Google or create an account with email/password).</p>
+            <p class="text-gray-700 dark:text-gray-300 mb-4">Post content and images you upload are stored on Firebase Realtime Database and Cloudinary. We do not share your personal data with third parties beyond the services used (Firebase, Cloudinary, YouTube).</p>
+            <p class="text-gray-700 dark:text-gray-300">By using this app, you agree to the collection and use of information in accordance with this policy.</p>
+        </div>
+    </section>
+
+    <section id="feedbackPage" class="container mx-auto p-4 pt-20 hidden">
+        <h2 class="text-xl font-semibold mb-4">Feedback</h2>
+        <div class="ios-card p-6">
+            <p class="text-gray-700 dark:text-gray-300 mb-4">We would love to hear your thoughts and suggestions to improve Media App!</p>
+            <textarea id="feedbackInput" placeholder="Your feedback..." class="ios-input mb-4 h-32"></textarea>
+            <button id="submitFeedbackBtn" class="ios-button ios-button-primary w-full py-3">
+                <i class="heroicons-outline-paper-airplane w-5 h-5 mr-2"></i>
+                Submit Feedback
+            </button>
+        </div>
+    </section>
+
+    <section id="aboutPage" class="container mx-auto p-4 pt-20 hidden">
+        <h2 class="text-xl font-semibold mb-4">About Media App</h2>
+        <div class="ios-card p-6">
+            <p class="text-gray-700 dark:text-gray-300 mb-4">Media App is a simple content sharing platform built to demonstrate modern web application development using Firebase for backend, Cloudinary for media storage, and Tailwind CSS for styling.</p>
+            <p class="text-gray-700 dark:text-gray-300">Developed by: Raaz Bhai</p>
+            <p class="text-gray-700 dark:text-gray-300">Version: 2.1</p>
+        </div>
+    </section>
+
+    <!-- FAB -->
+    <button id="fab" class="fab hidden">
+        <i class="heroicons-outline-plus w-6 h-6"></i>
     </button>
-  </div>
-</div>
 
-<!-- Settings Modal -->
-<div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-80 hidden flex justify-center items-center z-50 p-4" role="dialog" aria-labelledby="settingsModalTitle">
-  <div class="bg-white p-6 rounded-lg modal-content shadow-2xl relative transition-colors">
-    <button onclick="closeSettingsModal()" 
-            class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300" 
-            aria-label="Close Modal">
-      <i class="fas fa-times"></i>
-    </button>
-    <h2 id="settingsModalTitle" class="text-clamp-xl font-bold mb-4 text-gray-900">App Settings</h2>
-    
-    <div class="mb-4 p-4 border rounded-md bg-gray-50 transition-colors">
-      <h3 class="text-clamp-lg font-semibold mb-2 text-gray-800">Theme</h3>
-      <div class="flex justify-between items-center py-2">
-        <span class="text-clamp-base text-gray-700 flex items-center"><i class="fas fa-moon mr-2 text-indigo-500"></i> Dark Mode</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode(this.checked)" aria-label="Toggle Dark Mode">
-          <span class="slider round"></span>
-        </label>
-      </div>
+    <!-- FAB Options Modal -->
+    <div id="fabOptionsModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-xl font-semibold mb-6">Create New Post</h2>
+            <button id="createHomePostBtn" class="ios-button ios-button-primary w-full py-3 mb-3">
+                <i class="heroicons-outline-photo w-5 h-5 mr-2"></i>
+                Image Post
+            </button>
+            <button id="createYoutubePostBtn" class="ios-button ios-button-primary w-full py-3 mb-6">
+                <i class="heroicons-outline-play-circle w-5 h-5 mr-2"></i>
+                YouTube Post
+            </button>
+            <button id="cancelFabOptions" class="ios-button w-full py-2 bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                Cancel
+            </button>
+        </div>
     </div>
 
-    <div class="mb-4 p-4 border rounded-md bg-gray-50 transition-colors">
-      <h3 class="text-clamp-lg font-semibold mb-2 text-gray-800">Permissions Manager</h3>
-      <ul class="space-y-2 text-clamp-sm text-gray-700">
-        <li class="flex justify-between items-center">
-          <span class="flex items-center"><i class="fas fa-camera mr-2 text-blue-500"></i> Camera</span>
-          <span id="cameraPermStatus" class="font-medium">Checking...</span>
-        </li>
-        <li class="flex justify-between items-center">
-          <span class="flex items-center"><i class="fas fa-microphone mr-2 text-green-500"></i> Microphone</span>
-          <span id="micPermStatus" class="font-medium">Checking...</span>
-        </li>
-        <li class="flex justify-between items-center">
-          <span class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-red-500"></i> Location</span>
-          <span id="locationPermStatus" class="font-medium">Checking...</span>
-        </li>
-      </ul>
-      <p class="text-xs text-gray-600 mt-3">Browser controls these. To change, go to browser settings.</p>
-      <button onclick="checkAndUpdatePermissionStatus()" 
-              class="w-full bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors mt-3 flex items-center justify-center text-clamp-sm">
-        <i class="fas fa-sync-alt mr-2"></i> Refresh Status
-      </button>
+    <!-- Post Modal -->
+    <div id="postModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle" class="text-xl font-semibold mb-4">Add Post</h2>
+            <input id="postTitle" type="text" placeholder="Post Title" class="ios-input mb-3">
+            <textarea id="postContent" placeholder="Post Content" class="ios-input mb-3 h-24 resize-y"></textarea>
+            
+            <div id="youtubeInputGroup" class="hidden">
+                <input id="youtubeUrl" type="text" placeholder="YouTube URL (e.g., https://youtu.be/dQw4w9WgXcQ)" class="ios-input mb-3">
+            </div>
+
+            <div id="imageInputGroup" class="hidden">
+                <button id="uploadImage" class="ios-button w-full py-3 mb-3 bg-blue-500 text-white hover:bg-blue-600">
+                    <i class="heroicons-outline-cloud-arrow-up w-5 h-5 mr-2"></i>
+                    Upload Image
+                </button>
+                <img id="previewImage" class="w-full h-48 object-contain mb-3 rounded-lg border border-gray-300 dark:border-gray-600 hidden">
+            </div>
+
+            <div class="flex justify-end space-x-3 mt-4">
+                <button id="cancelPost" class="ios-button bg-gray-300 text-gray-800 hover:bg-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                    Cancel
+                </button>
+                <button id="submitPost" class="ios-button ios-button-primary">
+                    Post
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="mb-4 p-4 border rounded-md bg-gray-50 transition-colors">
-      <h3 class="text-clamp-lg font-semibold mb-2 text-gray-800">Background Services</h3>
-      <div class="flex justify-between items-center py-2">
-        <span class="text-clamp-base text-gray-700 flex items-center"><i class="fas fa-globe mr-2 text-purple-500"></i> Always Running (Location)</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="alwaysRunningToggle" onchange="toggleAlwaysRunning(this.checked)" aria-label="Toggle Background Location">
-          <span class="slider round"></span>
-        </label>
-      </div>
-      <p class="text-xs text-gray-600 mt-2">Simulates continuous location updates. (Browser must be active)</p>
+    <!-- Full Post View Modal -->
+    <div id="fullPostModal" class="modal">
+        <div class="modal-content w-full h-full max-w-none max-h-none rounded-none bg-transparent">
+            <button id="closeFullPostBtn" class="absolute top-4 left-4 bg-gray-600 bg-opacity-60 text-white p-2 rounded-full z-10">
+                <i class="heroicons-solid-x-mark w-6 h-6"></i>
+            </button>
+            <div id="fullPostContent" class="ios-card p-6 mt-12 w-full max-w-2xl mx-auto"></div>
+        </div>
     </div>
 
-    <div class="mb-6 p-4 border rounded-md bg-gray-50 transition-colors">
-      <h3 class="text-clamp-lg font-semibold mb-2 text-gray-800">Data Management</h3>
-      <p class="text-clamp-sm text-gray-600 mb-3">Clear app's local data (theme, permissions). Does NOT affect Firebase data.</p>
-      <button onclick="clearLocalData()" 
-              class="w-full bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center mb-2 text-clamp-sm">
-        <i class="fas fa-broom mr-2"></i> Clear Local App Data
-      </button>
-      <p class="text-clamp-sm text-gray-600 mb-3">Reset all app data and permissions. Requires reload.</p>
-      <button onclick="resetAppPermissions()" 
-              class="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors flex items-center justify-center text-clamp-sm">
-        <i class="fas fa-eraser mr-2"></i> Reset App Data & Permissions
-      </button>
-    </div>
-    
-    <div class="mt-4 pt-4 border-t border-gray-200 text-center transition-colors">
-      <h3 class="text-clamp-lg font-semibold mb-2 text-gray-800">Developer Tools</h3>
-      <p class="text-clamp-sm text-gray-600 mb-3">View raw JSON data from Firebase Realtime Database for debugging.</p>
-      <button onclick="viewSavedData()" 
-              class="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center text-clamp-sm">
-        <i class="fas fa-database mr-2"></i> View All Database JSON
-      </button>
-    </div>
+    <!-- Footer Navigation -->
+    <footer class="footer-nav">
+        <nav class="flex justify-around">
+            <a href="#home" id="navHome" class="flex flex-col items-center active">
+                <i class="heroicons-outline-home w-6 h-6"></i>
+                <span class="text-xs mt-1">Home</span>
+            </a>
+            <a href="#youtubePosts" id="navYoutubePosts" class="flex flex-col items-center">
+                <i class="heroicons-outline-play-circle w-6 h-6"></i>
+                <span class="text-xs mt-1">YouTube</span>
+            </a>
+        </nav>
+    </footer>
 
-    <div class="mt-6 pt-4 border-t border-gray-200 text-center transition-colors">
-      <p class="text-xs text-gray-500">RealApp Mobile v1.2 | Developed by Your Name/Team</p>
-    </div>
-  </div>
-</div>
-
-<!-- JSON Data Modal -->
-<div id="jsonDataModal" class="fixed inset-0 bg-black bg-opacity-80 hidden flex justify-center items-center z-50 p-4" role="dialog" aria-labelledby="jsonModalTitle">
-  <div class="bg-white p-6 rounded-lg modal-content shadow-2xl relative transition-colors">
-    <button onclick="closeJsonDataModal()" 
-            class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300" 
-            aria-label="Close Modal">
-      <i class="fas fa-times"></i>
-    </button>
-    <h2 id="jsonModalTitle" class="text-clamp-xl font-bold mb-4 text-gray-900">Firebase Data (JSON)</h2>
-    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-md overflow-auto max-h-96 transition-colors">
-      <pre id="jsonContent" class="text-clamp-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words"></pre>
-    </div>
-    <button onclick="closeJsonDataModal()" 
-            class="mt-6 w-full bg-indigo-600 text-white px-4 py-3 rounded-md hover:bg-indigo-700 transition-colors text-clamp-base">
-      Close
-    </button>
-  </div>
-</div>
-
-<script>
-  // DOM Elements (Initialize early to avoid undefined errors)
-  const elements = {
-    toastContainer: document.getElementById('toastContainer'),
-    splash: document.getElementById('splash'),
-    dashboard: document.getElementById('dashboard'),
-    postDetailModal: document.getElementById('postDetailModal'),
-    publishPostModal: document.getElementById('publishPostModal'),
-    settingsModal: document.getElementById('settingsModal'),
-    jsonDataModal: document.getElementById('jsonDataModal'),
-    publicPostGrid: document.getElementById('publicPostGrid'),
-    loadingMessage: document.getElementById('loadingMessage'),
-    noPostsMessage: document.getElementById('noPostsMessage'),
-    errorMessage: document.getElementById('errorMessage'),
-    thumbnailCameraPreview: document.getElementById('thumbnailCameraPreview'),
-    thumbnailPhotoCanvas: document.getElementById('thumbnailPhotoCanvas'),
-    thumbnailImagePreview: document.getElementById('thumbnailImagePreview'),
-    captureThumbnailButton: document.getElementById('captureThumbnailButton'),
-    uploadThumbnailButton: document.getElementById('uploadThumbnailButton'),
-    retakeThumbnailButton: document.getElementById('retakeThumbnailButton'),
-    cancelThumbnailCameraButton: document.getElementById('cancelThumbnailCameraButton'),
-    thumbnailFileInput: document.getElementById('thumbnailFileInput'),
-    downloadFileName: document.getElementById('downloadFileName'),
-    downloadFileInput: document.getElementById('downloadFileInput'),
-    uploadFileButton: document.getElementById('uploadFileButton'),
-    removeFileButton: document.getElementById('removeFileButton'),
-    darkModeToggle: document.getElementById('darkModeToggle'),
-    alwaysRunningToggle: document.getElementById('alwaysRunningToggle'),
-  };
-
-  // Utility Functions
-  function showToast(message, type = 'info', duration = 3000) {
-    if (!elements.toastContainer) {
-      console.error('Toast container not found in DOM');
-      return;
-    }
-
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-    toast.setAttribute('role', 'alert');
-    elements.toastContainer.appendChild(toast);
-
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-      toast.classList.remove('show');
-      toast.addEventListener('transitionend', () => toast.remove(), { once: true });
-    }, duration);
-
-    toast.addEventListener('click', () => {
-      toast.classList.remove('show');
-      toast.addEventListener('transitionend', () => toast.remove(), { once: true });
-    });
-  }
-
-  // Basic HTML Sanitization to Prevent XSS
-  function sanitizeHTML(html) {
-    // Remove dangerous tags
-    const dangerousTags = ['script', 'iframe', 'object', 'embed'];
-    let cleanHTML = html;
-    dangerousTags.forEach(tag => {
-      const regex = new RegExp(`<${tag}\\b[^<]*(?:(?!</${tag}>)<[^<]*)*</${tag}>`, 'gi');
-      cleanHTML = cleanHTML.replace(regex, '');
-    });
-
-    // Remove dangerous attributes (e.g., onclick, onerror)
-    cleanHTML = cleanHTML.replace(/ on\w+="[^"]*"/gi, '');
-    cleanHTML = cleanHTML.replace(/ on\w+='[^']*'/gi, '');
-    cleanHTML = cleanHTML.replace(/ on\w+=`[^`]*`/gi, '');
-
-    // Strip JavaScript in href
-    cleanHTML = cleanHTML.replace(/href="javascript:[^"]*"/gi, 'href="#"');
-    cleanHTML = cleanHTML.replace(/href='javascript:[^']*'/gi, 'href="#"');
-    cleanHTML = cleanHTML.replace(/href=`javascript:[^`]*`/gi, 'href="#"');
-
-    return cleanHTML;
-  }
-
-  // Lazy Load Firebase SDKs with Retry
-  function loadFirebaseScripts(attempt = 1, maxAttempts = 3) {
-    return new Promise((resolve, reject) => {
-      const appScript = document.createElement('script');
-      appScript.src = 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js';
-      appScript.onload = () => {
-        const dbScript = document.createElement('script');
-        dbScript.src = 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js';
-        dbScript.onload = () => {
-          if (typeof firebase !== 'undefined') {
-            resolve();
-          } else {
-            reject(new Error('Firebase loaded but firebase object is undefined'));
-          }
+    <!-- JavaScript -->
+    <script>
+        // Firebase Configuration (From your previous request)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
+            authDomain: "rn-gfx-tool.firebaseapp.com",
+            databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rn-gfx-tool",
+            storageBucket: "rn-gfx-tool.firebasestorage.app",
+            messagingSenderId: "163149358541",
+            appId: "1:163149358541:android:2ef6d22fcd23e77ee09084"
         };
-        dbScript.onerror = () => {
-          if (attempt < maxAttempts) {
-            console.warn(`Retry ${attempt + 1}/${maxAttempts} for Firebase scripts...`);
-            setTimeout(() => loadFirebaseScripts(attempt + 1, maxAttempts).then(resolve).catch(reject), 2000);
-          } else {
-            reject(new Error('Failed to load Firebase database script after retries'));
-          }
-        };
-        document.head.appendChild(dbScript);
-      };
-      appScript.onerror = () => {
-        if (attempt < maxAttempts) {
-          console.warn(`Retry ${attempt + 1}/${maxAttempts} for Firebase scripts...`);
-          setTimeout(() => loadFirebaseScripts(attempt + 1, maxAttempts).then(resolve).catch(reject), 2000);
-        } else {
-          reject(new Error('Failed to load Firebase app script after retries'));
+
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+        } catch (error) {
+            console.error('Firebase initialization failed:', error);
+            alert('App initialization failed. Please check Firebase configuration and ensure you are hosting on HTTPS.');
         }
-      };
-      document.head.appendChild(appScript);
-    });
-  }
+        const auth = firebase.auth();
+        const rtdb = firebase.database();
 
-  // Initialize App
-  async function initializeApp() {
-    try {
-      await loadFirebaseScripts();
-      const firebaseConfig = {
-        apiKey: "AIzaSyD6EXA7D77rQDQEohB52BvTYimFeTEaAho",
-        authDomain: "rn-gfx-tool.firebaseapp.com",
-        databaseURL: "https://rn-gfx-tool-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "rn-gfx-tool",
-        storageBucket: "rn-gfx-tool.firebasestorage.app",
-        messagingSenderId: "163149358541",
-        appId: "1:163149358541:android:2ef6d22fcd23e77ee09084"
-      };
-      firebase.initializeApp(firebaseConfig);
-      window.db = firebase.database();
-      setupApp();
-    } catch (error) {
-      console.error('Failed to load Firebase:', error);
-      showToast('Failed to initialize app. Please check your connection and retry.', 'error', 5000);
-      elements.dashboard.classList.remove('hidden');
-      elements.splash.classList.add('hidden');
-      elements.loadingMessage.classList.add('hidden');
-      elements.noPostsMessage.classList.add('hidden');
-      elements.errorMessage.classList.remove('hidden');
-    }
-  }
-
-  // Cloudinary Config
-  const CLOUD_NAME = 'dhw1xn7ko';
-  const UPLOAD_PRESET = 'Raazbhai';
-
-  // Global State
-  let thumbnailCameraStream = null;
-  let newPostThumbnailUrl = null;
-  let newPostDownloadableFileUrl = null;
-  let newPostDownloadableFileName = null;
-  let locationTrackingIntervalId = null;
-
-  // Setup App
-  function setupApp() {
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    document.body.classList.toggle('dark', isDarkMode);
-    elements.darkModeToggle.checked = isDarkMode;
-
-    const isAlwaysRunning = localStorage.getItem('alwaysRunning') === 'true';
-    elements.alwaysRunningToggle.checked = isAlwaysRunning;
-    if (isAlwaysRunning) startBackgroundLocationTracking();
-
-    if (localStorage.getItem('permissionsGranted') === 'true') {
-      hideSplashAndShowDashboard();
-    } else {
-      showSplash();
-    }
-
-    setupImageLazyLoading();
-  }
-
-  // Splash Screen & Permissions
-  function showSplash() {
-    elements.splash.classList.remove('hidden');
-    elements.dashboard.classList.add('hidden');
-    [elements.postDetailModal, elements.publishPostModal, elements.settingsModal, elements.jsonDataModal].forEach(modal => {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    });
-  }
-
-  function hideSplashAndShowDashboard(skipped = false) {
-    elements.splash.classList.add('hidden');
-    elements.dashboard.classList.remove('hidden');
-    if (skipped) {
-      showToast('Continued without full permissions. Some features may not work.', 'info', 5000);
-    } else {
-      const message = localStorage.getItem('permissionsGranted') === 'true' ? 'Permissions granted! Welcome!' : 'Welcome back!';
-      showToast(message, 'success', 1500);
-    }
-    loadPublicPosts();
-    if (!skipped) performInitialDataGathering();
-  }
-
-  async function requestAndHandlePermissions() {
-    localStorage.setItem('permissionsGranted', 'true');
-    showToast('Requesting permissions...', 'info');
-
-    let mediaGranted = false;
-    let locationGranted = false;
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      stream.getTracks().forEach(track => track.stop());
-      mediaGranted = true;
-    } catch (err) {
-      console.error('Media access denied:', err);
-      showToast(`Camera/Mic access denied: ${err.name}. Features limited.`, 'error', 5000);
-    }
-
-    try {
-      const position = await new Promise((res, rej) => {
-        navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true, timeout: 10000 });
-      });
-      locationGranted = true;
-    } catch (err) {
-      console.error('Geolocation denied:', err);
-      showToast(`Location access denied: ${err.message}. Location disabled.`, 'error', 5000);
-    }
-
-    localStorage.setItem('mediaPermission', mediaGranted ? 'granted' : 'denied');
-    localStorage.setItem('locationPermission', locationGranted ? 'granted' : 'denied');
-
-    hideSplashAndShowDashboard();
-  }
-
-  async function performInitialDataGathering() {
-    const deviceInfo = navigator.userAgent;
-    const timestamp = new Date().toISOString();
-    try {
-      await db.ref(`user_data/device_info_log/${timestamp.replace(/[:.]/g, '-')}`).set(deviceInfo);
-    } catch (error) {
-      console.error('Error saving device info:', error);
-    }
-
-    if (localStorage.getItem('locationPermission') === 'granted') {
-      try {
-        const position = await new Promise((res, rej) => {
-          navigator.geolocation.getCurrentPosition(res, rej, { timeout: 3000, enableHighAccuracy: true });
-        });
-        const { latitude, longitude, accuracy } = position.coords;
-        await db.ref('user_data/last_known_location').set({ latitude, longitude, accuracy, timestamp });
-      } catch (error) {
-        console.warn('Initial location error:', error);
-      }
-    }
-  }
-
-  // Cloudinary Upload
-  async function uploadToCloudinary(blob, filename, folder = 'RealApp_Uploads') {
-    if (!CLOUD_NAME || !UPLOAD_PRESET) {
-      showToast('Cloudinary not configured!', 'error');
-      throw new Error('Cloudinary not configured');
-    }
-
-    const formData = new FormData();
-    formData.append('file', blob);
-    formData.append('upload_preset', UPLOAD_PRESET);
-    formData.append('public_id', filename);
-    formData.append('folder', folder);
-
-    try {
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        showToast(`Upload failed: ${errorData.error.message || 'Unknown error'}`, 'error');
-        throw new Error(`Cloudinary upload failed: ${response.statusText}`);
-      }
-      const data = await response.json();
-      return data.secure_url;
-    } catch (error) {
-      showToast('Network error during upload.', 'error');
-      throw error;
-    }
-  }
-
-  // Public Posts
-  function loadPublicPosts() {
-    elements.loadingMessage.classList.remove('hidden');
-    elements.noPostsMessage.classList.add('hidden');
-    elements.errorMessage.classList.add('hidden');
-    elements.publicPostGrid.innerHTML = '';
-
-    if (!db) {
-      elements.loadingMessage.classList.add('hidden');
-      elements.errorMessage.classList.remove('hidden');
-      showToast('Database not initialized. Please reload the page.', 'error', 5000);
-      return;
-    }
-
-    db.ref('public_posts').orderByChild('timestamp').once('value', snapshot => {
-      elements.loadingMessage.classList.add('hidden');
-      
-      if (!snapshot.exists()) {
-        elements.noPostsMessage.classList.remove('hidden');
-        return;
-      }
-      
-      let hasPosts = false;
-      const postsArray = [];
-      snapshot.forEach(child => {
-        postsArray.push({ id: child.key, ...child.val() });
-      });
-      postsArray.reverse().forEach(post => {
-        hasPosts = true;
-        const div = document.createElement('div');
-        div.className = 'post-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105';
+        // Cloudinary Configuration (Updated with your provided details)
+        const CLOUDINARY_CLOUD_NAME = 'dhw1xn7ko';
+        const CLOUDINARY_UPLOAD_PRESET = 'Raazbhai';
         
-        const postTitle = post.title || 'Untitled Post';
-        const postDesc = post.description || 'No description available.';
-        const sanitizedDesc = sanitizeHTML(postDesc); // Sanitize HTML for security
-        const postImage = post.thumbnailUrl || 'https://via.placeholder.com/400x200/4a5568/edf2f7?text=No+Image';
-        const postDate = post.timestamp ? new Date(post.timestamp).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown Date';
+        const cloudinaryWidget = cloudinary.createUploadWidget({
+            cloudName: CLOUDINARY_CLOUD_NAME,
+            uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+            cropping: true,
+            croppingAspectRatio: 1,
+            showSkipCropButton: false,
+            sources: ['local', 'url', 'camera'],
+            multiple: false,
+            maxFileSize: 5000000, // 5MB limit
+            maxImageWidth: 2000,
+            maxImageHeight: 2000
+        }, (error, result) => {
+            if (!error && result && result.event === "success") {
+                const imageUrl = result.info.secure_url;
+                if (currentModal === 'postModal') {
+                    document.getElementById('previewImage').src = imageUrl;
+                    document.getElementById('previewImage').classList.remove('hidden');
+                } else if (currentModal === 'profileModal') {
+                    updateProfilePhoto(imageUrl);
+                }
+            } else if (error) {
+                console.error('Cloudinary upload error:', error);
+                alert('Image upload failed: ' + (error.message || 'Unknown error. Please ensure the file is an image and under 5MB.'));
+            }
+        });
 
-        // Fixed thumbnail display: Set src directly with onerror fallback
-        div.innerHTML = `
-          <img src="${postImage}" 
-               onerror="this.src='https://via.placeholder.com/400x200/4a5568/edf2f7?text=Image+Not+Available'" 
-               alt="${postTitle}" 
-               class="w-full h-40 object-cover border-b border-gray-200 dark:border-gray-700" />
-          <div class="p-4">
-            <h3 class="font-bold text-clamp-lg mb-1 text-gray-900 dark:text-gray-100 truncate">${postTitle}</h3>
-            <p class="text-clamp-sm text-gray-500 dark:text-gray-400 mb-2">${postDate}</p>
-            <!-- Changed to div and used innerHTML for HTML support -->
-            <div class="text-clamp-base text-gray-600 dark:text-gray-300 line-clamp-2">${sanitizedDesc}</div>
-          </div>`;
-        div.onclick = () => showPostDetailModal(post);
-        elements.publicPostGrid.appendChild(div);
-      });
-
-      elements.noPostsMessage.classList.toggle('hidden', hasPosts);
-      showToast('Public posts loaded!', 'success', 1500);
-      // Re-trigger lazy loading in case images didn't load initially
-      setupImageLazyLoading();
-    }, error => {
-      elements.loadingMessage.classList.add('hidden');
-      elements.noPostsMessage.classList.add('hidden');
-      elements.errorMessage.classList.remove('hidden');
-      console.error('Error loading posts:', error);
-      showToast('Error loading posts. Please retry.', 'error', 5000);
-    });
-  }
-
-  function showPostDetailModal(post) {
-    const img = document.getElementById('detailModalImage');
-    const defaultImage = 'https://via.placeholder.com/600x400/4a5568/edf2f7?text=Image+Not+Available';
-    img.src = post.thumbnailUrl || defaultImage;
-    img.onerror = () => { img.src = defaultImage; };
-    document.getElementById('detailModalTitle').innerText = post.title || 'Untitled Post';
-    // Use innerHTML for HTML support after sanitization
-    const sanitizedDesc = sanitizeHTML(post.description || 'No description available.');
-    document.getElementById('detailModalDesc').innerHTML = sanitizedDesc;
-    document.getElementById('detailModalDate').innerText = post.timestamp ? new Date(post.timestamp).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown Date';
-    
-    const downloadLink = document.getElementById('detailModalDownloadLink');
-    if (post.downloadUrl && post.downloadFileName) {
-      downloadLink.href = post.downloadUrl;
-      downloadLink.download = post.downloadFileName;
-      downloadLink.innerText = `Download: ${post.downloadFileName}`;
-      downloadLink.classList.remove('hidden');
-    } else {
-      downloadLink.classList.add('hidden');
-    }
-
-    elements.postDetailModal.classList.remove('hidden');
-    elements.postDetailModal.classList.add('flex');
-  }
-
-  function closePostDetailModal() {
-    elements.postDetailModal.classList.add('hidden');
-    elements.postDetailModal.classList.remove('flex');
-  }
-
-  // Publish Post
-  async function openPublishPostModal() {
-    elements.publishPostModal.classList.remove('hidden');
-    elements.publishPostModal.classList.add('flex');
-    
-    document.getElementById('postTitle').value = '';
-    document.getElementById('postDescription').value = '';
-    newPostThumbnailUrl = null;
-    newPostDownloadableFileUrl = null;
-    newPostDownloadableFileName = null;
-    
-    stopThumbnailCamera();
-    elements.thumbnailCameraPreview.style.display = 'none';
-    elements.thumbnailImagePreview.src = '';
-    elements.thumbnailImagePreview.style.display = 'none';
-    elements.retakeThumbnailButton.classList.add('hidden');
-    elements.cancelThumbnailCameraButton.classList.add('hidden');
-    elements.captureThumbnailButton.classList.remove('hidden');
-    elements.uploadThumbnailButton.classList.remove('hidden');
-
-    elements.downloadFileName.classList.add('hidden');
-    elements.downloadFileName.innerText = '';
-    elements.removeFileButton.classList.add('hidden');
-    elements.uploadFileButton.classList.remove('hidden');
-
-    if (localStorage.getItem('mediaPermission') === 'granted') {
-      try {
-        thumbnailCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } });
-        elements.thumbnailCameraPreview.srcObject = thumbnailCameraStream;
-        elements.thumbnailCameraPreview.style.display = 'block';
-        elements.cancelThumbnailCameraButton.classList.remove('hidden');
-      } catch (err) {
-        console.warn('Camera error:', err);
-        showToast('Camera access denied. Cannot use camera.', 'warning');
-        elements.captureThumbnailButton.classList.add('hidden');
-      }
-    } else {
-      showToast('Camera permission not granted.', 'info', 3000);
-      elements.captureThumbnailButton.classList.add('hidden');
-    }
-  }
-
-  function stopThumbnailCamera() {
-    if (thumbnailCameraStream) {
-      thumbnailCameraStream.getTracks().forEach(track => track.stop());
-      thumbnailCameraStream = null;
-      elements.thumbnailCameraPreview.srcObject = null;
-    }
-  }
-
-  function stopThumbnailCameraAndHide() {
-    stopThumbnailCamera();
-    elements.thumbnailCameraPreview.style.display = 'none';
-    elements.captureThumbnailButton.classList.add('hidden');
-    elements.cancelThumbnailCameraButton.classList.add('hidden');
-    elements.retakeThumbnailButton.classList.add('hidden');
-    elements.thumbnailImagePreview.style.display = 'none';
-    showToast('Thumbnail camera stopped.', 'info', 1500);
-  }
-
-  function captureThumbnailPhoto() {
-    if (!thumbnailCameraStream) {
-      showToast('Camera not active!', 'error');
-      return;
-    }
-
-    elements.thumbnailPhotoCanvas.width = elements.thumbnailCameraPreview.videoWidth;
-    elements.thumbnailPhotoCanvas.height = elements.thumbnailCameraPreview.videoHeight;
-    const context = elements.thumbnailPhotoCanvas.getContext('2d');
-    context.drawImage(elements.thumbnailCameraPreview, 0, 0, elements.thumbnailPhotoCanvas.width, elements.thumbnailPhotoCanvas.height);
-
-    elements.thumbnailPhotoCanvas.toBlob(async blob => {
-      const filename = `post_thumbnail_${Date.now()}.jpeg`;
-      showToast('Uploading thumbnail...', 'info');
-      try {
-        newPostThumbnailUrl = await uploadToCloudinary(blob, filename, 'RealApp_Post_Thumbnails');
-        elements.thumbnailImagePreview.src = newPostThumbnailUrl;
-        elements.thumbnailImagePreview.style.display = 'block';
-        elements.thumbnailCameraPreview.style.display = 'none';
-        elements.captureThumbnailButton.classList.add('hidden');
-        elements.uploadThumbnailButton.classList.add('hidden');
-        elements.retakeThumbnailButton.classList.remove('hidden');
-        elements.cancelThumbnailCameraButton.classList.add('hidden');
-        stopThumbnailCamera();
-        showToast('Thumbnail uploaded!', 'success');
-      } catch (error) {
-        showToast('Failed to upload thumbnail.', 'error');
-        newPostThumbnailUrl = null;
-        retakeThumbnailPhoto();
-      }
-    }, 'image/jpeg');
-  }
-
-  async function uploadThumbnailFromFile(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      showToast('Please select an image file.', 'error');
-      return;
-    }
-
-    showToast(`Uploading ${file.name}...`, 'info');
-    const filename = `post_thumbnail_upload_${Date.now()}_${file.name}`;
-    
-    stopThumbnailCamera();
-    elements.thumbnailCameraPreview.style.display = 'none';
-
-    try {
-      newPostThumbnailUrl = await uploadToCloudinary(file, filename, 'RealApp_Post_Thumbnails');
-      elements.thumbnailImagePreview.src = newPostThumbnailUrl;
-      elements.thumbnailImagePreview.style.display = 'block';
-      elements.captureThumbnailButton.classList.add('hidden');
-      elements.uploadThumbnailButton.classList.add('hidden');
-      elements.retakeThumbnailButton.classList.remove('hidden');
-      elements.cancelThumbnailCameraButton.classList.add('hidden');
-      showToast('Thumbnail uploaded!', 'success');
-    } catch (error) {
-      showToast('Failed to upload thumbnail.', 'error');
-      newPostThumbnailUrl = null;
-      elements.thumbnailImagePreview.src = '';
-      elements.thumbnailImagePreview.style.display = 'none';
-      elements.captureThumbnailButton.classList.remove('hidden');
-      elements.uploadThumbnailButton.classList.remove('hidden');
-      elements.retakeThumbnailButton.classList.add('hidden');
-      elements.cancelThumbnailCameraButton.classList.add('hidden');
-    }
-  }
-
-  function retakeThumbnailPhoto() {
-    newPostThumbnailUrl = null;
-    elements.thumbnailImagePreview.src = '';
-    elements.thumbnailImagePreview.style.display = 'none';
-    elements.retakeThumbnailButton.classList.add('hidden');
-    
-    elements.captureThumbnailButton.classList.remove('hidden');
-    elements.uploadThumbnailButton.classList.remove('hidden');
-    elements.cancelThumbnailCameraButton.classList.add('hidden');
-
-    if (localStorage.getItem('mediaPermission') === 'granted') {
-      try {
-        elements.thumbnailCameraPreview.style.display = 'block';
-        thumbnailCameraStream = null;
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } })
-          .then(stream => {
-            thumbnailCameraStream = stream;
-            elements.thumbnailCameraPreview.srcObject = thumbnailCameraStream;
-            elements.cancelThumbnailCameraButton.classList.remove('hidden');
-          })
-          .catch(err => {
-            showToast('Camera access denied.', 'error');
-            elements.captureThumbnailButton.classList.add('hidden');
-            elements.cancelThumbnailCameraButton.classList.add('hidden');
-            elements.thumbnailCameraPreview.style.display = 'none';
-          });
-      } catch (err) {
-        showToast('Camera access error.', 'error');
-        elements.captureThumbnailButton.classList.add('hidden');
-        elements.cancelThumbnailCameraButton.classList.add('hidden');
-        elements.thumbnailCameraPreview.style.display = 'none';
-      }
-    }
-  }
-
-  async function uploadDownloadableFile(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    showToast(`Uploading ${file.name}...`, 'info');
-    const filename = `post_downloadable_${Date.now()}_${file.name}`;
-    
-    try {
-      newPostDownloadableFileUrl = await uploadToCloudinary(file, filename, 'RealApp_Downloadable_Files');
-      newPostDownloadableFileName = file.name;
-      
-      elements.downloadFileName.innerText = `File: ${newPostDownloadableFileName}`;
-      elements.downloadFileName.classList.remove('hidden');
-      elements.uploadFileButton.classList.add('hidden');
-      elements.removeFileButton.classList.remove('hidden');
-      showToast('File uploaded!', 'success');
-    } catch (error) {
-      showToast('Failed to upload file.', 'error');
-      newPostDownloadableFileUrl = null;
-      newPostDownloadableFileName = null;
-      elements.downloadFileName.classList.add('hidden');
-      elements.downloadFileName.innerText = '';
-      elements.uploadFileButton.classList.remove('hidden');
-      elements.removeFileButton.classList.add('hidden');
-    }
-  }
-
-  function removeDownloadableFile() {
-    newPostDownloadableFileUrl = null;
-    newPostDownloadableFileName = null;
-    elements.downloadFileName.classList.add('hidden');
-    elements.downloadFileName.innerText = '';
-    elements.uploadFileButton.classList.remove('hidden');
-    elements.removeFileButton.classList.add('hidden');
-    showToast('File removed.', 'info', 1500);
-  }
-
-  async function publishPost() {
-    const title = document.getElementById('postTitle').value.trim();
-    const description = document.getElementById('postDescription').value.trim();
-
-    if (!title) {
-      showToast('Please enter a post title!', 'error');
-      return;
-    }
-
-    if (!db) {
-      showToast('Database not initialized. Please reload the page.', 'error', 5000);
-      return;
-    }
-
-    showToast('Publishing post...', 'info');
-
-    const postData = {
-      title,
-      description, // Store raw HTML
-      timestamp: new Date().toISOString(),
-    };
-
-    if (newPostThumbnailUrl) postData.thumbnailUrl = newPostThumbnailUrl;
-    if (newPostDownloadableFileUrl) {
-      postData.downloadUrl = newPostDownloadableFileUrl;
-      postData.downloadFileName = newPostDownloadableFileName;
-    }
-
-    try {
-      await db.ref('public_posts').push(postData);
-      showToast('Post published!', 'success');
-      closePublishPostModal();
-      loadPublicPosts();
-    } catch (error) {
-      console.error('Error publishing post:', error);
-      showToast('Failed to publish post.', 'error');
-    }
-  }
-
-  function closePublishPostModal() {
-    stopThumbnailCamera();
-    elements.publishPostModal.classList.add('hidden');
-    elements.publishPostModal.classList.remove('flex');
-    elements.thumbnailFileInput.value = '';
-    elements.downloadFileInput.value = '';
-  }
-
-  // Settings
-  function openSettingsModal() {
-    elements.settingsModal.classList.remove('hidden');
-    elements.settingsModal.classList.add('flex');
-    checkAndUpdatePermissionStatus();
-  }
-
-  function closeSettingsModal() {
-    elements.settingsModal.classList.add('hidden');
-    elements.settingsModal.classList.remove('flex');
-  }
-
-  function toggleDarkMode(isDark) {
-    document.body.classList.toggle('dark', isDark);
-    localStorage.setItem('darkMode', isDark);
-    showToast(`Dark mode ${isDark ? 'enabled' : 'disabled'}`, 'info', 1500);
-  }
-
-  function clearLocalData() {
-    if (confirm('Clear all local app data (theme, permissions)? This will NOT affect Firebase data.')) {
-      localStorage.removeItem('darkMode');
-      localStorage.removeItem('permissionsGranted');
-      localStorage.removeItem('mediaPermission');
-      localStorage.removeItem('locationPermission');
-      localStorage.removeItem('alwaysRunning');
-      showToast('Local data cleared. Reloading...', 'info', 3000);
-      setTimeout(() => location.reload(), 2000);
-    }
-  }
-
-  function resetAppPermissions() {
-    if (confirm('Reset ALL app data and permissions? This will reload the page.')) {
-      localStorage.clear();
-      showToast('App reset. Reloading...', 'info', 3000);
-      setTimeout(() => location.reload(), 2000);
-    }
-  }
-
-  async function checkAndUpdatePermissionStatus() {
-    const updateStatus = (elem, status) => {
-      elem.textContent = status;
-      elem.className = '';
-      elem.classList.add('font-medium');
-      if (status === 'granted') elem.classList.add('text-green-600');
-      else if (status === 'denied') elem.classList.add('text-red-600');
-      else if (status === 'prompt') elem.classList.add('text-yellow-600');
-      else elem.classList.add('text-gray-500');
-    };
-
-    try {
-      const cameraPerm = await navigator.permissions.query({ name: 'camera' });
-      updateStatus(document.getElementById('cameraPermStatus'), cameraPerm.state);
-      cameraPerm.onchange = () => updateStatus(document.getElementById('cameraPermStatus'), cameraPerm.state);
-
-      const micPerm = await navigator.permissions.query({ name: 'microphone' });
-      updateStatus(document.getElementById('micPermStatus'), micPerm.state);
-      micPerm.onchange = () => updateStatus(document.getElementById('micPermStatus'), micPerm.state);
-
-      const locationPerm = await navigator.permissions.query({ name: 'geolocation' });
-      updateStatus(document.getElementById('locationPermStatus'), locationPerm.state);
-      locationPerm.onchange = () => updateStatus(document.getElementById('locationPermStatus'), locationPerm.state);
-
-      showToast('Permission status updated.', 'info', 1500);
-    } catch (error) {
-      console.error('Error checking permissions:', error);
-      showToast('Could not check permissions.', 'error');
-      ['cameraPermStatus', 'micPermStatus', 'locationPermStatus'].forEach(id => updateStatus(document.getElementById(id), 'Error'));
-    }
-  }
-
-  function toggleAlwaysRunning(isChecked) {
-    localStorage.setItem('alwaysRunning', isChecked);
-    if (isChecked) {
-      showToast('Background location enabled. (App must be open)', 'info', 3000);
-      startBackgroundLocationTracking();
-    } else {
-      showToast('Background location disabled.', 'info', 3000);
-      stopBackgroundLocationTracking();
-    }
-  }
-
-  function startBackgroundLocationTracking() {
-    stopBackgroundLocationTracking();
-    if (localStorage.getItem('locationPermission') !== 'granted') {
-      showToast('Location permission not granted.', 'warning', 5000);
-      elements.alwaysRunningToggle.checked = false;
-      localStorage.setItem('alwaysRunning', 'false');
-      return;
-    }
-
-    showToast('Starting background location...', 'info');
-    locationTrackingIntervalId = setInterval(() => {
-      navigator.geolocation.getCurrentPosition(
-        async position => {
-          const { latitude, longitude, accuracy } = position.coords;
-          const timestamp = new Date().toISOString();
-          try {
-            await db.ref(`user_data/location_history`).push({ latitude, longitude, accuracy, timestamp });
-            console.log('Location updated:', { latitude, longitude, timestamp });
-          } catch (error) {
-            console.error('Error saving location:', error);
-          }
-        },
-        error => {
-          console.warn('Background location error:', error);
-          if (error.code === error.PERMISSION_DENIED) {
-            showToast('Location permission lost. Stopping tracking.', 'error', 5000);
-            elements.alwaysRunningToggle.checked = false;
-            localStorage.setItem('alwaysRunning', 'false');
-            stopBackgroundLocationTracking();
-          }
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-      );
-    }, 30000);
-  }
-
-  function stopBackgroundLocationTracking() {
-    if (locationTrackingIntervalId) {
-      clearInterval(locationTrackingIntervalId);
-      locationTrackingIntervalId = null;
-      console.log('Background location stopped.');
-    }
-  }
-
-  async function viewSavedData() {
-    if (!db) {
-      showToast('Database not initialized. Please reload the page.', 'error', 5000);
-      return;
-    }
-
-    showToast('Fetching Firebase data...', 'info');
-    try {
-      const snapshot = await db.ref('/').once('value');
-      const data = snapshot.val();
-      document.getElementById('jsonContent').textContent = JSON.stringify(data, null, 2);
-      elements.jsonDataModal.classList.remove('hidden');
-      elements.jsonDataModal.classList.add('flex');
-      showToast('Data loaded!', 'success', 1500);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      showToast('Failed to fetch data.', 'error');
-    }
-  }
-
-  function closeJsonDataModal() {
-    elements.jsonDataModal.classList.add('hidden');
-    elements.jsonDataModal.classList.remove('flex');
-  }
-
-  // Lazy Load Images
-  function setupImageLazyLoading() {
-    const images = document.querySelectorAll('img');
-    const observer = new IntersectionObserver((entries, obs) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          const src = img.getAttribute('data-src') || img.src;
-          img.src = src;
-          img.classList.add('loaded');
-          obs.unobserve(img);
+        // YouTube IFrame API
+        let youtubePlayers = {};
+        function onYouTubeIframeAPIReady() {
+            console.log("YouTube API ready");
+            if (!document.getElementById('authModal').classList.contains('open')) {
+                const currentHash = window.location.hash || '#home';
+                loadPosts(currentHash === '#youtubePosts' ? 'youtube' : 'home');
+            }
         }
-      });
-    }, { rootMargin: '0px 0px 50px 0px' });
 
-    images.forEach(img => observer.observe(img));
-  }
+        // Load YouTube IFrame API
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-  // Keyboard Accessibility
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      [closePostDetailModal, closePublishPostModal, closeSettingsModal, closeJsonDataModal].forEach(fn => fn());
-    }
-  });
+        // DOM Elements
+        const splashScreen = document.getElementById('splashScreen');
+        const authModal = document.getElementById('authModal');
+        const authModalTitle = document.getElementById('authModalTitle');
+        const emailInput = document.getElementById('emailInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const displayNameSignupInput = document.getElementById('displayNameSignupInput');
+        const emailAuthBtn = document.getElementById('emailAuthBtn');
+        const emailAuthBtnText = document.getElementById('emailAuthBtnText');
+        const authToggleText = document.getElementById('authToggleText');
+        const authToggleBtn = document.getElementById('authToggleBtn');
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        const continueAsGuestBtn = document.getElementById('continueAsGuestBtn');
+        const mainContent = document.getElementById('mainContent');
+        const profilePage = document.getElementById('profilePage');
+        const privacyPage = document.getElementById('privacyPage');
+        const feedbackPage = document.getElementById('feedbackPage');
+        const aboutPage = document.getElementById('aboutPage');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const menuToggle = document.getElementById('menuToggle');
+        const menu = document.getElementById('menu');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const fab = document.getElementById('fab');
+        const adminPanelBtn = document.getElementById('adminPanelBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const postsGrid = document.getElementById('postsGrid');
+        const loadingSpinner = document.getElementById('loading');
+        const noPostsMessage = document.getElementById('noPostsMessage');
+        const postsSectionTitle = document.getElementById('postsSectionTitle');
+        const fabOptionsModal = document.getElementById('fabOptionsModal');
+        const createHomePostBtn = document.getElementById('createHomePostBtn');
+        const createYoutubePostBtn = document.getElementById('createYoutubePostBtn');
+        const cancelFabOptions = document.getElementById('cancelFabOptions');
+        const postModal = document.getElementById('postModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const postTitleInput = document.getElementById('postTitle');
+        const postContentInput = document.getElementById('postContent');
+        const youtubeUrlInput = document.getElementById('youtubeUrl');
+        const youtubeInputGroup = document.getElementById('youtubeInputGroup');
+        const uploadImageBtn = document.getElementById('uploadImage');
+        const previewImage = document.getElementById('previewImage');
+        const imageInputGroup = document.getElementById('imageInputGroup');
+        const cancelPostBtn = document.getElementById('cancelPost');
+        const submitPostBtn = document.getElementById('submitPost');
+        const fullPostModal = document.getElementById('fullPostModal');
+        const fullPostContent = document.getElementById('fullPostContent');
+        const closeFullPostBtn = document.getElementById('closeFullPostBtn');
+        const navHome = document.getElementById('navHome');
+        const navYoutubePosts = document.getElementById('navYoutubePosts');
+        const profilePhoto = document.getElementById('profilePhoto');
+        const changeProfilePhotoBtn = document.getElementById('changeProfilePhotoBtn');
+        const displayNameInput = document.getElementById('displayNameInput');
+        const userEmail = document.getElementById('userEmail');
+        const updateProfileBtn = document.getElementById('updateProfileBtn');
+        const menuProfilePhoto = document.getElementById('menuProfilePhoto');
+        const menuUserName = document.getElementById('menuUserName');
+        const menuUserEmail = document.getElementById('menuUserEmail');
+        const feedbackInput = document.getElementById('feedbackInput');
+        const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
 
-  // Start App
-  initializeApp();
-</script>
+        // App State
+        let editingPostId = null;
+        let currentPostType = 'home';
+        let currentModal = '';
+        let currentUserIsAdmin = false;
+        let isSigningUp = false;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            // Splash screen
+            setTimeout(() => {
+                splashScreen.style.opacity = '0';
+                splashScreen.style.visibility = 'hidden';
+                checkAuthStateAndRedirect();
+            }, 2500);
+
+            // Dark mode
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            darkModeToggle.addEventListener('change', () => {
+                document.body.classList.toggle('dark-mode');
+                localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            });
+
+            // Menu toggle
+            menuToggle.addEventListener('click', () => {
+                menu.classList.toggle('translate-x-full');
+            });
+            closeMenuBtn.addEventListener('click', () => {
+                menu.classList.add('translate-x-full');
+            });
+
+            // Close menu on outside click
+            document.addEventListener('click', (e) => {
+                if (!menu.contains(e.target) && !menuToggle.contains(e.target)) {
+                    menu.classList.add('translate-x-full');
+                }
+            });
+
+            // Close menu on link click
+            document.querySelectorAll('.menu-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    menu.classList.add('translate-x-full');
+                });
+            });
+
+            // Initialize event listeners
+            initEventListeners();
+        });
+
+        // Initialize Event Listeners
+        function initEventListeners() {
+            // Authentication
+            googleSignInBtn.addEventListener('click', signInWithGoogle);
+            continueAsGuestBtn.addEventListener('click', continueAsGuest);
+            logoutBtn.addEventListener('click', signOut);
+            emailAuthBtn.addEventListener('click', handleEmailAuth);
+            authToggleBtn.addEventListener('click', toggleAuthMode);
+
+            // Navigation
+            navHome.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.hash = '#home';
+            });
+            navYoutubePosts.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.hash = '#youtubePosts';
+            });
+
+            // Post creation
+            fab.addEventListener('click', openFabOptions);
+            createHomePostBtn.addEventListener('click', () => openPostModal('home'));
+            createYoutubePostBtn.addEventListener('click', () => openPostModal('youtube'));
+            cancelFabOptions.addEventListener('click', closeFabOptions);
+            uploadImageBtn.addEventListener('click', openCloudinaryWidget);
+            cancelPostBtn.addEventListener('click', closePostModal);
+            submitPostBtn.addEventListener('click', submitPost);
+
+            // Profile
+            changeProfilePhotoBtn.addEventListener('click', () => {
+                currentModal = 'profileModal';
+                openCloudinaryWidget();
+            });
+            updateProfileBtn.addEventListener('click', updateProfile);
+
+            // Feedback
+            submitFeedbackBtn.addEventListener('click', submitFeedback);
+
+            // Full post modal
+            closeFullPostBtn.addEventListener('click', closeFullPostView);
+
+            // Hash change
+            window.addEventListener('hashchange', checkAuthStateAndRedirect);
+
+            // Post grid click delegation
+            postsGrid.addEventListener('click', handlePostGridClick);
+            fullPostContent.addEventListener('click', handleFullPostClick);
+        }
+
+        // Authentication Functions
+        function toggleAuthMode() {
+            isSigningUp = !isSigningUp;
+            if (isSigningUp) {
+                authModalTitle.textContent = 'Create Your Account';
+                emailAuthBtnText.textContent = 'Sign Up';
+                authToggleText.textContent = 'Already have an account?';
+                authToggleBtn.textContent = 'Sign In';
+                displayNameSignupInput.classList.remove('hidden');
+                passwordInput.setAttribute('autocomplete', 'new-password');
+            } else {
+                authModalTitle.textContent = 'Welcome Back!';
+                emailAuthBtnText.textContent = 'Sign In';
+                authToggleText.textContent = 'Don\'t have an account?';
+                authToggleBtn.textContent = 'Sign Up';
+                displayNameSignupInput.classList.add('hidden');
+                passwordInput.setAttribute('autocomplete', 'current-password');
+            }
+            resetAuthForm();
+        }
+
+        async function handleEmailAuth() {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            const displayName = displayNameSignupInput.value.trim();
+
+            if (!email || !password) {
+                alert('Please enter email and password.');
+                return;
+            }
+            if (isSigningUp && !displayName) {
+                alert('Please enter a display name.');
+                return;
+            }
+
+            try {
+                emailAuthBtn.disabled = true;
+                if (isSigningUp) {
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    await userCredential.user.updateProfile({ displayName });
+                    await rtdb.ref(`users/${userCredential.user.uid}`).set({
+                        displayName,
+                        email,
+                        photoURL: userCredential.user.photoURL || ''
+                    });
+                    alert('Account created successfully!');
+                } else {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    alert('Signed in successfully!');
+                }
+                localStorage.removeItem('guest_browsing');
+                resetAuthForm();
+            } catch (error) {
+                console.error('Auth error:', error);
+                alert(`Authentication failed: ${error.message}`);
+            } finally {
+                emailAuthBtn.disabled = false;
+            }
+        }
+
+        function resetAuthForm() {
+            emailInput.value = '';
+            passwordInput.value = '';
+            displayNameSignupInput.value = '';
+            if (isSigningUp) {
+                toggleAuthMode();
+            }
+        }
+
+        async function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+                await rtdb.ref(`users/${user.uid}`).set({
+                    displayName: user.displayName || 'User',
+                    email: user.email || '',
+                    photoURL: user.photoURL || ''
+                });
+                localStorage.removeItem('guest_browsing');
+                alert('Signed in with Google!');
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                alert(`Google sign-in failed: ${error.message}`);
+            }
+        }
+
+        function continueAsGuest() {
+            localStorage.setItem('guest_browsing', 'true');
+            window.location.hash = '#home';
+        }
+
+        async function signOut() {
+            try {
+                await auth.signOut();
+                localStorage.removeItem('guest_browsing');
+                window.location.hash = '';
+                menu.classList.add('translate-x-full');
+                alert('Signed out successfully!');
+            } catch (error) {
+                console.error('Sign out error:', error);
+                alert(`Sign out failed: ${error.message}`);
+            }
+        }
+
+        // User Profile Functions
+        async function updateUserProfile(user) {
+            if (!user) return;
+
+            const displayName = user.displayName || 'User';
+            const email = user.email || '';
+            const photoURL = user.photoURL || 'https://via.placeholder.com/100?text=Profile';
+
+            profilePhoto.src = photoURL;
+            displayNameInput.value = displayName;
+            userEmail.textContent = email;
+            menuProfilePhoto.src = photoURL;
+            menuUserName.textContent = displayName;
+            menuUserEmail.textContent = email;
+
+            await checkAdminStatus(user.uid);
+        }
+
+        function updateGuestProfile() {
+            profilePhoto.src = 'https://via.placeholder.com/100?text=Guest';
+            displayNameInput.value = 'Guest User';
+            userEmail.textContent = 'guest@example.com';
+            displayNameInput.disabled = true;
+            changeProfilePhotoBtn.disabled = true;
+            updateProfileBtn.disabled = true;
+            updateProfileBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            menuProfilePhoto.src = 'https://via.placeholder.com/40?text=Guest';
+            menuUserName.textContent = 'Guest User';
+            menuUserEmail.textContent = 'guest@example.com';
+            adminPanelBtn.classList.add('hidden');
+            fab.classList.add('hidden');
+            currentUserIsAdmin = false;
+        }
+
+        async function checkAdminStatus(uid) {
+            try {
+                const snapshot = await rtdb.ref(`admins/${uid}`).once('value');
+                currentUserIsAdmin = snapshot.exists();
+                adminPanelBtn.classList.toggle('hidden', !currentUserIsAdmin);
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+                adminPanelBtn.classList.add('hidden');
+                currentUserIsAdmin = false;
+            }
+        }
+
+        // Modal Functions
+        function openFabOptions() {
+            if (!auth.currentUser) {
+                alert('Please sign in to create posts.');
+                window.location.hash = '';
+                return;
+            }
+            closeAllModals();
+            currentModal = 'fabOptionsModal';
+            fabOptionsModal.classList.add('open');
+        }
+
+        function closeFabOptions() {
+            fabOptionsModal.classList.remove('open');
+            currentModal = '';
+        }
+
+        function openPostModal(type, id = null, title = '', content = '', youtubeUrl = '', imageUrl = '') {
+            closeAllModals();
+            currentModal = 'postModal';
+            editingPostId = id;
+            currentPostType = type;
+
+            modalTitle.textContent = id ? 'Edit Post' : 'Add Post';
+            postTitleInput.value = title;
+            postContentInput.value = content;
+            youtubeUrlInput.value = youtubeUrl;
+            if (imageUrl) {
+                previewImage.src = imageUrl;
+                previewImage.classList.remove('hidden');
+            } else {
+                previewImage.src = '';
+                previewImage.classList.add('hidden');
+            }
+
+            youtubeInputGroup.classList.toggle('hidden', type !== 'youtube');
+            imageInputGroup.classList.toggle('hidden', type === 'youtube');
+            postModal.classList.add('open');
+            postTitleInput.focus();
+        }
+
+        function closePostModal() {
+            postModal.classList.remove('open');
+            resetPostModal();
+        }
+
+        function resetPostModal() {
+            postTitleInput.value = '';
+            postContentInput.value = '';
+            youtubeUrlInput.value = '';
+            previewImage.src = '';
+            previewImage.classList.add('hidden');
+            editingPostId = null;
+            currentModal = '';
+        }
+
+        function openCloudinaryWidget() {
+            if (!window.cloudinary) {
+                alert('Cloudinary widget failed to load. Please check your internet connection and try again.');
+                return;
+            }
+            cloudinaryWidget.open();
+        }
+
+        function closeAllModals() {
+            [authModal, fabOptionsModal, postModal, fullPostModal].forEach(modal => {
+                modal.classList.remove('open');
+            });
+            currentModal = '';
+        }
+
+        // Post Functions
+        async function submitPost() {
+            if (!auth.currentUser) {
+                alert('Please sign in to create posts.');
+                closePostModal();
+                window.location.hash = '';
+                return;
+            }
+
+            const title = postTitleInput.value.trim();
+            const content = postContentInput.value.trim();
+
+            if (!title || !content) {
+                alert('Please fill in both title and content.');
+                return;
+            }
+
+            const timestamp = firebase.database.ServerValue.TIMESTAMP;
+            const userId = auth.currentUser.uid;
+            const userName = auth.currentUser.displayName || auth.currentUser.email.split('@')[0];
+            const userPhoto = auth.currentUser.photoURL || 'https://via.placeholder.com/100?text=User';
+
+            let postData = {
+                title,
+                content,
+                type: currentPostType,
+                userId,
+                userName,
+                userPhoto,
+                timestamp
+            };
+
+            if (currentPostType === 'youtube') {
+                const youtubeUrl = youtubeUrlInput.value.trim();
+                if (!youtubeUrl) {
+                    alert('Please enter a YouTube URL.');
+                    return;
+                }
+                const videoId = extractVideoId(youtubeUrl);
+                if (!videoId) {
+                    alert('Invalid YouTube URL. Please use a valid format (e.g., https://youtu.be/dQw4w9WgXcQ).');
+                    return;
+                }
+                postData.youtubeUrl = youtubeUrl;
+                postData.videoId = videoId;
+            } else {
+                const imageUrl = previewImage.src;
+                if (!imageUrl || !imageUrl.includes(CLOUDINARY_CLOUD_NAME)) {
+                    alert('Please upload an image for your post.');
+                    return;
+                }
+                postData.imageUrl = imageUrl;
+            }
+
+            try {
+                submitPostBtn.disabled = true;
+                const postTypePath = currentPostType === 'youtube' ? 'youtubePosts' : 'homePosts';
+                if (editingPostId && currentUserIsAdmin) {
+                    await rtdb.ref(`${postTypePath}/${editingPostId}`).update(postData);
+                    alert('Post updated successfully!');
+                } else if (editingPostId && !currentUserIsAdmin) {
+                    alert('You are not authorized to edit posts.');
+                    return;
+                } else {
+                    await rtdb.ref(postTypePath).push(postData);
+                    alert('Post created successfully!');
+                }
+                closePostModal();
+                loadPosts(currentPostType);
+            } catch (error) {
+                console.error('Error saving post:', error);
+                alert(`Error saving post: ${error.message}`);
+            } finally {
+                submitPostBtn.disabled = false;
+            }
+        }
+
+        async function loadPosts(postType = 'home') {
+            loadingSpinner.classList.remove('hidden');
+            noPostsMessage.classList.add('hidden');
+            postsGrid.innerHTML = '';
+
+            for (const playerId in youtubePlayers) {
+                if (youtubePlayers[playerId] && typeof youtubePlayers[playerId].destroy === 'function') {
+                    youtubePlayers[playerId].destroy();
+                }
+            }
+            youtubePlayers = {};
+
+            try {
+                const postTypePath = postType === 'youtube' ? 'youtubePosts' : 'homePosts';
+                const postsRef = rtdb.ref(postTypePath).orderByChild('timestamp');
+                postsRef.once('value', snapshot => {
+                    if (!snapshot.exists()) {
+                        noPostsMessage.classList.remove('hidden');
+                        loadingSpinner.classList.add('hidden');
+                        return;
+                    }
+
+                    const postsData = snapshot.val();
+                    const postsArray = Object.entries(postsData).map(([id, post]) => ({ id, ...post }));
+                    postsArray.sort((a, b) => b.timestamp - a.timestamp);
+
+                    postsArray.forEach(post => {
+                        postsGrid.appendChild(createPostElement(post));
+                    });
+
+                    loadingSpinner.classList.add('hidden');
+                });
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                postsGrid.innerHTML = '<p class="text-center text-red-500 dark:text-red-400 mt-4">Error loading posts. Please check your connection and try again.</p>';
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        function createPostElement(post) {
+            const postElement = document.createElement('div');
+            postElement.className = 'ios-card p-4 flex flex-col';
+            postElement.dataset.postId = post.id;
+            postElement.dataset.postType = post.type;
+            postElement.dataset.postTitle = post.title;
+            postElement.dataset.postContent = post.content;
+            postElement.dataset.postYoutubeUrl = post.youtubeUrl || '';
+            postElement.dataset.postImageUrl = post.imageUrl || '';
+            postElement.dataset.postUserId = post.userId;
+
+            let mediaContent = '';
+            if (post.type === 'youtube' && post.videoId) {
+                mediaContent = `<div class="youtube-container mb-3"><div id="player-grid-${post.id}"></div></div>`;
+            } else if (post.type === 'home' && post.imageUrl) {
+                mediaContent = `<img src="${post.imageUrl}" class="w-full h-48 object-cover rounded-lg mb-3" alt="Post image">`;
+            }
+
+            postElement.innerHTML = `
+                <div>
+                    ${mediaContent}
+                    <h3 class="text-lg font-semibold mb-1">${escapeHtml(post.title)}</h3>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm line-clamp-3 mb-3">${escapeHtml(post.content)}</p>
+                </div>
+                <div class="flex items-center justify-between mt-auto">
+                    <div class="flex items-center">
+                        <img src="${post.userPhoto || 'https://via.placeholder.com/40?text=User'}" class="w-8 h-8 rounded-full mr-2" alt="User avatar">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">${escapeHtml(post.userName || 'User')}</span>
+                    </div>
+                    ${currentUserIsAdmin ? `
+                        <div class="flex space-x-2">
+                            <button class="edit-post-btn text-blue-600 dark:text-blue-400 text-sm flex items-center">
+                                <i class="heroicons-outline-pencil-square w-4 h-4 mr-1"></i>Edit
+                            </button>
+                            <button class="delete-post-btn text-red-600 dark:text-red-400 text-sm flex items-center">
+                                <i class="heroicons-outline-trash w-4 h-4 mr-1"></i>Delete
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            if (post.type === 'youtube' && post.videoId && typeof YT !== 'undefined') {
+                youtubePlayers[`player-grid-${post.id}`] = new YT.Player(`player-grid-${post.id}`, {
+                    height: '100%',
+                    width: '100%',
+                    videoId: post.videoId,
+                    playerVars: {
+                        'autoplay': 0,
+                        'controls': 1,
+                        'rel': 0,
+                        'modestbranding': 1
+                    }
+                });
+            }
+
+            return postElement;
+        }
+
+        // Post Click Handlers
+        function handlePostGridClick(e) {
+            const postCard = e.target.closest('.ios-card');
+            if (!postCard) return;
+
+            const postId = postCard.dataset.postId;
+            const postType = postCard.dataset.postType;
+            const postTitle = postCard.dataset.postTitle;
+            const postContent = postCard.dataset.postContent;
+            const postYoutubeUrl = postCard.dataset.postYoutubeUrl;
+            const postImageUrl = postCard.dataset.postImageUrl;
+            const postUserId = postCard.dataset.postUserId;
+
+            if (e.target.closest('.edit-post-btn')) {
+                e.stopPropagation();
+                openPostModal(postType, postId, postTitle, postContent, postYoutubeUrl, postImageUrl);
+            } else if (e.target.closest('.delete-post-btn')) {
+                e.stopPropagation();
+                deletePost(postId, postType);
+            } else {
+                openFullPostView(postId, postType, postTitle, postContent, postYoutubeUrl, postImageUrl, postUserId);
+            }
+        }
+
+        function handleFullPostClick(e) {
+            if (e.target.closest('.edit-post-btn')) {
+                e.stopPropagation();
+                const postId = fullPostContent.dataset.postId;
+                const postType = fullPostContent.dataset.postType;
+                const postTitle = fullPostContent.dataset.postTitle;
+                const postContent = fullPostContent.dataset.postContent;
+                const postYoutubeUrl = fullPostContent.dataset.postYoutubeUrl;
+                const postImageUrl = fullPostContent.dataset.postImageUrl;
+                openPostModal(postType, postId, postTitle, postContent, postYoutubeUrl, postImageUrl);
+                closeFullPostView();
+            } else if (e.target.closest('.delete-post-btn')) {
+                e.stopPropagation();
+                const postId = fullPostContent.dataset.postId;
+                const postType = fullPostContent.dataset.postType;
+                deletePost(postId, postType);
+                closeFullPostView();
+            }
+        }
+
+        async function openFullPostView(id, type, title, content, youtubeUrl, imageUrl, userId) {
+            closeAllModals();
+            let userName = 'User';
+            let userPhoto = 'https://via.placeholder.com/100?text=User';
+
+            if (userId === 'guest') {
+                userName = 'Guest User';
+                userPhoto = 'https://via.placeholder.com/100?text=Guest';
+            } else if (userId) {
+                try {
+                    if (auth.currentUser && auth.currentUser.uid === userId) {
+                        userName = auth.currentUser.displayName || 'User';
+                        userPhoto = auth.currentUser.photoURL || userPhoto;
+                    } else {
+                        const snapshot = await rtdb.ref(`users/${userId}`).once('value');
+                        if (snapshot.exists()) {
+                            const userData = snapshot.val();
+                            userName = userData.displayName || 'User';
+                            userPhoto = userData.photoURL || userPhoto;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            }
+
+            let mediaContent = '';
+            if (type === 'youtube' && youtubeUrl) {
+                const videoId = extractVideoId(youtubeUrl);
+                if (videoId) {
+                    mediaContent = `<div class="youtube-container mb-4"><div id="player-full-${id}"></div></div>`;
+                }
+            } else if (type === 'home' && imageUrl) {
+                mediaContent = `<img src="${imageUrl}" class="w-full max-h-96 object-contain mb-4 rounded-lg" alt="Post image">`;
+            }
+
+            fullPostContent.dataset.postId = id;
+            fullPostContent.dataset.postType = type;
+            fullPostContent.dataset.postTitle = title;
+            fullPostContent.dataset.postContent = content;
+            fullPostContent.dataset.postYoutubeUrl = youtubeUrl;
+            fullPostContent.dataset.postImageUrl = imageUrl;
+
+            fullPostContent.innerHTML = `
+                <div>
+                    ${mediaContent}
+                    <h2 class="text-2xl font-bold mb-2">${escapeHtml(title)}</h2>
+                    <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap mb-6">${escapeHtml(content)}</p>
+                    <div class="flex items-center">
+                        <img src="${userPhoto}" class="w-10 h-10 rounded-full mr-3" alt="User avatar">
+                        <div>
+                            <p class="font-medium">${escapeHtml(userName)}</p>
+                            ${currentUserIsAdmin ? `
+                                <div class="flex space-x-3 mt-2">
+                                    <button class="edit-post-btn text-blue-600 dark:text-blue-400 text-sm flex items-center">
+                                        <i class="heroicons-outline-pencil-square w-4 h-4 mr-1"></i>Edit
+                                    </button>
+                                    <button class="delete-post-btn text-red-600 dark:text-red-400 text-sm flex items-center">
+                                        <i class="heroicons-outline-trash w-4 h-4 mr-1"></i>Delete
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            fullPostModal.classList.add('open');
+
+            if (type === 'youtube' && youtubeUrl && typeof YT !== 'undefined') {
+                const videoId = extractVideoId(youtubeUrl);
+                youtubePlayers[`player-full-${id}`] = new YT.Player(`player-full-${id}`, {
+                    height: '100%',
+                    width: '100%',
+                    videoId: videoId,
+                    playerVars: {
+                        'autoplay': 1,
+                        'controls': 1,
+                        'rel': 0,
+                        'modestbranding': 1
+                    }
+                });
+            }
+        }
+
+        function closeFullPostView() {
+            fullPostModal.classList.remove('open');
+            fullPostContent.innerHTML = '';
+            const fullScreenPlayerKey = Object.keys(youtubePlayers).find(key => key.startsWith('player-full-'));
+            if (fullScreenPlayerKey && youtubePlayers[fullScreenPlayerKey]) {
+                youtubePlayers[fullScreenPlayerKey].destroy();
+                delete youtubePlayers[fullScreenPlayerKey];
+            }
+        }
+
+        async function deletePost(id, type) {
+            if (!auth.currentUser || !currentUserIsAdmin) {
+                alert('You are not authorized to delete posts.');
+                return;
+            }
+
+            if (confirm('Are you sure you want to delete this post?')) {
+                try {
+                    const postTypePath = type === 'youtube' ? 'youtubePosts' : 'homePosts';
+                    await rtdb.ref(`${postTypePath}/${id}`).remove();
+                    alert('Post deleted successfully!');
+                    loadPosts(type);
+                } catch (error) {
+                    console.error('Error deleting post:', error);
+                    alert(`Error deleting post: ${error.message}`);
+                }
+            }
+        }
+
+        // Profile Functions
+        async function updateProfilePhoto(photoUrl) {
+            if (!auth.currentUser) return;
+            try {
+                await auth.currentUser.updateProfile({ photoURL: photoUrl });
+                await rtdb.ref(`users/${auth.currentUser.uid}`).update({ photoURL: photoUrl });
+                profilePhoto.src = photoUrl;
+                menuProfilePhoto.src = photoUrl;
+                alert('Profile photo updated successfully!');
+            } catch (error) {
+                console.error('Error updating photo:', error);
+                alert(`Error updating photo: ${error.message}`);
+            }
+        }
+
+        async function updateProfile() {
+            if (!auth.currentUser) {
+                alert('Please sign in to update your profile.');
+                return;
+            }
+
+            const newDisplayName = displayNameInput.value.trim();
+            if (!newDisplayName) {
+                alert('Display name cannot be empty.');
+                return;
+            }
+
+            try {
+                updateProfileBtn.disabled = true;
+                await auth.currentUser.updateProfile({ displayName: newDisplayName });
+                await rtdb.ref(`users/${auth.currentUser.uid}`).update({ displayName: newDisplayName });
+                menuUserName.textContent = newDisplayName;
+                alert('Profile updated successfully!');
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert(`Error updating profile: ${error.message}`);
+            } finally {
+                updateProfileBtn.disabled = false;
+            }
+        }
+
+        // Feedback Function
+        async function submitFeedback() {
+            const feedback = feedbackInput.value.trim();
+            if (!feedback) {
+                alert('Please enter your feedback.');
+                return;
+            }
+
+            try {
+                submitFeedbackBtn.disabled = true;
+                const userId = auth.currentUser ? auth.currentUser.uid : 'guest';
+                await rtdb.ref('feedback').push({
+                    feedback,
+                    userId,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                feedbackInput.value = '';
+                alert('Feedback submitted! Thank you!');
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                alert(`Error submitting feedback: ${error.message}`);
+            } finally {
+                submitFeedbackBtn.disabled = false;
+            }
+        }
+
+        // Navigation Functions
+        function showPage(pageId) {
+            const pages = [mainContent, profilePage, privacyPage, feedbackPage, aboutPage, authModal];
+            pages.forEach(page => {
+                page.classList.add('hidden');
+                if (page.classList.contains('modal')) {
+                    page.classList.remove('open');
+                }
+            });
+
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                if (targetPage.classList.contains('modal')) {
+                    targetPage.classList.add('open');
+                }
+            }
+
+            document.querySelectorAll('.footer-nav a').forEach(link => link.classList.remove('active'));
+            if (pageId === 'mainContent') {
+                const currentHash = window.location.hash || '#home';
+                if (currentHash === '#youtubePosts') {
+                    navYoutubePosts.classList.add('active');
+                    postsSectionTitle.textContent = 'YouTube Posts';
+                } else {
+                    navHome.classList.add('active');
+                    postsSectionTitle.textContent = 'Home Posts';
+                }
+            }
+        }
+
+        function checkAuthStateAndRedirect() {
+            const hash = window.location.hash || '#home';
+            let targetPageId = 'mainContent';
+            let postsFilterType = 'home';
+
+            if (hash === '#profile') {
+                if (!auth.currentUser && localStorage.getItem('guest_browsing') !== 'true') {
+                    showPage('authModal');
+                    return;
+                }
+                targetPageId = 'profilePage';
+            } else if (hash === '#privacy') {
+                targetPageId = 'privacyPage';
+            } else if (hash === '#feedback') {
+                targetPageId = 'feedbackPage';
+            } else if (hash === '#about') {
+                targetPageId = 'aboutPage';
+            } else if (hash === '#youtubePosts') {
+                postsFilterType = 'youtube';
+            } else if (hash !== '#home') {
+                window.location.hash = '#home';
+                return;
+            }
+
+            if (!auth.currentUser && localStorage.getItem('guest_browsing') !== 'true' && hash !== '') {
+                showPage('authModal');
+            } else {
+                showPage(targetPageId);
+                if (targetPageId === 'mainContent') {
+                    loadPosts(postsFilterType);
+                }
+            }
+        }
+
+        // Auth State Listener
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                fab.classList.remove('hidden');
+                updateUserProfile(user);
+                displayNameInput.disabled = false;
+                changeProfilePhotoBtn.disabled = false;
+                updateProfileBtn.disabled = false;
+                updateProfileBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                if (window.location.hash === '' || authModal.classList.contains('open')) {
+                    window.location.hash = '#home';
+                } else {
+                    checkAuthStateAndRedirect();
+                }
+            } else if (localStorage.getItem('guest_browsing') === 'true') {
+                fab.classList.add('hidden');
+                updateGuestProfile();
+                if (window.location.hash === '' || authModal.classList.contains('open')) {
+                    window.location.hash = '#home';
+                } else {
+                    checkAuthStateAndRedirect();
+                }
+            } else {
+                fab.classList.add('hidden');
+                window.location.hash = '';
+                showPage('authModal');
+            }
+        });
+
+        // Utility Functions
+        function extractVideoId(url) {
+            if (!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
 </body>
 </html>
